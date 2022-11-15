@@ -1,4 +1,5 @@
-venv
+client_secrets.json
+src/components/data_manager/settings.yml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

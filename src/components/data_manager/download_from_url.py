@@ -2,6 +2,7 @@ import requests
 
 def get_download_from_url(download_url):
     response = requests.get(download_url)
+    print('Download Complete')
     return response
 
 def get_content_from_download(response):
