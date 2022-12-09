@@ -1,7 +1,7 @@
 import numpy as np
 
-cholecT45_array=np.load('cholecT45_array.npy') 
-cholecSeg8k_array=np.load('cholecSeg8k_array.npy') 
+cholecT45_array=np.load('src/assets/matching_data/cholecT45_array.npy') 
+cholecSeg8k_array=np.load('src/assets/matching_data/cholecSeg8k_array.npy') 
 
 #print(cholecT45_array)
 #print(cholecSeg8k_array)
@@ -27,4 +27,4 @@ if __name__=='__main__':
     print(matching_data.shape)
     print(matching_data)
     
-    np.save('matching_data_array.npy', matching_data) 
+    np.save('src/assets/matching_data/matching_data_array.npy', matching_data) 

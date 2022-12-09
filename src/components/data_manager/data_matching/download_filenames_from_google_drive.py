@@ -68,8 +68,8 @@ def main():
                 cholecT45_array = np.vstack([cholecT45_array, frame_row])
             
     
-    np.save('cholecSeg8k_array.npy', cholecSeg8k_array[1:]) 
-    np.save('cholecT45_array.npy', cholecT45_array[1:])      
+    np.save('src/assets/matching_data/cholecSeg8k_array.npy', cholecSeg8k_array[1:]) 
+    np.save('src/assets/matching_data/cholecT45_array.npy', cholecT45_array[1:])      
                        
 
 if __name__ == '__main__':
