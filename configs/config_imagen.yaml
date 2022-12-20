@@ -1,0 +1,78 @@
+## Training
+# Trainer
+trainer:
+  split_valid_from_train: True
+  max_epochs: 100
+  batch_size: 16
+  max_batch_size: 16
+  shuffle: True
+  
+# Dataset
+dataset:
+  PATH_TRIPLETS_DIR: ./data/CholecT45/triplets/
+  PATH_DICT_DIR: ./data/CholecT45/dict/
+  PATH_VIDEO_DIR: ./data/CholecT45/data/
+  image_size: 480
+  dl_tuple_output_keywords_names:
+    - images
+    - texts
+  text_embedding: True
+
+## Architecture
+# U-Net 1
+unet1:
+  dim: 32
+  cond_dim: 512
+  dim_mults: 
+    - 1
+    - 2
+    - 4
+    - 8
+  num_resnet_blocks: 3
+  layer_attns:
+    - False
+    - True
+    - True
+    - True
+  layer_cross_attns: 
+    - False
+    - True
+    - True
+    - True
+
+# U-Net 2
+unet2:
+  dim: 32
+  cond_dim: 512
+  dim_mults: 
+    - 1
+    - 2
+    - 4
+    - 8
+  num_resnet_blocks:
+    - 2
+    - 4
+    - 8
+    - 8
+  layer_attns:
+    - False
+    - False
+    - False
+    - True
+  layer_cross_attns: 
+    - False
+    - False
+    - False
+    - True
+
+# Imagen
+imagen:
+  unets:
+    - unet1
+    - unet2
+  image_sizes:
+    - 64
+    - 256
+  timesteps: 250
+  cond_drop_prob: 0.1
+

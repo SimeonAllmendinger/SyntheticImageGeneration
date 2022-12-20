@@ -1,7 +1,7 @@
 import logging
 import logging.config
 
-def get_logger(verbose=False):
+def _get_logger_(verbose=False):
     logging.config.fileConfig('configs/config_logger.conf')
     master_logger = logging.getLogger('MasterLogger')
     
@@ -16,4 +16,4 @@ def get_logger(verbose=False):
     return master_logger
 
 if __name__ == '__main__':
-    get_logger(verbose=True)
+    _get_logger_(verbose=True)
