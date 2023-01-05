@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.curdir))
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+from os.path import exists as file_exists
 from imagen_pytorch.data import Dataset
 from imagen_pytorch.t5 import t5_encode_text
 from PIL import Image
@@ -21,9 +22,18 @@ class CholecT45ImagenDataset(Dataset):
         super().__init__(folder=opt.imagen['dataset']['PATH_VIDEO_DIR'],
                          image_size=opt.imagen['dataset']['image_size'])
         
-        if self.t5_embedding:
-            self.triplet_embeds = t5_encode_text(texts=self.img_triplets['triplet_text'].to_list())
         
+        if self.t5_embedding:
+            if file_exists(opt.imagen['dataset']['PATH_TEXT_EMBEDDING_FILE']):
+                opt.logger.debug('Load text embedding from file')
+                
+                self.triplet_embeds = torch.load(opt.imagen['dataset']['PATH_TEXT_EMBEDDING_FILE'])
+            
+            else:
+                opt.logger.debug('Create text embedding')
+                
+                self.triplet_embeds = t5_encode_text(texts=self.img_triplets['triplet_text'].to_list())
+                torch.save(self.triplet_embeds, opt.imagen['dataset']['PATH_TEXT_EMBEDDING_FILE'])
 
     def __getitem__(self, index):
         # Get Image
@@ -49,19 +59,23 @@ class CholecT45ImagenDataset(Dataset):
 
 if __name__ == "__main__":
     opt=Opt()
-    #opt.imagen['dataset']['text_embedding'] = False
+    
     cholecT45_dataset = CholecT45ImagenDataset(opt=opt)
     
     # Plot
     fig, ax = plt.subplots(2,1, figsize=(6,8))
+    
     for i in range(2):
         # Example image with random index
         index = np.random.randint(low=1, high=200)
-        image, triplet_string = cholecT45_dataset.__getitem__(index=index)
+        image, triplet = cholecT45_dataset.__getitem__(index=index)
 
         # Display example
-        opt.logger.debug('Triplets string: ' + triplet_string)
+        if not opt.imagen['dataset']['text_embedding']:
+            opt.logger.debug('Triplets string: ' + triplet)
+            ax[i].set_title(triplet)
+            
         ax[i].imshow(image.permute(1, 2, 0))
-        ax[i].set_title(triplet_string)
+        
     plt.show()
     

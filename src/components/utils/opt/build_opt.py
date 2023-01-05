@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.curdir))
 import yaml
 
 from src.components.utils.logger.MasterLogger import _get_logger_
+from src.components.utils.pytorch_cuda.cuda_devices import CudaDevice
 
 class Opt():
     
@@ -12,7 +13,7 @@ class Opt():
         self.imagen = _get_config_('configs/config_imagen.yaml')
         self.neptune = _get_config_('configs/config_neptune.yaml')
         self.logger = _get_logger_(verbose=False)
-        # TODO: Cuda ...
+        #self.pytorch_cuda = CudaDevice()
         
 
 def _get_config_(path :str):

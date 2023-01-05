@@ -3,6 +3,9 @@ src/components/data_manager/settings.yml
 data
 configs/config_neptune.yaml
 
+# Models
+*.pt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -50,10 +50,10 @@ def train_imagen(opt: Opt, imagen_model: Imagen):
                                                text_embeds=triplet_batch,
                                                unet_number=unet_k)
                 loss.backward()
-                opt.logger.info(f'loss: {loss}')
+                opt.logger.debug(f'batch loss: {loss}')
                 
                 # Upload epoch loss to neptune_ai
-                neptune_ai.log_neptune_run(opt=opt, data_item=loss, neptune_run_save_path=f"train/batch/loss_unet-{unet_k}")
+                neptune_ai.log_neptune_run(opt=opt, data_item=loss, neptune_run_save_path=f"train/loss_unet-{unet_k}")
             
     opt.logger.info('Imagen trained')
     
