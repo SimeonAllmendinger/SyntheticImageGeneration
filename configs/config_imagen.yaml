@@ -2,7 +2,7 @@
 # Trainer
 trainer:
   split_valid_from_train: True
-  max_epochs: 100
+  max_epochs: 1
   batch_size: 16
   max_batch_size: 16
   shuffle: True
@@ -12,6 +12,7 @@ dataset:
   PATH_TRIPLETS_DIR: ./data/CholecT45/triplets/
   PATH_DICT_DIR: ./data/CholecT45/dict/
   PATH_VIDEO_DIR: ./data/CholecT45/data/
+  PATH_TEXT_EMBEDDING_FILE: './src/assets/imagen/text_embeddings/triplets_embeds.pt'
   image_size: 480
   dl_tuple_output_keywords_names:
     - images
