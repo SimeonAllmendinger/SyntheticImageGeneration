@@ -13,7 +13,7 @@ class Opt():
         self.imagen = _get_config_('configs/config_imagen.yaml')
         self.neptune = _get_config_('configs/config_neptune.yaml')
         self.logger = _get_logger_(verbose=False)
-        #self.pytorch_cuda = CudaDevice()
+        self.pytorch_cuda = CudaDevice()
         
 
 def _get_config_(path :str):

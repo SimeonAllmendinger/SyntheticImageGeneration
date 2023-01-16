@@ -1,10 +1,17 @@
 client_secrets.json
 src/components/data_manager/settings.yml
 data
+results
 configs/config_neptune.yaml
 
 # Models
-*.pt
+src/assets/imagen/models/*.pt
+
+# Embeddings
+src/assets/imagen/text_embeddings/*.pkl
+
+# Triplets
+src/assets/imagen/triplets/*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

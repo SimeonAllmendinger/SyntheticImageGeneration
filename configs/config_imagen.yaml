@@ -1,23 +1,32 @@
 ## Training
 # Trainer
 trainer:
-  split_valid_from_train: True
-  max_epochs: 1
-  batch_size: 16
-  max_batch_size: 16
+  existing_model: True
+  PATH_MODEL_CHECKPOINT: './src/assets/imagen/models/imagen_checkpoint.pt'
+  PATH_MODEL_SAVE: './src/assets/imagen/models/imagen_checkpoint.pt'
+  split_valid_from_train: False
+  max_epochs: 10000
+  batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
   shuffle: True
   
 # Dataset
 dataset:
-  PATH_TRIPLETS_DIR: ./data/CholecT45/triplets/
+  PATH_TRIPLETS_DIR: ./data/CholecT45/triplet/
   PATH_DICT_DIR: ./data/CholecT45/dict/
   PATH_VIDEO_DIR: ./data/CholecT45/data/
-  PATH_TEXT_EMBEDDING_FILE: './src/assets/imagen/text_embeddings/triplets_embeds.pt'
+  
+  PATH_TEXT_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/unique_embeds.pkl
+  PATH_TRIPLETS_DF_FILE: ./src/assets/imagen/triplets/df_triplets.json
+  
   image_size: 480
   dl_tuple_output_keywords_names:
     - images
-    - texts
-  text_embedding: True
+    - text_embeds
+  t5_text_embedding: True
+
+# Validation
+validation:
+  PATH_MODEL_VALIDATION: './src/assets/imagen/models/imagen_checkpoint.pt'
 
 ## Architecture
 # U-Net 1
