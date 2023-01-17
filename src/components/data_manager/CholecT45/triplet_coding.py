@@ -11,13 +11,14 @@ from src.components.utils.opt.build_opt import Opt
 
 
 def get_df_triplets(opt: Opt):
-    
-    if not file_exists(opt.imagen['dataset']['PATH_TRIPLETS_DF_FILE']):
+
+    if not opt.imagen['dataset']['use_existing_data_files'] and not file_exists(opt.imagen['dataset']['PATH_TRIPLETS_DF_FILE']):
         # Get file paths of triplets .txt files
         triplets_files_paths = get_triplet_file_paths_in_dir_as_list(opt=opt)
-        
+
         # Get dictionary .txt file of triplet mapping
-        triplets_dict = _load_text_data(opt=opt, path=opt.imagen['dataset']['PATH_DICT_DIR'] + 'triplet.txt')
+        triplets_dict = _load_text_data(
+            opt=opt, path=opt.imagen['dataset']['PATH_DICT_DIR'] + 'triplet.txt')
 
         # Initialize triplets_text and triplets_embed_path as list
         triplets_text = list()

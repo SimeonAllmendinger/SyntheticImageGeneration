@@ -2,15 +2,22 @@
 # Trainer
 trainer:
   existing_model: True
+  
   PATH_MODEL_CHECKPOINT: './src/assets/imagen/models/imagen_checkpoint.pt'
   PATH_MODEL_SAVE: './src/assets/imagen/models/imagen_checkpoint.pt'
-  split_valid_from_train: False
-  max_epochs: 10000
-  batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
+  
+  split_valid_from_train: True
   shuffle: True
+  train_split: 0.9
+  valid_split: 0.1
+  
+  max_epochs: 3000
+  batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
+  unet_number: 2 # train unet 1 or 2
   
 # Dataset
 dataset:
+  use_existing_data_files: True
   PATH_TRIPLETS_DIR: ./data/CholecT45/triplet/
   PATH_DICT_DIR: ./data/CholecT45/dict/
   PATH_VIDEO_DIR: ./data/CholecT45/data/
@@ -27,6 +34,7 @@ dataset:
 # Validation
 validation:
   PATH_MODEL_VALIDATION: './src/assets/imagen/models/imagen_checkpoint.pt'
+  PATH_TRAINING_SAMPLE: './results/training_sample/'
 
 ## Architecture
 # U-Net 1

@@ -28,7 +28,7 @@ class CholecT45ImagenDataset(Dataset):
             
             self.triplets_unique_list = self.img_triplets['triplet_text'].unique().tolist()
             
-            if not file_exists(f"{opt.imagen['dataset']['PATH_TEXT_EMBEDDING_FILE']}"):
+            if not opt.imagen['dataset']['use_existing_data_files'] and not file_exists(f"{opt.imagen['dataset']['PATH_TEXT_EMBEDDING_FILE']}") :
 
                 opt.logger.debug('Create text embedding')
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # Plot
     fig, ax = plt.subplots(2,1, figsize=(6,8))
     
-    for i in range(2):
+    for i in range(1):
         # Example image with random index
         index = np.random.randint(low=1, high=2000)
         image, triplet = cholecT45_dataset.__getitem__(index=index)

@@ -48,8 +48,8 @@ def _get_imagen_(opt: Opt, validation: bool):
         
         else:
             
-            opt.logger.info('Load Imagen model from Checkpoint for additional Training')
-            imagen = load_imagen_from_checkpoint(opt.imagen['trainer']['PATH_MODEL_CHECKPOINT'])
+            opt.logger.info('Load Imagen model from Checkpoint for further Training')
+            imagen = load_imagen_from_checkpoint(opt.imagen['trainer']['PATH_MODEL_SAVE'])
         
     if opt.pytorch_cuda.available:
         imagen = imagen.cuda()

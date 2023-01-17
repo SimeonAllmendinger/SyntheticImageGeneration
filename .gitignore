@@ -4,6 +4,9 @@ data
 results
 configs/config_neptune.yaml
 
+# Neptune-Client
+.neptune
+
 # Models
 src/assets/imagen/models/*.pt
 
