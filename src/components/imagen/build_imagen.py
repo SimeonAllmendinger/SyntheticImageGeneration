@@ -32,29 +32,34 @@ def _get_imagen_(opt: Opt, validation: bool):
         imagen = load_imagen_from_checkpoint(opt.imagen['validation']['PATH_MODEL_VALIDATION'])
     
     else:
-        if not opt.imagen['trainer']['existing_model'] or not glob.glob(opt.imagen['trainer']['PATH_MODEL_CHECKPOINT']):
-            
-            opt.logger.info('Create new Imagen model')
-            
-            # imagen-config, which contains the unets above (base unet and super resoluting ones)
-            # the config class can be safed and loaded afterwards
-            imagen = ImagenConfig(
-                unets=[dict(**opt.imagen['unet1']), 
-                    dict(**opt.imagen['unet2'])],
-                image_sizes=opt.imagen['imagen']['image_sizes'],
-                timesteps=opt.imagen['imagen']['timesteps'],
-                cond_drop_prob=opt.imagen['imagen']['cond_drop_prob']
-            ).create()
-        
-        else:
+        if opt.imagen['trainer']['use_existing_model'] or glob.glob(opt.imagen['trainer']['PATH_MODEL_CHECKPOINT']):
             
             opt.logger.info('Load Imagen model from Checkpoint for further Training')
             imagen = load_imagen_from_checkpoint(opt.imagen['trainer']['PATH_MODEL_SAVE'])
         
+        else:
+            
+            opt.logger.info('Create new Imagen model')
+            
+            if opt.imagen['imagen']['t5_text_embedding']:
+                assert opt.imagen['imagen']['text_embed_dim'] == 768, "Text embed dim must be changed to 768"
+                assert opt.imagen['imagen']['text_encoder_name'] == 'google/t5-v1_1-base', "Text encoder name must be changed to 'google/t5-v1_1-base'"
+            else:
+                assert opt.imagen['imagen']['text_embed_dim'] == 29, "Text embed dim must be changed to 29"
+                assert opt.imagen['imagen']['text_encoder_name'] == 'Own_Encoder', "Text encoder name must be changed to 'Own_Encoder'"
+                
+            
+            # imagen-config, which contains the unets above (base unet and super resoluting ones)
+            # the config class can be safed and loaded afterwards
+            imagen = ImagenConfig(unets=[dict(**opt.imagen['unet1']),
+                                         dict(**opt.imagen['unet2'])],
+                                  **opt.imagen['imagen']
+                                  ).create()   
+        
     if opt.pytorch_cuda.available:
         imagen = imagen.cuda()
         
-    opt.logger.debug('Imagen built')
+    opt.logger.debug('Imagen Model built')
 
     return imagen
 
@@ -64,7 +69,7 @@ def _get_trainer_(opt: Opt, imagen: Imagen):
     trainer = ImagenTrainer(imagen=imagen,
                             # whether to split the validation dataset from the training
                             split_valid_from_train=opt.imagen['trainer']['split_valid_from_train'],
-                            dl_tuple_output_keywords_names = opt.imagen['dataset']['dl_tuple_output_keywords_names']
+                            dl_tuple_output_keywords_names = opt.imagen['trainer']['dl_tuple_output_keywords_names']
                             )
         
     if opt.pytorch_cuda.available:
@@ -73,6 +78,11 @@ def _get_trainer_(opt: Opt, imagen: Imagen):
     return trainer
 
 
-if __name__ == "__main__":
+def main():
     opt = Opt()
-    imagen = Imagen_Model(opt=opt)
+    imagen_model = Imagen_Model(opt=opt)
+    opt.logger.debug(f'imagen trainer attributes: {imagen_model.imagen}')
+
+
+if __name__ == "__main__":
+    main()

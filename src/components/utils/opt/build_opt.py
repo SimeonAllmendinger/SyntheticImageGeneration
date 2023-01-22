@@ -10,8 +10,8 @@ from src.components.utils.pytorch_cuda.cuda_devices import CudaDevice
 class Opt():
     
     def __init__(self):
-        self.imagen = _get_config_('configs/config_imagen.yaml')
-        self.neptune = _get_config_('configs/config_neptune.yaml')
+        self.imagen = _get_config_(path='configs/config_imagen.yaml')
+        self.neptune = _get_config_(path='configs/config_neptune.yaml')
         self.logger = _get_logger_(verbose=False)
         self.pytorch_cuda = CudaDevice()
         

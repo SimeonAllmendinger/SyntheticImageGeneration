@@ -12,17 +12,23 @@ from src.components.utils.opt.build_opt import Opt
 
 def get_df_triplets(opt: Opt):
 
-    if not opt.imagen['dataset']['use_existing_data_files'] and not file_exists(opt.imagen['dataset']['PATH_TRIPLETS_DF_FILE']):
+    if file_exists(opt.imagen['dataset']['PATH_TRIPLETS_DF_FILE']) and opt.imagen['dataset']['use_existing_data_files']:
+        
+        # Load df_triplets
+        df_triplets = pd.read_json(opt.imagen['dataset']['PATH_TRIPLETS_DF_FILE'])
+        
+    else:
         # Get file paths of triplets .txt files
         triplets_files_paths = get_triplet_file_paths_in_dir_as_list(opt=opt)
 
-        # Get dictionary .txt file of triplet mapping
-        triplets_dict = _load_text_data(
+        # Get dictionary triplet.txt file of triplet text mapping
+        triplets_dict = _load_text_data_(
             opt=opt, path=opt.imagen['dataset']['PATH_DICT_DIR'] + 'triplet.txt')
-
+        
         # Initialize triplets_text and triplets_embed_path as list
-        triplets_text = list()
-        triplets_embed_path = list()
+        triplets_text_list = list()
+        triplets_embed_path_list = list()
+        triplet_dict_indices_list = list()
 
         for i, triplets_file_path in enumerate(triplets_files_paths):
 
@@ -51,31 +57,31 @@ def get_df_triplets(opt: Opt):
 
         # Get corresponding triplet encoding
         for i in range(df_img_triplets.shape[0]):
+            
             # Define all triplet encodings as type int (only 0 or 1)
             triplet_encoding = df_img_triplets.iloc[i, 1:].astype(int)
+            
             # Decode triplet encoding to obtain text as string
-            triplet_text = get_single_frame_triplet_decoding(opt=opt,
-                                                            frame_triplet_encoding=triplet_encoding,
-                                                            triplets_dict=triplets_dict)
+            triplet_text, triplet_dict_indices = get_single_frame_triplet_decoding(opt=opt,
+                                                                                   frame_triplet_encoding=triplet_encoding,
+                                                                                   triplets_dict=triplets_dict)
             # Append triplets text for each frame
-            triplets_text.append(triplet_text)
-            triplets_embed_path.append(triplet_text.replace(' ','_').strip(' ,'))
+            triplets_text_list.append(triplet_text)
+            triplets_embed_path_list.append(triplet_text.replace(' ','_').strip(' ,'))
+            triplet_dict_indices_list.append(triplet_dict_indices)
 
-        
-        df_img_triplets['triplet_text'] = triplets_text
-        df_img_triplets['triplet_embed_path'] = triplets_embed_path
+        df_img_triplets['triplet_text'] = triplets_text_list
+        df_img_triplets['triplet_embed_path'] = triplets_embed_path_list
+        df_img_triplets['triplet_dict_indices'] = triplet_dict_indices_list
         
         df_triplets = pd.concat((df_img_triplets.iloc[:, 0], 
                                 df_img_triplets['triplet_text'], 
-                                df_img_triplets['triplet_embed_path']), 
+                                df_img_triplets['triplet_embed_path'],
+                                df_img_triplets['triplet_dict_indices']), 
                                 axis=1)
         
         df_triplets.to_json(opt.imagen['dataset']['PATH_TRIPLETS_DF_FILE'])
         
-    else:
-        
-        # Load df_triplets
-        df_triplets = pd.read_json(opt.imagen['dataset']['PATH_TRIPLETS_DF_FILE'])
     
     opt.logger.info('df_triplets_shape: ' + str(df_triplets.shape))
     opt.logger.debug('df_triplet_variations: ' + str(df_triplets['triplet_embed_path'].unique().shape[0]))
@@ -104,21 +110,22 @@ def get_single_frame_triplet_encoding(opt :Opt, video_n :int, frame_n :int):
     load_path = opt.imagen['dataset']['PATH_TRIPLETS_DIR'] + 'VID' + f'{video_n:02d}' + '.txt'
     
     # load .txt data as list
-    lines = _load_text_data(opt=opt, path=load_path)
+    lines = _load_text_data_(opt=opt, path=load_path)
     
     # get triplet of determined frame as encoded list
-    frame_triplet_encoding = np.array(list(map(int, lines[frame_n].split(','))))
+    frame_triplet_encoding = np.array(list(map(int, lines[frame_n].split(','))))[1:]
     
     opt.logger.debug('frame_triplet_encoding created')
     
     return frame_triplet_encoding
             
         
-def get_single_frame_triplet_decoding(opt :Opt, frame_triplet_encoding :list(), triplets_dict):
+def get_single_frame_triplet_decoding(opt :Opt, frame_triplet_encoding: list, triplets_dict: list):
     
     # get triplet of determined frame as decoded prompt (list or string)
     if frame_triplet_encoding.sum() == 0:
         frame_triplet_decoding = np.array(triplets_dict)[-1:].tolist()
+        triplet_dict_indices = [len(triplets_dict)-1]
     else:
         triplet_dict_indices = np.where(frame_triplet_encoding[:] == 1)[0]
         frame_triplet_decoding = np.array(triplets_dict)[triplet_dict_indices.astype(int)].tolist()
@@ -133,10 +140,10 @@ def get_single_frame_triplet_decoding(opt :Opt, frame_triplet_encoding :list(), 
             triplet_string+=', '
         triplet_string +=' '.join(triplet)
 
-    return triplet_string
+    return triplet_string, triplet_dict_indices
     
     
-def _load_text_data(opt :Opt, path):
+def _load_text_data_(opt :Opt, path):
     
     with open(path, 'r') as file:
         lines=file.readlines()
@@ -146,24 +153,32 @@ def _load_text_data(opt :Opt, path):
     return lines
    
  
-if __name__ == "__main__":
+def main(): 
     opt = Opt()
+    
     # Define load path of triplet encodings of video n
     load_path = opt.imagen['dataset']['PATH_DICT_DIR'] + 'triplet.txt'
     
     # load .txt data as list
-    triplets_dict = _load_text_data(opt=opt, path=load_path)
+    triplets_dict = _load_text_data_(opt=opt, path=load_path)
     
+    i=1
     j = np.random.randint(1,800)
+    
 
     frame_triplet_encoding = get_single_frame_triplet_encoding(opt=opt,
-                                                               video_n=1,
+                                                               video_n=i,
                                                                frame_n=j)
     frame_triplet_decoding = get_single_frame_triplet_decoding(opt=opt,
-                                                               frame_triplet_encoding=frame_triplet_encoding[1:],
+                                                               frame_triplet_encoding=frame_triplet_encoding,
                                                                triplets_dict=triplets_dict)
 
     opt.logger.info('---------- TEST OUTPUT ----------')
-    opt.logger.info('frame_n: ' + str(j))
-    opt.logger.debug('frame_triplet_encoding shape: ' + str(frame_triplet_encoding[1:].shape))
+    opt.logger.info('video_n: ' + str(i) + ', frame_n: ' + str(j))
+    opt.logger.info('frame_triplet_encoding shape: ' + str(frame_triplet_encoding.shape))
+    opt.logger.info('frame_triplet_encoding: ' + str(frame_triplet_encoding))
     opt.logger.info('frame_triplet_decoding: ' + str(frame_triplet_decoding))
+    
+    
+if __name__ == "__main__":
+    main()
