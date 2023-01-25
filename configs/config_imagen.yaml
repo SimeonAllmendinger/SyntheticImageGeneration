@@ -13,26 +13,50 @@ trainer:
   # Dataloader
   shuffle: True
   batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
-  train_split: 0.9
-  valid_split: 0.1
+  train_split: 0.95
+  valid_split: 0.05
   
   # Training
-  max_epochs: 5000
-  unet_number: 1 # train unet 1 or 2
-  
-# Dataset
-dataset:
-  use_existing_data_files: True
-  PATH_TRIPLETS_DIR: ./data/CholecT45/triplet/
-  PATH_DICT_DIR: ./data/CholecT45/dict/
-  PATH_VIDEO_DIR: ./data/CholecT45/data/
-  
-  PATH_T5_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/t5_unique_embeds.pkl
-  PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/ohe_embeds.pkl
-  PATH_TRIPLETS_DF_FILE: ./src/assets/imagen/triplets/df_triplets.json
-  
+  max_epochs: 10000
+  unet_number: 2 # train unet 1 or 2
+
+data:
+  dataset: CholecT45 #CholecT45, CholecSeg8k
   image_size: 480
-  t5_text_embedding: False
+  use_existing_data_files: True
+
+  # CholecT45 Dataset
+  CholecT45:
+
+    fps: 1
+
+    # CholecT45 [RAW]
+    PATH_TRIPLETS_DIR: ./data/CholecT45/triplet/
+    PATH_DICT_DIR: ./data/CholecT45/dict/
+    PATH_VIDEO_DIR: ./data/CholecT45/data/
+
+  # Text embedding [PREPROCESSING]
+    PATH_T5_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecT45/t5_unique_embeds.pkl
+    PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecT45/ohe_embeds.pkl
+    PATH_TRIPLETS_DF_FILE: ./src/assets/imagen/triplets/CholecT45/df_triplets.json
+
+  # CholecSeg8k Dataset
+  CholecSeg8k:
+
+    fps: 25
+
+    # CholecSeg8k [RAW]
+    PATH_VIDEO_DIR: ./data/CholecSeg8k/
+
+    # Text embedding [PREPROCESSING]
+    PATH_T5_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecSeg8k/t5_unique_embeds.pkl
+    PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecSeg8k/ohe_embeds.pkl
+    PATH_TRIPLETS_DF_FILE: ./src/assets/imagen/triplets/CholecSeg8k/df_triplets.json
+  
+  Cholec80:
+
+    PATH_PHASE_LABELS: ./
+
 
 # Validation
 validation:
@@ -41,10 +65,19 @@ validation:
 
 # Testing
 testing:
+  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_checkpoint.pt
   PATH_TEST_SAMPLE: ./results/test_sample/
-
-  frame_indices: [2001] # As list
+  
   unet_number: 2
+  frame_indices: 
+  # list of int
+    - 50087
+    - 60012
+    - 70003
+    - 90003
+    - 31023
+    - 11023
+
 
 ## Architecture
 # U-Net 1
@@ -102,7 +135,7 @@ imagen:
   
   # Text Embedding
   text_embed_dim: 29 #T5: 768 | OHE: 29
-  text_encoder_name: Own_Encoder # T5: google/t5-v1_1-base | OHE: Own_Encoder
+  text_encoder_name: ohe_encoder # T5: google/t5-v1_1-base | OHE: ohe_encoder
   
   # Variables
   timesteps: 1000
