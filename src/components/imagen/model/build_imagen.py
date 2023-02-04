@@ -9,6 +9,7 @@ from imagen_pytorch import Unet, ImagenTrainer, ImagenConfig, load_imagen_from_c
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.imagen.utils.decorators import check_text_encoder, model_starter
+from src.components.imagen.utils.early_stopping import EarlyStopping
 
 
 def _get_unets_(opt: Opt):
@@ -24,49 +25,50 @@ class Imagen_Model():
 
     def __init__(self, opt: Opt, validation=False):
         
-        self.OPT_IMAGEN_MODEL = dict(**opt.imagen['imagen'])
-        self.OPT_IMAGEN_TRAINER = dict(**opt.imagen['trainer'])
-        self.OPT_IMAGEN_UNETS = [dict(**opt.imagen['unet1']),
-                                  dict(**opt.imagen['unet2'])]
-        
         self.unet1, self.unet2 = _get_unets_(opt=opt)
         self.validation = validation
         
-        self._set_imagen_()
-        self._set_trainer_()
+        self._set_imagen_(opt=opt)
+        self._set_trainer_(opt=opt)
+        
+        if opt.imagen['trainer']['early_stopping']['usage']:
+            self.loss_queue = EarlyStopping(opt_early_stopping=opt.imagen['trainer']['early_stopping'])
+        
 
     @model_starter
     @check_text_encoder
-    def _set_imagen_(self):
+    def _set_imagen_(self, opt: Opt):
         
         if self.validation:
             
-            self.imagen = load_imagen_from_checkpoint(self.OPT_IMAGEN_MODEL['PATH_MODEL_VALIDATION'])
+            self.imagen = load_imagen_from_checkpoint(opt.imagen['imagen']['PATH_MODEL_VALIDATION'])
         
         else:
             
-            if self.OPT_IMAGEN_TRAINER['use_existing_model'] and glob.glob(self.OPT_IMAGEN_TRAINER['PATH_MODEL_CHECKPOINT']):
-                
-                self.imagen = load_imagen_from_checkpoint(self.OPT_IMAGEN_TRAINER['PATH_MODEL_SAVE'])
-            
+            if opt.imagen['trainer']['use_existing_model'] and glob.glob(opt.imagen['trainer']['PATH_MODEL_SAVE']):
+
+                self.imagen = load_imagen_from_checkpoint(
+                    opt.imagen['trainer']['PATH_MODEL_SAVE'])
+
             else:
 
                 # imagen-config, which contains the unets above (base unet and super resoluting ones)
                 # the config class can be safed and loaded afterwards
-                self.imagen = ImagenConfig(unets=self.OPT_IMAGEN_UNETS,
-                                      **self.OPT_IMAGEN_MODEL
-                                      ).create()
+                self.imagen = ImagenConfig(unets=[dict(**opt.imagen['unet1']),
+                                                  dict(**opt.imagen['unet2'])],
+                                           **opt.imagen['imagen']
+                                           ).create()
 
         if torch.cuda.is_available():
             self.imagen = self.imagen.cuda()
 
 
-    def _set_trainer_(self):
+    def _set_trainer_(self, opt: Opt):
 
         self.trainer = ImagenTrainer(imagen=self.imagen,
                                 # whether to split the validation dataset from the training
-                                split_valid_from_train=self.OPT_IMAGEN_TRAINER['split_valid_from_train'],
-                                dl_tuple_output_keywords_names = self.OPT_IMAGEN_TRAINER['dl_tuple_output_keywords_names']
+                                split_valid_from_train=opt.imagen['trainer']['split_valid_from_train'],
+                                dl_tuple_output_keywords_names = opt.imagen['trainer']['dl_tuple_output_keywords_names']
                                 )
             
         if torch.cuda.is_available():

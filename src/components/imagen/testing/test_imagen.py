@@ -21,7 +21,7 @@ def sample_text2images(opt: Opt, sample_index: int, unet_number: int):
     os.mkdir(test_sample_folder)
 
     ds = CholecT45ImagenDataset(opt=opt)
-    sample_text = ds.df_triplets['FRAME TRIPLET TEXT'].values[sample_index]
+    sample_text = ds.df_train['TEXT PROMPT'].values[sample_index]
     sample_image, sample_text_embeds = ds.__getitem__(sample_index)
 
     # sample an image based on the text embeddings from the cascading ddpm

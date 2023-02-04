@@ -14,7 +14,11 @@ def check_text_encoder(func):
             assert opt.imagen['imagen']['text_embed_dim'] == 768, "Text embed dim must be changed to 768"
     
         elif opt.imagen['imagen']['text_encoder_name'] == 'ohe_encoder':
-            assert opt.imagen['imagen']['text_embed_dim'] == 29, "Text embed dim must be changed to 29"
+                if opt.imagen['data']['Cholec80']['use_phase_labels']:
+                    assert opt.imagen['imagen']['text_embed_dim'] == 36, "Text embed dim must be changed to 36"
+        
+                else:
+                    assert opt.imagen['imagen']['text_embed_dim'] == 29, "Text embed dim must be changed to 29"
         
         else:
             assert True, "Choose an existing encoder: 'ohe_encoder' or 'google/t5-v1_1-base'"
@@ -26,14 +30,15 @@ def check_text_encoder(func):
 
 def check_dataset_name(func):
     
-    opt=Opt()
-    
+    opt = Opt()
+
     def wrapper(*args, **kwargs):
-        
-        assert opt.imagen['data']['dataset'] == 'CholecT45' or opt.imagen['data']['dataset'] == 'CholecSeg8k', 'Choose an existing dataset: CholecT45 or CholecSeg8k'
-        
+
+        assert opt.imagen['data']['dataset'] == 'CholecT45' or opt.imagen['data'][
+            'dataset'] == 'CholecSeg8k' or opt.imagen['data']['dataset'] == 'Both', 'Choose an existing dataset: CholecT45, CholecSeg8k or Both'
+
         return func(*args, **kwargs)
-        
+
     return wrapper
 
 
