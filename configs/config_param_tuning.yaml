@@ -4,12 +4,13 @@
 tune_params:
   scheduler:
     max_t: 1000 # max_num_epochs
-    grace_period: 1000
+    grace_period: 100
     reduction_factor: 2
   resources:
-    cpu: 1 # cpus_per_trial
+    cpu: 4 # cpus_per_trial
     gpu: 1 # gpus_per_trial
-  num_samples: 1
+  num_samples: -1
+  time_budget_s: 3600 # if num_samples = -1
   metric: loss
   mode: min
 
@@ -30,25 +31,25 @@ search_space:
   ## Start of Tuning Params --------------------------------------------
   # 1: number of ...
   timesteps: 
-    function: ray.tune.quniform
+    function: ray.tune.qrandint
     values:
-      lower: 1000
-      q: 500
-      upper: 1000
+      lower: 100
+      q: 100
+      upper: 1500
   # 2
   cond_drop_prob: 
-    function: ray.tune.qloguniform
+    function: ray.tune.quniform
     values:
-      lower: 0.1
+      lower: 0.01
       q: 0.01
-      upper: 0.1
+      upper: 0.2
   # 3
   loss_type:
     function: ray.tune.choice
     values:
-      #- 'l1'
-      - 'l2'
-      #- 'huber'
+      - l1
+      - l2
+      - huber
   # 4
   noise_schedules: 
     function: ray.tune.choice
@@ -68,23 +69,23 @@ search_space:
   lowres_sample_noise_level: 
     function: ray.tune.quniform
     values:
-      lower: 0.2
+      lower: 0.1
       q: 0.1
-      upper: 0.2
+      upper: 0.3
   # 8
   p2_loss_weight_gamma: 
     function: ray.tune.quniform
     values:
-      lower: 0.5
+      lower: 0.4
       q: 0.1
-      upper: 0.5
+      upper: 0.6
   # 9
   p2_loss_weight_k:
-    function: ray.tune.qloguniform
+    function: ray.tune.quniform
     values:
-      lower: 1
+      lower: 0.9
       q: 0.1
-      upper: 1
+      upper: 1.1
   # 10
   only_train_unet_number:
     function: ray.tune.choice
@@ -92,8 +93,8 @@ search_space:
       - 1 
   # 11
   dynamic_thresholding_percentile: 
-    function: ray.tune.qloguniform
+    function: ray.tune.quniform
     values:
-      lower: 0.95
+      lower: 0.5
       q: 0.05
-      upper: 0.95
+      upper: 1

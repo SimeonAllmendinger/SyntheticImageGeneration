@@ -23,10 +23,9 @@ def _get_unets_(opt: Opt):
 
 class Imagen_Model():
 
-    def __init__(self, opt: Opt, validation=False):
+    def __init__(self, opt: Opt):
         
         self.unet1, self.unet2 = _get_unets_(opt=opt)
-        self.validation = validation
         
         self._set_imagen_(opt=opt)
         self._set_trainer_(opt=opt)
@@ -39,25 +38,20 @@ class Imagen_Model():
     @check_text_encoder
     def _set_imagen_(self, opt: Opt):
         
-        if self.validation:
+        path_model_save = os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['trainer']['PATH_MODEL_SAVE'])
             
-            self.imagen = load_imagen_from_checkpoint(opt.imagen['imagen']['PATH_MODEL_VALIDATION'])
-        
+        if opt.imagen['trainer']['use_existing_model'] and glob.glob(path_model_save):
+            
+            self.imagen = load_imagen_from_checkpoint(path_model_save)
+
         else:
-            
-            if opt.imagen['trainer']['use_existing_model'] and glob.glob(opt.imagen['trainer']['PATH_MODEL_SAVE']):
 
-                self.imagen = load_imagen_from_checkpoint(
-                    opt.imagen['trainer']['PATH_MODEL_SAVE'])
-
-            else:
-
-                # imagen-config, which contains the unets above (base unet and super resoluting ones)
-                # the config class can be safed and loaded afterwards
-                self.imagen = ImagenConfig(unets=[dict(**opt.imagen['unet1']),
-                                                  dict(**opt.imagen['unet2'])],
-                                           **opt.imagen['imagen']
-                                           ).create()
+            # imagen-config, which contains the unets above (base unet and super resoluting ones)
+            # the config class can be safed and loaded afterwards
+            self.imagen = ImagenConfig(unets=[dict(**opt.imagen['unet1']),
+                                                dict(**opt.imagen['unet2'])],
+                                        **opt.imagen['imagen']
+                                        ).create()
 
         if torch.cuda.is_available():
             self.imagen = self.imagen.cuda()

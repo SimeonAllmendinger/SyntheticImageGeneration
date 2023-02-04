@@ -29,7 +29,7 @@ class BaseImagenDataset(Dataset):
         self.use_phase_labels = opt.imagen['data']['Cholec80']['use_phase_labels']
         
         #
-        super().__init__(folder=opt.imagen['data'][self.DATASET]['PATH_VIDEO_DIR'],
+        super().__init__(folder=os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['data'][self.DATASET]['PATH_VIDEO_DIR']),
                          image_size=opt.imagen['data']['image_size'])
         
     @check_text_encoder
@@ -42,8 +42,6 @@ class BaseImagenDataset(Dataset):
                                                       phase_label_encoding=self.df_train['PHASE LABEL ENCODING'],
                                                       opt=opt)
             
-            
-
         elif self.TEXT_ENCODER_NAME == 'google/t5-v1_1-base':
 
             if opt.imagen['data']['Cholec80']['use_phase_labels']:
@@ -208,7 +206,8 @@ def main():
     elif opt.imagen['data']['dataset'] == 'Both':
         dataset = ConcatImagenDataset(opt=opt)
     
-    triplets_list = pd.read_json(opt.imagen['data']['CholecT45']['PATH_TRAIN_DF_FILE'])['TEXT PROMPT'].values
+    path_train_df_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['data']['CholecT45']['PATH_TRAIN_DF_FILE'])
+    triplets_list = pd.read_json(path_train_df_file)['TEXT PROMPT'].values
     
     # Plot
     fig, ax = plt.subplots(2,1, figsize=(6,8))
@@ -230,7 +229,7 @@ def main():
         
         ax[i].imshow(image.permute(1, 2, 0))
         
-    fig.savefig('./results/imagen_data_item.png')   # save the figure to file
+    fig.savefig(os.path.join(opt.base['PATH_BASE_DIR'], './results/imagen_data_item.png'))   # save the figure to file
     plt.close(fig)
  
     

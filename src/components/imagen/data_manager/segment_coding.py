@@ -14,10 +14,14 @@ def get_seg8k_df_train(opt: Opt, folder: str):
     
     OPT_DATA = dict(**opt.imagen['data'])
     
-    if file_exists(OPT_DATA['CholecSeg8k']['PATH_TRAIN_DF_FILE']) and OPT_DATA['use_existing_data_files']:
+    #
+    path_train_df_file = os.path.join(opt.base['PATH_BASE_DIR'], OPT_DATA['CholecSeg8k']['PATH_TRAIN_DF_FILE'])
+    
+    #
+    if file_exists(path_train_df_file) and OPT_DATA['use_existing_data_files']:
         
         # Load df_triplets
-        df_train = pd.read_json(OPT_DATA['CholecSeg8k']['PATH_TRAIN_DF_FILE'])
+        df_train = pd.read_json(path_train_df_file)
         
     else:
         
@@ -65,7 +69,7 @@ def get_seg8k_df_train(opt: Opt, folder: str):
                                  })
 
         #
-        df_train.to_json(OPT_DATA['CholecSeg8k']['PATH_TRAIN_DF_FILE'])
+        df_train.to_json(path_train_df_file)
 
     opt.logger.info('df_CholecSeg8k_shape: ' + str(df_train.shape))
 

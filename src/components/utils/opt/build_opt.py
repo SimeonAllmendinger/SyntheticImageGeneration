@@ -7,13 +7,16 @@ import yaml
 from src.components.utils.logger.MasterLogger import _get_logger_
 from src.components.utils.pytorch_cuda.cuda_devices import CudaDevice
 
+PATH_BASE_CONFIG = '/home/stud01/SyntheticImageGeneration/configs/config_base.yaml'
+
 class Opt():
     
     def __init__(self):
-        self.imagen = _get_config_(path='configs/config_imagen.yaml')
-        self.neptune = _get_config_(path='configs/config_neptune.yaml')
-        self.param_tuning = _get_config_(path='configs/config_param_tuning.yaml')
-        self.logger = _get_logger_(verbose=False)
+        self.base = _get_config_(path=PATH_BASE_CONFIG)
+        self.imagen = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_imagen.yaml'))
+        self.neptune = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_neptune.yaml'))
+        self.param_tuning = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_param_tuning.yaml'))
+        self.logger = _get_logger_(path_base_dir=self.base['PATH_BASE_DIR'], verbose=False)
         self.pytorch_cuda = CudaDevice()
         
 

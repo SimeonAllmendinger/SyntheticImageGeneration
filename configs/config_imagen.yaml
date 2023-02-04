@@ -27,11 +27,11 @@ trainer:
     threshold: 1.0e-7
     queue_length: 20
 
-# Data
+## Data
 data:
   dataset: Both # CholecT45, CholecSeg8k, Both
   image_size: 480
-  use_existing_data_files: False
+  use_existing_data_files: True
 
   # CholecT45 Dataset
   CholecT45:

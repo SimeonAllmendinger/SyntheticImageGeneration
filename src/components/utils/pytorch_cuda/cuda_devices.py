@@ -2,12 +2,22 @@ import torch
 
 class CudaDevice():
     
-    def __init__(self):
-        self.available = torch.cuda.is_available()
-        self.device_count = torch.cuda.device_count()
-        self.current_device = torch.cuda.current_device()
-        self.device = torch.cuda.device(0)
-        self.device_name = torch.cuda.get_device_name(0)
+    @property
+    def available(self):
+        return torch.cuda.is_available()
+
+    @property
+    def device_count(self):
+        return torch.cuda.device_count()
+    
+    @property
+    def current_device(self):
+        return torch.cuda.current_device()
+    
+    @property
+    def device_name_0(self):
+        return torch.cuda.get_device_name(0)
+    
         
 if __name__ == '__main__':
     cuda_device = CudaDevice()

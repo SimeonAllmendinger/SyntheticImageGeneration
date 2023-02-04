@@ -29,7 +29,11 @@ def train_imagen(tune_config=None):
     if tune_config:
         
         opt.imagen['imagen'] = tune_config
+        
+        #
         opt.imagen['trainer']['param_tuning'] = True
+        tqdm_disable=True
+        
         opt.logger.warning('Override configs with tune params')
 
     # print(opt.imagen['imagen'])
@@ -78,11 +82,12 @@ def train_imagen(tune_config=None):
                                         neptune_run_save_path='configs')
     
     # Specify model save and checkpoint path
-    model_save_path=opt.imagen['trainer']['PATH_MODEL_SAVE']
-    model_checkpoint_path=opt.imagen['trainer']['PATH_MODEL_CHECKPOINT']
+    model_save_path=os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['trainer']['PATH_MODEL_SAVE'])
+    model_checkpoint_path=os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['trainer']['PATH_MODEL_CHECKPOINT'])
     
     # Make results folder with timestamp for samples
     path_run_dir = opt.imagen['validation']['PATH_TRAINING_SAMPLE'] + f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}" + f"_u{opt.imagen['trainer']['unet_number']}"
+    path_run_dir = os.path.join(opt.base['PATH_BASE_DIR'], path_run_dir)
     os.mkdir(path_run_dir)
     
     # feed images into imagen, training each unet in the cascade
@@ -90,11 +95,12 @@ def train_imagen(tune_config=None):
 
     unet_number=opt.imagen['trainer']['unet_number']
     
-    for epoch in tqdm(range(1, opt.imagen['trainer']['max_epochs'] + 1)):
+    for epoch in tqdm(iterable=range(1, opt.imagen['trainer']['max_epochs'] + 1), disable=tqdm_disable):
 
         # Training with text_embeds
         loss = imagen_model.trainer.train_step(unet_number=unet_number)
         
+        #
         if opt.imagen['trainer']['early_stopping']['usage']:
             imagen_model.loss_queue.push(loss)
 
@@ -104,7 +110,7 @@ def train_imagen(tune_config=None):
 
         # validation
         if not (epoch % 500):
-            
+
             #
             valid_loss = imagen_model.trainer.valid_step(
                 unet_number=unet_number)
@@ -130,12 +136,12 @@ def train_imagen(tune_config=None):
                 # Upload epoch valid loss to neptune_ai
                 neptune_ai.log_neptune_run(
                     opt=opt, data_item=valid_loss, neptune_run_save_path=f"val/loss_unet-{unet_number}")
-                
+
                 #
                 neptune_ai.upload_neptune_run(opt=opt,
                                               data_item=model_checkpoint,
                                               neptune_run_save_path='model')
-                 
+
         # is_main makes sure this can run in distributed
         if not (epoch % 1000) and imagen_model.trainer.is_main and opt.imagen['trainer']['display_samples']:
            

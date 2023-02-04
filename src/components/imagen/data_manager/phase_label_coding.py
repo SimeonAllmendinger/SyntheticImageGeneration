@@ -26,7 +26,7 @@ def get_phase_labels_for_videos_as_df(opt: Opt, videos: list, frames: list, fps:
     for video_k in np.unique(videos):
         
         #
-        video_label_path=opt.imagen['data']['Cholec80']['PATH_PHASE_LABELS'] + f'video{video_k:02d}-phase.txt'
+        video_label_path=os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['data']['Cholec80']['PATH_PHASE_LABELS'],f'video{video_k:02d}-phase.txt')
         
         #
         frame_indices=[frames[i] for i in np.argwhere(np.array(videos) == video_k)[:,0]]

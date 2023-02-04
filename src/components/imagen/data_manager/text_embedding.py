@@ -28,14 +28,17 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
             representing OHE embeddings of triplets and phase labels.
     """
     
-    if opt.imagen['data']['use_existing_data_files'] and file_exists(f"{opt.imagen['data'][opt.imagen['data']['dataset']]['PATH_OHE_EMBEDDING_FILE']}") :
+    path_ohe_embedding_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['data'][opt.imagen['data']['dataset']]['PATH_OHE_EMBEDDING_FILE'])
+    
+    if opt.imagen['data']['use_existing_data_files'] and file_exists(path_ohe_embedding_file) :
         
-        triplet_ohe_embeds = torch.load(opt.imagen['data'][opt.imagen['data']['dataset']]['PATH_OHE_EMBEDDING_FILE'])
+        triplet_ohe_embeds = torch.load(path_ohe_embedding_file)
         
     else:
         
         # Get dictionary .txt file of triplet mapping
-        map_dict = _load_text_data_(opt=opt, path=opt.imagen['data']['CholecT45']['PATH_DICT_DIR'] + 'maps.txt')
+        path_dict_maps=os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['data']['CholecT45']['PATH_DICT_DIR'] + 'maps.txt')
+        map_dict = _load_text_data_(opt=opt, path=path_dict_maps)
         
         if opt.imagen['data']['Cholec80']['use_phase_labels']:
             triplet_ohe_embeds = np.zeros((len(triplet_dict_indices),3,29+7)) # add 7 surgical phases
@@ -77,17 +80,18 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
         triplet_ohe_embeds = torch.from_numpy(triplet_ohe_embeds).to(torch.float32)
         
         # Save embedding of unique triplets
-        embed_save_path = opt.imagen['data'][opt.imagen['data']['dataset']]['PATH_OHE_EMBEDDING_FILE']
-        torch.save(triplet_ohe_embeds, f=embed_save_path)
+        torch.save(triplet_ohe_embeds, f=path_ohe_embedding_file)
         
     return triplet_ohe_embeds
 
 
 def get_text_t5_embedding(opt: Opt, dataset_name: str, triplets_unique_list: list, ):
+    
+    path_t5_embedding_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['data'][dataset_name]['PATH_T5_EMBEDDING_FILE'])
           
-    if opt.imagen['data']['use_existing_data_files'] and file_exists(f"{opt.imagen['data'][dataset_name]['PATH_T5_EMBEDDING_FILE']}") :
+    if opt.imagen['data']['use_existing_data_files'] and file_exists(path_t5_embedding_file) :
         
-        triplet_embeds = torch.load(opt.imagen['data'][dataset_name]['PATH_T5_EMBEDDING_FILE'])
+        triplet_embeds = torch.load(path_t5_embedding_file)
 
     else:
         
@@ -96,8 +100,7 @@ def get_text_t5_embedding(opt: Opt, dataset_name: str, triplets_unique_list: lis
         triplet_embeds = t5_encode_text(texts=triplets_unique_list)
             
         # Save embedding of unique triplets
-        embed_save_path = opt.imagen['data'][dataset_name]['PATH_T5_EMBEDDING_FILE']
-        torch.save(triplet_embeds, f=embed_save_path)
+        torch.save(triplet_embeds, f=path_t5_embedding_file)
     
     return triplet_embeds
 

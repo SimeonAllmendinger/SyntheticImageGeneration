@@ -34,27 +34,29 @@ def tune_train_params(opt: Opt):
             #
             ray_tuning_params[key] = value['values']
 
-    #scheduler = ASHAScheduler(**opt.param_tuning['tune_params']['scheduler'])
+    scheduler = ASHAScheduler(**opt.param_tuning['tune_params']['scheduler'])
 
     tuner = tune.Tuner(
-        trainable=train_imagen,
+        tune.with_resources(
+            trainable=train_imagen,
+            resources=dict(**opt.param_tuning['tune_params']['resources'])),
         tune_config=tune.TuneConfig(
             metric=opt.param_tuning['tune_params']['metric'],
             mode=opt.param_tuning['tune_params']['mode'],
-            #scheduler=scheduler,
-            #num_samples=opt.param_tuning['tune_params']['num_samples'],
-            #search_alg=OptunaSearch()
+            scheduler=scheduler,
+            num_samples=opt.param_tuning['tune_params']['num_samples'],
+            time_budget_s=opt.param_tuning['tune_params']['time_budget_s'],
+            search_alg=OptunaSearch()
         ),
         param_space=ray_tuning_params,
     )
     results = tuner.fit()
-    '''
+    
     best_result = results.get_best_result(metric=opt.param_tuning['tune_params']['metric'],
                                           mode=opt.param_tuning['tune_params']['mode'])
 
-    print("Best trial config: {}".format(best_result.config))
-    print("Best trial metrics: {}".format(best_result.metrics))
-    print("Best trial final validation loss: {}".format(best_result.metrics["loss"]))
+    print("--- Best trial config: {}".format(best_result.config))
+    print("--- Best trial final validation loss: {}".format(best_result.metrics["loss"]))
 
     # Obtain a trial dataframe from all run trials of this `tune.run` call.
     dfs = {result.log_dir: result.metrics_dataframe for result in results}
@@ -70,7 +72,7 @@ def tune_train_params(opt: Opt):
         ax.set_ylabel("Loss")
         
     fig.savefig('./results/param_tuning.png')   # save the figure to file
-    plt.close(fig)'''
+    plt.close(fig)
     
     
 def load_ray_func(dotpath : str):
