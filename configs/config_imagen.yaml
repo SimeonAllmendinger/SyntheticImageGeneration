@@ -1,9 +1,10 @@
 ## Training
 # Trainer
 trainer:
-  use_existing_model: False
+  use_existing_model: True
   PATH_MODEL_CHECKPOINT: imagen_checkpoint.pt
   PATH_MODEL_SAVE: ./src/assets/imagen/models/imagen_model.pt
+  PATH_MODEL_LOAD: ./src/assets/imagen/models/imagen_model.pt
 
   # Imagen Trainer
   split_valid_from_train: False
@@ -14,13 +15,12 @@ trainer:
   # Dataloader
   shuffle: True
   batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
-  train_split: 0.95
-  valid_split: 0.05
+  train_split: 0.90
+  valid_split: 0.10
   
   # Training
-  max_epochs: 10000
-  unet_number: 1 # train unet 1 or 2
-  display_samples: True
+  max_epochs: 20000
+  unet_number: 2 # train unet 1 or 2
   param_tuning: False
   early_stopping:
     usage: True
@@ -43,7 +43,7 @@ data:
     PATH_DICT_DIR: ./data/CholecT45/dict/
     PATH_VIDEO_DIR: ./data/CholecT45/data/
 
-  # Text embedding [PREPROCESSING]
+    # Text embedding [PREPROCESSING]
     PATH_T5_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecT45/t5_unique_embeds.pkl
     PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecT45/ohe_embeds.pkl
     PATH_TRAIN_DF_FILE: ./src/assets/imagen/train/CholecT45/df_triplets.json
@@ -52,48 +52,50 @@ data:
   CholecSeg8k:
 
     fps: 25
+    single_classes: True
+    multi_classes: True
 
     # CholecSeg8k [RAW]
     PATH_VIDEO_DIR: ./data/CholecSeg8k/
 
-    # Frame segments [PREPROCESSING]
+    # Frame segments [PREPARATION]
     classes:
       # 0
-      black background: 
+      black background: # black background
         - '#7F7F7F'
       # 1
-      abdominal wall: 
+      abdominal wall cavity: # abdominall wall
         - '#D28C8C'
       # 2
-      liver: 
+      liver: # liver
         - '#FF7272'
       # 3
-      gastrointestinal tract: 
+      gut: # gastrointestinal tract
         - '#E7469C'
       # 4
-      fat: 
+      omentum: # fat 
         - '#BAB746'
         - '#BAB74B'
       # 5
-      grasper: 
+      grasper: # grasper 
         - '#AAFF00'
       # 6
-      connective tissue: 
+      adhesion: # connective tissue
         - '#FF5500'
       # 7
-      blood: 
+      fluid: # blood
         - '#FF0000'
       # 8
-      cystic duct: 
+      cystic duct: # cystic duct
         - '#FFFF00'
       # 9
       hook: 
         - '#A9FFB8'
       # 10
-      gallbladder: 
+      gallbladder: # gallbladder
         - '#FFA0A5'
       # 11
-      hepatic vein: 
+      blood vessel: # hepatic vein
         - '#003280'
       # 12
       liver ligament: 
@@ -102,40 +104,106 @@ data:
       white frame: 
         - '#FFFFFF'
 
+    multi_classes:
+      # 
+      gallbladder and liver:
+        - gallbladder
+        - liver
+
+      gallbladder and grasper:
+        - gallbladder
+        - grasper
+
+      gallbladder and hoook:
+        - gallbladder
+        - hook
+
+      gallbladder and liver and grasper:
+        - gallbladder
+        - liver
+        - grasper
+
+      gallbladder and liver and hook:
+        - gallbladder
+        - liver
+        - hook
+      
+      abdominal wall cavity and omentum:
+        - abdominal wall cavity
+        - omentum
+
+      abdominal wall cavity and omentum and liver:
+        - abdominal wall cavity
+        - omentum
+        - liver
+
+      abdominal wall cavity and adhesion:
+        - abdominal wall cavity
+        - adhesion
+      
+      omentum and liver:
+        - omentum
+        - liver
+
+      gallbladder and omentum:
+        - gallbladder
+        - omentum
+
     # Text embedding [PREPROCESSING]
     PATH_T5_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecSeg8k/t5_unique_embeds.pkl
     PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecSeg8k/ohe_embeds.pkl
-    PATH_TRAIN_DF_FILE: ./src/assets/imagen/train/CholecSeg8k/df_triplets.json
+    PATH_TRAIN_DF_FILE: ./src/assets/imagen/train/CholecSeg8k/df_train.json
 
   # Cholec80 Dataset
   Cholec80:
 
     fps: 25
-    use_phase_labels: False
+    use_phase_labels: True
 
     # Cholec80 [RAW]
     PATH_PHASE_LABELS: ./data/Cholec80/phase_annotations/
     PATH_VIDEO_DIR: ./data/Cholec80/videos/
+
+    # Text embedding [PREPROCESSING]
+    classes:
+      Preparation:                preparation
+      CalotTriangleDissection:    calot triangle dissection
+      ClippingCutting:            clipping cutting
+      GallbladderDissection:      gallbladder dissection
+      GallbladderPackaging:       gallbladder packaging
+      CleaningCoagulation:        cleaning coagulation
+      GallbladderRetraction:      gallbladder etraction
 
 # Validation
 validation:
   PATH_MODEL_VALIDATION: ./src/assets/imagen/models/imagen_checkpoint.pt
   PATH_TRAINING_SAMPLE: ./results/training/
 
+  interval:
+    valid_loss: 50
+    validate_model: 1000
+
+  # Sampling
+  display_samples: True
+  sample_quantity: 100
+  sample_seed: 20
+
 # Testing
 testing:
-  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_checkpoint.pt
+  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_model.pt
   PATH_TEST_SAMPLE: ./results/test/
   
+  # Sampling
   unet_number: 2
-  frame_indices: 
-  # list of int
-    - 50087
-    - 60012
-    - 70003
-    - 90003
-    - 31023
-    - 11023
+  sample_quantity: 500
+  sample_seed: 10
+  save_samples: True
+  only_triplets: True
+
+  # Frechet Inception Distance
+  FrechetInceptionDistance:
+    fid_features: 2048
+    reset_real_features: False
 
 
 ## Architecture
@@ -201,13 +269,11 @@ imagen:
   timesteps: 1000
   cond_drop_prob: 0.1
   loss_type: l2
-  noise_schedules: cosine
-  pred_objectives: noise
-  lowres_noise_schedule: linear
+  noise_schedules: cosine # cosine
+  pred_objectives: noise # noise
+  lowres_noise_schedule: linear # linear
   lowres_sample_noise_level: 0.2
   p2_loss_weight_gamma: 0.5
   p2_loss_weight_k: 1
-  only_train_unet_number: 1
-  dynamic_thresholding_percentile: 0.95
-
-
+  only_train_unet_number: 2 # None
+  dynamic_thresholding_percentile: 0.95 # 0.95

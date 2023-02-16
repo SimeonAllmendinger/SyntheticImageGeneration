@@ -3,98 +3,150 @@
 # ray tune parameters
 tune_params:
   scheduler:
-    max_t: 1000 # max_num_epochs
-    grace_period: 100
+    max_t: 2000 # max_num_epochs
+    grace_period: 200
     reduction_factor: 2
   resources:
     cpu: 4 # cpus_per_trial
     gpu: 1 # gpus_per_trial
   num_samples: -1
-  time_budget_s: 3600 # if num_samples = -1
-  metric: loss
+  time_budget_s: 40000 # if num_samples = -1
+  metric: valid_loss
   mode: min
+
+  local_dir: "./results/tuning"
+  run_name: "experiment_"
+
+# Trainer
+trainer:
+  use_existing_model: True
+  PATH_MODEL_CHECKPOINT: imagen_checkpoint.pt
+  PATH_MODEL_SAVE: ./src/assets/imagen/models/imagen_model_u2.pt
+  PATH_MODEL_LOAD: ./src/assets/imagen/models/imagen_model.pt
+
+  # Imagen Trainer
+  split_valid_from_train: False
+  dl_tuple_output_keywords_names:
+    - images
+    - text_embeds
+
+  # Dataloader
+  shuffle: True
+  batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
+  train_split: 0.90
+  valid_split: 0.10
+  
+  # Training
+  max_epochs: 200000
+  unet_number: 2 # train unet 1 or 2
+  param_tuning: True
+  early_stopping:
+    usage: False
+    threshold: 1.0e-7
+    queue_length: 20
 
 # Search Space
 search_space:
-  # Fixed Params
-  image_sizes:
-    values:
-      - 64
-      - 256
-  
-  # Text Embedding
-  text_embed_dim: 
-    values: 768
-  text_encoder_name: 
-    values: google/t5-v1_1-base
+  data:
+    #
+    dataset: 
+      function: ray.tune.choice
+      values:
+        - Both
+        - CholecT45
+        - CholecSeg8k
 
-  ## Start of Tuning Params --------------------------------------------
-  # 1: number of ...
-  timesteps: 
-    function: ray.tune.qrandint
-    values:
-      lower: 100
-      q: 100
-      upper: 1500
-  # 2
-  cond_drop_prob: 
-    function: ray.tune.quniform
-    values:
-      lower: 0.01
-      q: 0.01
-      upper: 0.2
-  # 3
-  loss_type:
-    function: ray.tune.choice
-    values:
-      - l1
-      - l2
-      - huber
-  # 4
-  noise_schedules: 
-    function: ray.tune.choice
-    values:
-      - cosine
-  # 5
-  pred_objectives:
-    function: ray.tune.choice
-    values:
-      - noise
-  # 6
-  lowres_noise_schedule:
-    function: ray.tune.choice
-    values:
-      - linear
-  # 7
-  lowres_sample_noise_level: 
-    function: ray.tune.quniform
-    values:
-      lower: 0.1
-      q: 0.1
-      upper: 0.3
-  # 8
-  p2_loss_weight_gamma: 
-    function: ray.tune.quniform
-    values:
-      lower: 0.4
-      q: 0.1
-      upper: 0.6
-  # 9
-  p2_loss_weight_k:
-    function: ray.tune.quniform
-    values:
-      lower: 0.9
-      q: 0.1
-      upper: 1.1
-  # 10
-  only_train_unet_number:
-    function: ray.tune.choice
-    values: 
-      - 1 
-  # 11
-  dynamic_thresholding_percentile: 
-    function: ray.tune.quniform
-    values:
-      lower: 0.5
-      q: 0.05
-      upper: 1
+    use_existing_data_files: 
+      values: False
+
+    use_phase_labels: 
+      function: ray.tune.choice
+      values:
+        - True
+        - False
+
+  imagen:
+    # Fixed Params
+    image_sizes:
+      values:
+        - 64
+        - 256
+    
+    # Text Embedding
+    text_embed_dim: 
+      values: 768
+    text_encoder_name: 
+      values: google/t5-v1_1-base
+
+    ## Start of Model Tuning Params --------------------------------------------
+    # 1: number of ...
+    timesteps: 
+      function: ray.tune.qrandint
+      values:
+        lower: 200
+        q: 200
+        upper: 1400
+    # 2
+    cond_drop_prob: 
+      function: ray.tune.quniform
+      values:
+        lower: 0
+        q: 0.05
+        upper: 0.2
+    # 3
+    loss_type:
+      function: ray.tune.choice
+      values:
+        #- l1
+        - l2
+        #- huber
+    # 4
+    noise_schedules: 
+      function: ray.tune.choice
+      values:
+        - cosine
+        - linear
+    # 5
+    pred_objectives:
+      function: ray.tune.choice
+      values:
+        - noise
+        - x_start
+        - v
+    # 6
+    lowres_noise_schedule:
+      function: ray.tune.choice
+      values:
+        - linear
+    # 7
+    lowres_sample_noise_level: 
+      function: ray.tune.quniform
+      values:
+        lower: 0.1
+        q: 0.1
+        upper: 0.3
+    # 8
+    p2_loss_weight_gamma: 
+      function: ray.tune.choice
+      values:
+        - 0.5
+        - 1
+    # 9
+    p2_loss_weight_k:
+      function: ray.tune.choice
+      values:
+        - 1
+    # 10
+    only_train_unet_number:
+      function: ray.tune.choice
+      values: 
+        - 1
+        - 2
+
+    # 11
+    dynamic_thresholding_percentile: 
+      function: ray.tune.quniform
+      values:
+        lower: 0.5
+        q: 0.05
+        upper: 1

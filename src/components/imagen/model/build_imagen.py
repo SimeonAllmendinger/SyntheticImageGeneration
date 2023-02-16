@@ -23,12 +23,14 @@ def _get_unets_(opt: Opt):
 
 class Imagen_Model():
 
-    def __init__(self, opt: Opt):
+    def __init__(self, opt: Opt, testing=False):
         
-        self.unet1, self.unet2 = _get_unets_(opt=opt)
-        
+        self.testing = testing
+                
         self._set_imagen_(opt=opt)
         self._set_trainer_(opt=opt)
+        
+        self.unet1, self.unet2 = _get_unets_(opt=opt)
         
         if opt.imagen['trainer']['early_stopping']['usage']:
             self.loss_queue = EarlyStopping(opt_early_stopping=opt.imagen['trainer']['early_stopping'])
@@ -38,11 +40,18 @@ class Imagen_Model():
     @check_text_encoder
     def _set_imagen_(self, opt: Opt):
         
-        path_model_save = os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['trainer']['PATH_MODEL_SAVE'])
+        path_model_load = os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['trainer']['PATH_MODEL_LOAD'])
             
-        if opt.imagen['trainer']['use_existing_model'] and glob.glob(path_model_save):
+        if self.testing:
             
-            self.imagen = load_imagen_from_checkpoint(path_model_save)
+            #
+            test_model_save = os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['testing']['PATH_MODEL_TESTING'])
+            self.imagen = load_imagen_from_checkpoint(test_model_save)
+            
+        elif (opt.imagen['trainer']['use_existing_model'] and glob.glob(path_model_load)):
+            
+            #
+            self.imagen = load_imagen_from_checkpoint(path_model_load)
 
         else:
 
