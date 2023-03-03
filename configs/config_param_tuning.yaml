@@ -3,14 +3,14 @@
 # ray tune parameters
 tune_params:
   scheduler:
-    max_t: 2000 # max_num_epochs
+    max_t: 200 # max_num_epochs
     grace_period: 200
     reduction_factor: 2
   resources:
     cpu: 4 # cpus_per_trial
     gpu: 1 # gpus_per_trial
   num_samples: -1
-  time_budget_s: 40000 # if num_samples = -1
+  time_budget_s: 172800 # if num_samples = -1
   metric: valid_loss
   mode: min
 
@@ -37,7 +37,7 @@ trainer:
   valid_split: 0.10
   
   # Training
-  max_epochs: 200000
+  max_epochs: 2000
   unet_number: 2 # train unet 1 or 2
   param_tuning: True
   early_stopping:
@@ -53,8 +53,8 @@ search_space:
       function: ray.tune.choice
       values:
         - Both
-        - CholecT45
-        - CholecSeg8k
+        #- CholecT45
+        #- CholecSeg8k
 
     use_existing_data_files: 
       values: False
@@ -63,7 +63,7 @@ search_space:
       function: ray.tune.choice
       values:
         - True
-        - False
+        #- False
 
   imagen:
     # Fixed Params
@@ -91,7 +91,7 @@ search_space:
       function: ray.tune.quniform
       values:
         lower: 0
-        q: 0.05
+        q: 0.1
         upper: 0.2
     # 3
     loss_type:

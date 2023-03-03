@@ -67,8 +67,9 @@ def train_imagen(tune_config=None, reporter=None):
     if opt.imagen['trainer']['param_tuning']:
         
         #
-        model_checkpoint_path = os.path.join(reporter.logdir, model_checkpoint_file)
-                   
+        path_run_dir = reporter.logdir
+        model_checkpoint_path = os.path.join(path_run_dir, model_checkpoint_file)
+        
     else:
         
         # Start run with neptune docs
@@ -145,7 +146,7 @@ def train_imagen(tune_config=None, reporter=None):
             
             #
             if opt.imagen['trainer']['param_tuning']:
-                session.report({"fid": fid_result})
+                session.report({"fid": fid_result, "loss": loss, "valid_loss": valid_loss})
                 
             else:
                 

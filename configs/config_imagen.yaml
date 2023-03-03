@@ -19,7 +19,7 @@ trainer:
   valid_split: 0.10
   
   # Training
-  max_epochs: 20000
+  max_epochs: 2000
   unet_number: 2 # train unet 1 or 2
   param_tuning: False
   early_stopping:
@@ -180,8 +180,8 @@ validation:
   PATH_TRAINING_SAMPLE: ./results/training/
 
   interval:
-    valid_loss: 50
-    validate_model: 1000
+    valid_loss: 10
+    validate_model: 1000000
 
   # Sampling
   display_samples: True
