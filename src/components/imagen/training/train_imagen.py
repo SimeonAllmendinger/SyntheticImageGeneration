@@ -73,7 +73,7 @@ def train_imagen(tune_config=None, reporter=None):
     else:
         
         # Start run with neptune docs
-        neptune_ai = Neptune_AI(opt=opt)
+        neptune_ai = Neptune_AI(opt=opt).start_neptune_run()
         
         # Upload configs to neptune_ai
         neptune_ai.add_param_neptune_run(opt=opt, 
@@ -119,7 +119,12 @@ def train_imagen(tune_config=None, reporter=None):
             if opt.imagen['trainer']['param_tuning']:
                 
                 #
-                session.report({"loss": loss, "valid_loss": valid_loss})  # Send the score to Tune.
+                if 'fid_result' in locals():
+                    session.report({"fid": fid_result, "loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
+                else:
+                    session.report({"loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
+                
+                opt.logger.info('report succesful')
                     
             else:
                 
@@ -130,7 +135,7 @@ def train_imagen(tune_config=None, reporter=None):
 
         # is_main makes sure this can run in distributed
         if not (epoch % opt.imagen['validation']['interval']['validate_model']) and imagen_model.trainer.is_main:
-            
+    
             #
             fid_result = test_text2images(opt=opt,
                                 sample_dataset=sample_dataset,
@@ -145,10 +150,15 @@ def train_imagen(tune_config=None, reporter=None):
                                 max_sampling_batch_size=100)
             
             #
-            if opt.imagen['trainer']['param_tuning']:
-                session.report({"fid": fid_result, "loss": loss, "valid_loss": valid_loss})
+            if not opt.imagen['trainer']['param_tuning']:
                 
-            else:
+                # Save model checkpoint
+                imagen_model.trainer.save(model_checkpoint_path)
+                
+                # Upload model checkpoint
+                neptune_ai.upload_neptune_run(opt=opt, 
+                                  data_item=model_checkpoint_path,
+                                  neptune_run_save_path='model')
                 
                 # Upload epoch loss to neptune_ai
                 neptune_ai.log_neptune_run(

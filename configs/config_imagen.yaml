@@ -1,7 +1,7 @@
 ## Training
 # Trainer
 trainer:
-  use_existing_model: True
+  use_existing_model: False
   PATH_MODEL_CHECKPOINT: imagen_checkpoint.pt
   PATH_MODEL_SAVE: ./src/assets/imagen/models/imagen_model.pt
   PATH_MODEL_LOAD: ./src/assets/imagen/models/imagen_model.pt
@@ -19,8 +19,8 @@ trainer:
   valid_split: 0.10
   
   # Training
-  max_epochs: 2000
-  unet_number: 2 # train unet 1 or 2
+  max_epochs: 1000
+  unet_number: 1 # train unet 1 or 2
   param_tuning: False
   early_stopping:
     usage: True
@@ -180,8 +180,8 @@ validation:
   PATH_TRAINING_SAMPLE: ./results/training/
 
   interval:
-    valid_loss: 10
-    validate_model: 1000000
+    valid_loss: 2
+    validate_model: 10000
 
   # Sampling
   display_samples: True
@@ -194,7 +194,7 @@ testing:
   PATH_TEST_SAMPLE: ./results/test/
   
   # Sampling
-  unet_number: 2
+  unet_number: 1
   sample_quantity: 500
   sample_seed: 10
   save_samples: True
@@ -275,5 +275,5 @@ imagen:
   lowres_sample_noise_level: 0.2
   p2_loss_weight_gamma: 0.5
   p2_loss_weight_k: 1
-  only_train_unet_number: 2 # None
+  only_train_unet_number: 1 # None
   dynamic_thresholding_percentile: 0.95 # 0.95

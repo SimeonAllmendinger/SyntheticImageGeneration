@@ -188,11 +188,14 @@ class ConcatImagenDataset(torch.utils.data.ConcatDataset):
         
         #
         self.df_train = pd.concat((cholecT45_ds.df_train, cholecSeg8k_ds.df_train), ignore_index=True)
+        
+        #
+        opt.logger.debug(f'Text embed size: CholecT45={cholecT45_ds.text_embeds.size()} | CholecSeg8k={cholecSeg8k_ds.text_embeds.size()}')
 
         #
         if cholecT45_ds.text_embeds.size()[1] != cholecSeg8k_ds.text_embeds.size()[2]:
             
-            # create a tensor with shape [100, X, 768] filled with zeros
+            # create a tensor with shape [A, B, 768] filled with zeros
             new_embeds = torch.zeros(cholecSeg8k_ds.text_embeds.size()[0],
                                      cholecT45_ds.text_embeds.size()[1],
                                      cholecT45_ds.text_embeds.size()[2])

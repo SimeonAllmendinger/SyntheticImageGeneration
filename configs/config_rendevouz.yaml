@@ -1,0 +1,15 @@
+type:
+  train: true
+  test: false
+
+data:
+  dataset_variant: cholect45-crossval
+  data_dir: /home/stud01/SyntheticImageGeneration/data/CholecT45
+  test_ckpt: /home/stud01/SyntheticImageGeneration/src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth
+  pretrain_dir: /home/stud01/SyntheticImageGeneration/src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth
+
+params:
+  use_ln: True
+  kfold: 5
+  batch: 32
+  version: 1

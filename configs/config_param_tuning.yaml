@@ -3,14 +3,14 @@
 # ray tune parameters
 tune_params:
   scheduler:
-    max_t: 200 # max_num_epochs
+    max_t: 1500 # max_num_epochs
     grace_period: 200
-    reduction_factor: 2
+    reduction_factor: 2 # Only stop trials at least this old in time.
   resources:
     cpu: 4 # cpus_per_trial
     gpu: 1 # gpus_per_trial
   num_samples: -1
-  time_budget_s: 172800 # if num_samples = -1
+  time_budget_s: 45000 # if num_samples = -1
   metric: valid_loss
   mode: min
 
@@ -19,9 +19,9 @@ tune_params:
 
 # Trainer
 trainer:
-  use_existing_model: True
+  use_existing_model: False
   PATH_MODEL_CHECKPOINT: imagen_checkpoint.pt
-  PATH_MODEL_SAVE: ./src/assets/imagen/models/imagen_model_u2.pt
+  PATH_MODEL_SAVE: ./src/assets/imagen/models/imagen_model_u1.pt
   PATH_MODEL_LOAD: ./src/assets/imagen/models/imagen_model.pt
 
   # Imagen Trainer
@@ -37,7 +37,7 @@ trainer:
   valid_split: 0.10
   
   # Training
-  max_epochs: 2000
+  max_epochs: 5000
   unet_number: 2 # train unet 1 or 2
   param_tuning: True
   early_stopping:
@@ -141,7 +141,7 @@ search_space:
       function: ray.tune.choice
       values: 
         - 1
-        - 2
+        #- 2
 
     # 11
     dynamic_thresholding_percentile: 

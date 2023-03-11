@@ -3,6 +3,7 @@ src/components/data_manager/settings.yml
 data
 results
 configs/config_neptune.yaml
+configs/config_wandb.yaml
 .vscode
 
 # Neptune-Client

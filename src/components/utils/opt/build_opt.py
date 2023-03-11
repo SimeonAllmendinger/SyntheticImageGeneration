@@ -15,6 +15,7 @@ class Opt():
         self.base = _get_config_(path=PATH_BASE_CONFIG)
         self.imagen = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_imagen.yaml'))
         self.neptune = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_neptune.yaml'))
+        self.wandb = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_wandb.yaml'))
         self.param_tuning = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_param_tuning.yaml'))
         self.logger = _get_logger_(path_base_dir=self.base['PATH_BASE_DIR'], verbose=False)
         self.pytorch_cuda = CudaDevice()

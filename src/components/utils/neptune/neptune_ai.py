@@ -9,7 +9,11 @@ from src.components.utils.opt.build_opt import Opt
 class Neptune_AI():
     def __init__(self, opt):
         self.configs = opt.neptune
+        
+        
+    def start_neptune_run(self):
         self.run = neptune.init_run(**self.configs)  # credentials
+        opt.logger.info('Neptune run started')
 
 
     def stop_neptune_run(self, opt):
