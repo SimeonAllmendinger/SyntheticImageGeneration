@@ -1,0 +1,15 @@
+
+============================= JOB FEEDBACK =============================
+
+NodeName=uc2n509
+Job ID: 21910678
+Cluster: uc2
+User/Group: uerib/stud
+State: CANCELLED (exit code 0)
+Nodes: 1
+Cores per node: 4
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:20:00 core-walltime
+Job Wall-clock time: 00:05:00
+Memory Utilized: 10.45 GB
+Memory Efficiency: 0.00% of 0.00 MB

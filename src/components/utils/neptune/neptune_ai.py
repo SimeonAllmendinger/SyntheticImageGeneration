@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.curdir))
 
-import neptune.new as neptune
+import neptune
 
 from src.components.utils.opt.build_opt import Opt
 

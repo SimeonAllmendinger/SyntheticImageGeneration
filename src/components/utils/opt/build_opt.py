@@ -7,7 +7,7 @@ import yaml
 from src.components.utils.logger.MasterLogger import _get_logger_
 from src.components.utils.pytorch_cuda.cuda_devices import CudaDevice
 
-PATH_BASE_CONFIG = '/home/stud01/SyntheticImageGeneration/configs/config_base.yaml'
+PATH_BASE_CONFIG = '/home/kit/stud/uerib/SyntheticImageGeneration/configs/config_base.yaml'
 
 class Opt():
     

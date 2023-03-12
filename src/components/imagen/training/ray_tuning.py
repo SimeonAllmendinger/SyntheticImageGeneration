@@ -7,6 +7,7 @@ import numpy as np
 
 from importlib import import_module
 from datetime import datetime
+import ray
 from ray import tune, air
 from ray.tune.schedulers import ASHAScheduler
 from ray.tune.search.optuna import OptunaSearch

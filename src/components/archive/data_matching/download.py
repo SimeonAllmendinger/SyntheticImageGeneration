@@ -33,9 +33,6 @@ def download_dataset(download_url: str,
     else:
         print('{} already exists!'.format(local_path_to_zip_file))
 
-    
-    print('...start to unzip dataset...')
-
     # if the directory to extract to already exists, do not unzip
     if not os.path.exists(directory_to_extract_to):
         print('...start to unzip dataset...')
@@ -53,8 +50,9 @@ def download_dataset(download_url: str,
 if __name__ == '__main__':
     CHOLECT45_URL="http://lnkiy.in/cholect45dataset"
     CHOLECSEG8K_URL='https://www.kaggle.com/datasets/newslab/cholecseg8k/download?datasetVersionNumber=11'
-    CHOLEC80 = 'https://drive.google.com/drive/folders/1EzG06wlp-HG9fW6keg3nFFd9q7DNGY0g?usp=share_link'
-    url_list = [CHOLEC80]
+    CHOLEC80_URL = 'https://drive.google.com/drive/folders/1EzG06wlp-HG9fW6keg3nFFd9q7DNGY0g?usp=share_link'
+    CHOLECT50_URL = "https://s3.unistra.fr/camma_public/datasets/cholect50/CholecT50.zip"
+    url_list = [CHOLEC80_URL]
     name_list = ['Cholec80']
     
     for i, url in enumerate(url_list):

@@ -1,0 +1,18 @@
+args:
+  time: 15:00:00	                        # Wall clock time limit.
+  nodes: 4                            # Number of nodes to be used.
+  ntasks: 1                           # Number of tasks to be launched.
+  ntasks_per_node: 1	                # Maximum count (<= 28 and <= 40 resp.) of tasks per node.
+  cpus_per_task: 4	                  # Number of CPUs required per (MPI-)task.
+  mem: 35000                          # Memory in MegaByte per node.
+  mem_per_cpu: 5000     	            # Minimum Memory required per allocated CPU.
+  mem_per_gpu: 35000                  # Minimum Memory required per allocated GPU.
+  cpu_per_gpu: 2
+  mail_type: ALL                      # Notify user by email when certain event types occur. Valid type values are NONE, BEGIN, END, FAIL, REQUEUE, ALL.
+  mail_user: uerib@student.kit.edu	  # The specified mail-address receives email notification of state changes as defined by --mail-type.
+  output: scripts/stdout.txt                  # File in which job output is stored.
+  error: scripts/stderr.txt                 	# File in which job error messages are stored.
+  job_name: ray_tuning	              # Job name.
+  partition: gpu_4    	              # Request a specific queue for the resource allocation.
+  gres: gpu:1
+  job: /home/kit/stud/uerib/SyntheticImageGeneration/scripts/run_ray_param_tuning.sh
