@@ -1,7 +1,9 @@
 client_secrets.json
 src/components/data_manager/settings.yml
-data
-results
+data/*
+results/tuning/*
+results/training/*
+results/testing/*
 configs/config_neptune.yaml
 configs/config_wandb.yaml
 .vscode

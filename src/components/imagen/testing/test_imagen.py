@@ -33,7 +33,7 @@ def test_text2images(opt: Opt,
 
     #
     fid = FrechetInceptionDistance(**opt.imagen['testing']['FrechetInceptionDistance']).cuda()
-    kid = KernelInceptionDistance().cuda()
+    #kid = KernelInceptionDistance().cuda()
     
     # Convert the PIL image to a tensor with data type torch.uint8
     transform = transforms.ToTensor()

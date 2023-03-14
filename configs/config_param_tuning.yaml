@@ -3,14 +3,14 @@
 # ray tune parameters
 tune_params:
   scheduler:
-    max_t: 1500 # max_num_epochs
-    grace_period: 200
-    reduction_factor: 2 # Only stop trials at least this old in time.
+    max_t: 1400 # max_num_epochs
+    grace_period: 300 # Only stop trials at least this old in time.
+    reduction_factor: 2 
   resources:
-    cpu: 1 # cpus_per_trial
-    gpu: 1 # gpus_per_trial
+    cpu: 4 # cpus_per_trial
+    gpu: 2 # gpus_per_trial
   num_samples: -1
-  time_budget_s: 45000 # if num_samples = -1
+  time_budget_s: 70000 # if num_samples = -1
   metric: valid_loss
   mode: min
 
@@ -38,7 +38,7 @@ trainer:
   
   # Training
   max_epochs: 5000
-  unet_number: 2 # train unet 1 or 2
+  unet_number: 1 # train unet 1 or 2
   param_tuning: True
   early_stopping:
     usage: False
@@ -53,11 +53,11 @@ search_space:
       function: ray.tune.choice
       values:
         - Both
-        #- CholecT45
+        - CholecT45
         #- CholecSeg8k
 
     use_existing_data_files: 
-      values: False
+      values: True
 
     use_phase_labels: 
       function: ray.tune.choice
@@ -83,16 +83,16 @@ search_space:
     timesteps: 
       function: ray.tune.qrandint
       values:
-        lower: 200
+        lower: 800
         q: 200
-        upper: 1400
+        upper: 2000
     # 2
     cond_drop_prob: 
       function: ray.tune.quniform
       values:
         lower: 0
         q: 0.1
-        upper: 0.2
+        upper: 0.3
     # 3
     loss_type:
       function: ray.tune.choice
@@ -124,13 +124,13 @@ search_space:
       values:
         lower: 0.1
         q: 0.1
-        upper: 0.3
+        upper: 0.5
     # 8
     p2_loss_weight_gamma: 
       function: ray.tune.choice
       values:
         - 0.5
-        - 1
+        #- 1
     # 9
     p2_loss_weight_k:
       function: ray.tune.choice

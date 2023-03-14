@@ -19,7 +19,7 @@ trainer:
   valid_split: 0.10
   
   # Training
-  max_epochs: 1000
+  max_epochs: 1300
   unet_number: 1 # train unet 1 or 2
   param_tuning: False
   early_stopping:
@@ -181,12 +181,12 @@ validation:
 
   interval:
     valid_loss: 2
-    validate_model: 10000
+    validate_model: 100
 
   # Sampling
   display_samples: True
-  sample_quantity: 100
-  sample_seed: 20
+  sample_quantity: 5
+  sample_seed: 50
 
 # Testing
 testing:
@@ -195,7 +195,7 @@ testing:
   
   # Sampling
   unet_number: 1
-  sample_quantity: 500
+  sample_quantity: 10
   sample_seed: 10
   save_samples: True
   only_triplets: True

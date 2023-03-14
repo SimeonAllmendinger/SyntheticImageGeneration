@@ -26,6 +26,8 @@ def get_seg8k_df_train(opt: Opt, folder: str):
     else:
         
         seg8k_video_numbers = sorted(get_video_numbers(opt=opt, folder=folder))
+        
+        opt.logger.debug(f'seg8k_video_numbers: {seg8k_video_numbers}')
                 
         # Initialize triplets_text and triplets_embed_path as list
         frame_paths_list = list()
@@ -100,6 +102,8 @@ def get_video_numbers(opt: Opt, folder):
 
     video_numbers=list()
     file_paths = os.listdir(folder)
+    
+    opt.logger.debug(f'file_paths: {file_paths}')
     
     for file_path in file_paths:
         video_numbers.append(int(file_path.strip('video')))
