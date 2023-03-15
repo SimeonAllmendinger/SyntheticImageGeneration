@@ -123,8 +123,6 @@ def train_imagen(tune_config=None, reporter=None):
                     session.report({"fid": fid_result, "loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
                 else:
                     session.report({"loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
-                
-                opt.logger.info('report succesful')
                     
             else:
                 

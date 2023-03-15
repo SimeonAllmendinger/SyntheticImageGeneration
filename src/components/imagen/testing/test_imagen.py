@@ -50,9 +50,6 @@ def test_text2images(opt: Opt,
                                      embed_shape[1])
     
     #
-    fid.update((sample_images * 255).to(torch.uint8).cuda(), real=True)
-    
-    #
     sample_texts = list()
     excluded_indices = set()
     
@@ -76,6 +73,11 @@ def test_text2images(opt: Opt,
         sample_text_embeds[k, :, :] = sample_text_embed
         sample_texts.append(sample_text)
     
+    #
+    opt.logger.debug(f'sample_images_size: {sample_images.size()}')
+    opt.logger.debug(f'sample_images: {sample_images}')
+    fid.update((sample_images*255).to(torch.uint8).cuda(), real=True)
+
     num_batches = sample_text_embeds.shape[0] // max_sampling_batch_size
     sample_text_embeds_batches = torch.split(sample_text_embeds, max_sampling_batch_size, dim=0)
     
@@ -87,7 +89,9 @@ def test_text2images(opt: Opt,
                                                         stop_at_unet_number=unet_number) 
         
         #
-        fid.update((synthetic_images * 255).to(torch.uint8).cuda(), real=False)
+        opt.logger.debug(f'synthetic_images_size: {synthetic_images.size()}')
+        opt.logger.debug(f'synthetic_images: {synthetic_images}')
+        fid.update((synthetic_images*255).to(torch.uint8).cuda(), real=False)
         
         if save_samples: 
             
