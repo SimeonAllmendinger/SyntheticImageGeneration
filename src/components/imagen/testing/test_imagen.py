@@ -28,7 +28,8 @@ def test_text2images(opt: Opt,
                      embed_shape: tuple,
                      epoch: int,
                      seed: int,
-                     max_sampling_batch_size=100
+                     max_sampling_batch_size=100,
+                     tqdm_disable=False
                      ):
 
     #
@@ -56,7 +57,7 @@ def test_text2images(opt: Opt,
     #
     np.random.seed(seed)
     
-    for k in tqdm(range(sample_quantity)):
+    for k in tqdm(range(sample_quantity), disable=tqdm_disable):
         
         #
         sample_index = np.random.randint(low=0, high=sample_dataset.__len__())
@@ -86,7 +87,8 @@ def test_text2images(opt: Opt,
         # sample an image based on the text embeddings from the cascading ddpm
         synthetic_images = imagen_model.trainer.sample(text_embeds=embed_batch,
                                                         return_pil_images=False,
-                                                        stop_at_unet_number=unet_number) 
+                                                        stop_at_unet_number=unet_number,
+                                                        use_tqdm=not tqdm_disable) 
         
         #
         opt.logger.debug(f'synthetic_images_size: {synthetic_images.size()}')

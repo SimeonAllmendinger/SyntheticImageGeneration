@@ -73,7 +73,8 @@ def train_imagen(tune_config=None, reporter=None):
     else:
         
         # Start run with neptune docs
-        neptune_ai = Neptune_AI(opt=opt).start_neptune_run()
+        neptune_ai = Neptune_AI(opt=opt)
+        neptune_ai.start_neptune_run(opt)
         
         # Upload configs to neptune_ai
         neptune_ai.add_param_neptune_run(opt=opt, 
@@ -119,13 +120,12 @@ def train_imagen(tune_config=None, reporter=None):
             if opt.imagen['trainer']['param_tuning']:
                 
                 #
-                if 'fid_result' in locals():
-                    session.report({"fid": fid_result, "loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
-                else:
-                    session.report({"loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
-                    
+                if 'fid_result' not in locals():
+                    fid_result=2000
+            
+                session.report({"fid": fid_result, "loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
+            
             else:
-                
                 # Upload epoch valid loss to neptune_ai
                 neptune_ai.log_neptune_run(opt=opt,
                                            data_item=valid_loss,
@@ -145,7 +145,11 @@ def train_imagen(tune_config=None, reporter=None):
                                 embed_shape=sample_dataset.__getitem__(index=0)[1].size(),
                                 epoch=epoch,
                                 seed=opt.imagen['validation']['sample_seed'],
-                                max_sampling_batch_size=100)
+                                max_sampling_batch_size=100,
+                                tqdm_disable=tqdm_disable)
+            fid_result = fid_result.item()
+            
+            opt.logger.debug(f'FRECHET INCEPTION DISTANCE (FID): {fid_result}')
             
             #
             if not opt.imagen['trainer']['param_tuning']:

@@ -11,9 +11,10 @@ class Neptune_AI():
         self.configs = opt.neptune
         
         
-    def start_neptune_run(self):
+    def start_neptune_run(self, opt):
         self.run = neptune.init_run(**self.configs)  # credentials
         opt.logger.info('Neptune run started')
+        opt.logger.debug(f'Neptune run: {self.run}')
 
 
     def stop_neptune_run(self, opt):
