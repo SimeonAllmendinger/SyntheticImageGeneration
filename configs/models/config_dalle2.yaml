@@ -1,0 +1,78 @@
+## Architecture
+
+# CLIP
+clip:
+    #
+    pretrained: True
+    epochs: 10000
+    
+    params:
+        dim_text: 512
+        dim_image: 512
+        dim_latent: 512
+        num_text_tokens: 49408
+        text_enc_depth: 1
+        text_seq_len: 256
+        text_heads: 8
+        visual_enc_depth: 1
+        visual_image_size: 256
+        visual_patch_size: 32
+        visual_heads: 8
+        use_all_token_embeds: True            # whether to use fine-grained contrastive learning (FILIP)
+        decoupled_contrastive_learning: True  # use decoupled contrastive learning (DCL) objective function, removing positive pairs from the denominator of the InfoNCE loss (CLOOB + DCL)
+        extra_latent_projection: True         # whether to use separate projections for text-to-image vs image-to-text comparisons (CLOOB)
+        use_visual_ssl: True                  # whether to do self supervised learning on images
+        visual_ssl_type: 'simclr'             # can be either 'simclr' or 'simsiam', depending on using DeCLIP or SLIP
+        use_mlm: False                        # use masked language learning (MLM) on text (DeCLIP)
+        text_ssl_loss_weight: 0.05            # weight for text MLM loss
+        image_ssl_loss_weight: 0.05           # weight for image self-supervised learning loss
+
+# Diffusion Prior Network Parameters
+diffusion_prior_network:
+    params:
+        dim: 512
+        depth: 6
+        dim_head: 64
+        heads: 8
+
+# Diffusion Prior Parameters
+diffusion_prior:
+    params:
+        timesteps: 1000
+        sample_timesteps: 64
+        cond_drop_prob: 0.2
+
+# Diffusion Prior Trainer Parameters
+diffusion_prior_trainer:
+    params:
+        lr: 3e-4
+        wd: 1e-2
+        ema_beta: 0.99
+        ema_update_after_step: 1000
+        ema_update_every: 10
+
+# unet 1
+unet1:
+    dim: 32
+    image_embed_dim: 512
+    text_embed_dim: 512
+    cond_dim: 128
+    channels: 3
+    cond_on_text_encodings: True # set to True for any unets that need to be conditioned on text encodings
+    dim_mults:
+        - 1
+        - 2
+        - 4
+        - 8
+
+unet2:
+    dim: 32
+    image_embed_dim: 512
+    cond_dim: 128
+    channels: 3
+    dim_mults:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16

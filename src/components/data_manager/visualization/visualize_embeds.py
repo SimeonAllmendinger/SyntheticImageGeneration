@@ -34,10 +34,10 @@ def sum_abs_cosine_similarity(A, B):
 def main():
     opt = Opt()
 
-    triplets_unique_list = pd.read_json(opt.imagen['dataset']['PATH_TRIPLETS_DF_FILE'])['triplet_text'].unique().tolist()
+    triplets_unique_list = pd.read_json(opt.datasets['data']['dataset']['PATH_TRIPLETS_DF_FILE'])['triplet_text'].unique().tolist()
     # Appnd domain-strange texts
     # Get t5 nlp embeddings
-    triplet_embeds = torch.load(opt.imagen['dataset']['PATH_TEXT_EMBEDDING_FILE']) #.reshape((551,35*768))
+    triplet_embeds = torch.load(opt.datasets['data']['dataset']['PATH_TEXT_EMBEDDING_FILE']) #.reshape((551,35*768))
     
     n = 5
     

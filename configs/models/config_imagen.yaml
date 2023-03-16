@@ -1,0 +1,71 @@
+## Architecture
+# U-Net 1
+unet1:
+  dim: 32
+  cond_dim: 512
+  dim_mults: 
+    - 1
+    - 2
+    - 4
+    - 8
+  num_resnet_blocks: 3
+  layer_attns:
+    - False
+    - True
+    - True
+    - True
+  layer_cross_attns: 
+    - False
+    - True
+    - True
+    - True
+
+# U-Net 2
+unet2:
+  dim: 32
+  cond_dim: 512
+  dim_mults: 
+    - 1
+    - 2
+    - 4
+    - 8
+  num_resnet_blocks:
+    - 2
+    - 4
+    - 8
+    - 8
+  layer_attns:
+    - False
+    - False
+    - False
+    - True
+  layer_cross_attns: 
+    - False
+    - False
+    - False
+    - True
+
+# Imagen
+imagen:
+
+  # Parameter
+  image_sizes:
+    - 64
+    - 256
+
+  # Text Embedding
+  text_embed_dim: 768 #T5: 768 | OHE: 29 (with phase label: 36)
+  text_encoder_name: google/t5-v1_1-base # T5: google/t5-v1_1-base | OHE: ohe_encoder
+
+  # Variables
+  timesteps: 1000
+  cond_drop_prob: 0.1
+  loss_type: l2
+  noise_schedules: cosine # cosine
+  pred_objectives: noise # noise
+  lowres_noise_schedule: linear # linear
+  lowres_sample_noise_level: 0.2
+  p2_loss_weight_gamma: 0.5
+  p2_loss_weight_k: 1
+  only_train_unet_number: 1 # None
+  dynamic_thresholding_percentile: 0.95 # 0.95

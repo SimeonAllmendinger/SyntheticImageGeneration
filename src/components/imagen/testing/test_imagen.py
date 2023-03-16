@@ -13,10 +13,10 @@ from torchmetrics.image.fid import FrechetInceptionDistance
 from torchmetrics.image.kid import KernelInceptionDistance
 
 
-from src.components.imagen.data_manager.imagen_dataset import CholecT45ImagenDataset
 from src.components.utils.opt.build_opt import Opt
 from src.components.imagen.model.build_imagen import Imagen_Model
-from src.components.imagen.data_manager.imagen_dataset import get_train_valid_ds
+from components.data_manager.imagen_dataset import get_train_valid_ds
+
 
 def test_text2images(opt: Opt, 
                      sample_dataset, 
@@ -33,17 +33,14 @@ def test_text2images(opt: Opt,
                      ):
 
     #
-    fid = FrechetInceptionDistance(**opt.imagen['testing']['FrechetInceptionDistance']).cuda()
+    fid = FrechetInceptionDistance(**opt.conductor['testing']['FrechetInceptionDistance']).cuda()
     #kid = KernelInceptionDistance().cuda()
-    
-    # Convert the PIL image to a tensor with data type torch.uint8
-    transform = transforms.ToTensor()
     
     #
     sample_images = torch.zeros(sample_quantity,
                                 3, # 3 color channels
-                                opt.imagen['data']['image_size'],
-                                opt.imagen['data']['image_size'])
+                                opt.datasets['data']['image_size'],
+                                opt.datasets['data']['image_size'])
     
     #
     sample_text_embeds = torch.zeros(sample_quantity,
@@ -130,10 +127,10 @@ def main():
     opt=Opt()
     
     #
-    sample_quantity=opt.imagen['testing']['sample_quantity']
-    unet_number=opt.imagen['testing']['unet_number']
-    save_samples=opt.imagen['testing']['save_samples']
-    seed=opt.imagen['testing']['sample_seed']
+    sample_quantity=opt.conductor['testing']['sample_quantity']
+    unet_number=opt.conductor['testing']['unet_number']
+    save_samples=opt.conductor['testing']['save_samples']
+    seed=opt.conductor['testing']['sample_seed']
     
     #
     imagen_dataset = get_train_valid_ds(opt=opt, testing=True)
@@ -144,7 +141,7 @@ def main():
     # Make results test folder with timestamp
     timestamp = f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
     test_sample_folder = os.path.join(
-        opt.base['PATH_BASE_DIR'], opt.imagen['testing']['PATH_TEST_SAMPLE'] + timestamp)
+        opt.base['PATH_BASE_DIR'], opt.conductor['testing']['PATH_TEST_SAMPLE'] + timestamp)
     os.mkdir(test_sample_folder)
 
     #

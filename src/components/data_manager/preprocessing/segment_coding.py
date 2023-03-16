@@ -12,7 +12,7 @@ from src.components.utils.opt.build_opt import Opt
 
 def get_seg8k_df_train(opt: Opt, folder: str):
     
-    OPT_DATA = dict(**opt.imagen['data'])
+    OPT_DATA = dict(**opt.datasets['data'])
     
     #
     path_train_df_file = os.path.join(opt.base['PATH_BASE_DIR'], OPT_DATA['CholecSeg8k']['PATH_TRAIN_DF_FILE'])
@@ -45,8 +45,8 @@ def get_seg8k_df_train(opt: Opt, folder: str):
             
             for j, frame_number in enumerate(seg8k_frame_numbers):
 
-                if opt.imagen['data']['CholecSeg8k']['single_classes']:
-                    for key, value in opt.imagen['data']['CholecSeg8k']['classes'].items():
+                if opt.datasets['data']['CholecSeg8k']['single_classes']:
+                    for key, value in opt.datasets['data']['CholecSeg8k']['classes'].items():
                         
                         path = '/'.join(seg8k_frame_paths[j].replace('.png','').split('/')[-3:]) + f'_{key}.png'
 
@@ -64,8 +64,8 @@ def get_seg8k_df_train(opt: Opt, folder: str):
                             indices_list.append(0)
                 
                 
-                if opt.imagen['data']['CholecSeg8k']['multi_classes']:
-                    for key, value in opt.imagen['data']['CholecSeg8k']['multi_classes'].items():
+                if opt.datasets['data']['CholecSeg8k']['multi_classes']:
+                    for key, value in opt.datasets['data']['CholecSeg8k']['multi_classes'].items():
                         
                         path = '/'.join(seg8k_frame_paths[j].replace('.png', '').split('/')[-3:]) + f'_{key}.png'
 

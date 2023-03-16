@@ -17,15 +17,18 @@ class EarlyStopping:
                 self.stop=True
         self.queue.append(value)
 
+
     def pop(self):
         if len(self.queue) == 0:
             return None
         return self.queue.pop()
 
+
     def peek(self):
         if len(self.queue) == 0:
             return None
         return self.queue[-1]
+    
     
     @property
     def variance(self):

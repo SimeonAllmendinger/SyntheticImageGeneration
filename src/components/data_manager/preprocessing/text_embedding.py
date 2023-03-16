@@ -10,7 +10,7 @@ import numpy as np
 from imagen_pytorch.t5 import t5_encode_text
 
 from src.components.utils.opt.build_opt import Opt
-from src.components.imagen.data_manager.preprocessing.triplet_coding import _load_text_data_, get_df_triplets
+from src.components.data_manager.preprocessing.triplet_coding import _load_text_data_, get_df_triplets
 
 
 def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: list, opt: Opt):
@@ -28,19 +28,19 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
             representing OHE embeddings of triplets and phase labels.
     """
     
-    path_ohe_embedding_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['data'][opt.imagen['data']['dataset']]['PATH_OHE_EMBEDDING_FILE'])
+    path_ohe_embedding_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['PATH_OHE_EMBEDDING_FILE'])
     
-    if opt.imagen['data']['use_existing_data_files'] and file_exists(path_ohe_embedding_file) :
+    if opt.datasets['data']['use_existing_data_files'] and file_exists(path_ohe_embedding_file) :
         
         triplet_ohe_embeds = torch.load(path_ohe_embedding_file)
         
     else:
         
         # Get dictionary .txt file of triplet mapping
-        path_dict_maps=os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['data']['CholecT45']['PATH_DICT_DIR'] + 'maps.txt')
+        path_dict_maps=os.path.join(opt.base['PATH_BASE_DIR'],opt.datasets['data']['CholecT45']['PATH_DICT_DIR'] + 'maps.txt')
         map_dict = _load_text_data_(opt=opt, path=path_dict_maps)
         
-        if opt.imagen['data']['Cholec80']['use_phase_labels']:
+        if opt.datasets['data']['Cholec80']['use_phase_labels']:
             triplet_ohe_embeds = np.zeros((len(triplet_dict_indices),3,29+7)) # add 7 surgical phases
         else:
             triplet_ohe_embeds = np.zeros((len(triplet_dict_indices),3,29)) #
@@ -72,7 +72,7 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
                             triplet_ohe_embeds[img, k_tools, digit+13] = 1
                 
                 
-                if opt.imagen['data']['Cholec80']['use_phase_labels']:
+                if opt.datasets['data']['Cholec80']['use_phase_labels']:
                     
                     # add phase labels as one-hot-encoding
                     triplet_ohe_embeds[img, k_tools, 29:] = phase_label_encoding[img]
@@ -87,9 +87,9 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
 
 def get_text_t5_embedding(opt: Opt, dataset_name: str, triplets_unique_list: list, ):
     
-    path_t5_embedding_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['data'][dataset_name]['PATH_T5_EMBEDDING_FILE'])
+    path_t5_embedding_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][dataset_name]['PATH_T5_EMBEDDING_FILE'])
           
-    if opt.imagen['data']['use_existing_data_files'] and file_exists(path_t5_embedding_file) :
+    if opt.datasets['data']['use_existing_data_files'] and file_exists(path_t5_embedding_file) :
         
         triplet_embeds = torch.load(path_t5_embedding_file)
 

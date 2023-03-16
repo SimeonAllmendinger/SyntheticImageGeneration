@@ -1,0 +1,67 @@
+## Conductor
+
+# Model
+model:
+  model_type: ElucidatedImagen # Imagen, ElucidatedImagen
+
+# Trainer
+trainer:
+  use_existing_model: False
+  PATH_MODEL_CHECKPOINT: imagen_checkpoint.pt
+  PATH_MODEL_SAVE: ./src/assets/imagen/models/imagen_model_u1.pt
+  PATH_MODEL_LOAD: ./src/assets/imagen/models/imagen_model.pt
+
+  # Imagen Trainer
+  split_valid_from_train: False
+  dl_tuple_output_keywords_names:
+    - images
+    - text_embeds
+
+  # Dataloader
+  shuffle: True
+  batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
+  train_split: 0.90
+  valid_split: 0.10
+  
+  # Training
+  max_epochs: 5000
+  unet_number: 1 # train unet 1 or 2
+  param_tuning: False
+  early_stopping:
+    usage: True
+    threshold: 1.0e-7
+    queue_length: 20
+
+
+# Validation
+validation:
+  PATH_MODEL_VALIDATION: ./src/assets/imagen/models/imagen_checkpoint.pt
+  PATH_TRAINING_SAMPLE: ./results/training/
+
+  interval:
+    valid_loss: 2
+    validate_model: 2
+
+  # Sampling
+  display_samples: True
+  sample_quantity: 5
+  sample_seed: 50
+
+
+# Testing
+testing:
+  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_model.pt
+  PATH_TEST_SAMPLE: ./results/testing/
+  
+  # Sampling
+  unet_number: 1
+  sample_quantity: 10
+  sample_seed: 10
+  save_samples: True
+  only_triplets: True
+
+  # Frechet Inception Distance
+  FrechetInceptionDistance:
+    fid_features: 2048
+    reset_real_features: False
+

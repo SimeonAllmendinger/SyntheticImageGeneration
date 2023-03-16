@@ -14,7 +14,7 @@ def check_text_encoder(func):
             assert opt.imagen['imagen']['text_embed_dim'] == 768, "Text embed dim must be changed to 768"
     
         elif opt.imagen['imagen']['text_encoder_name'] == 'ohe_encoder':
-                if opt.imagen['data']['Cholec80']['use_phase_labels']:
+                if opt.datasets['data']['Cholec80']['use_phase_labels']:
                     assert opt.imagen['imagen']['text_embed_dim'] == 36, "Text embed dim must be changed to 36"
         
                 else:
@@ -34,8 +34,8 @@ def check_dataset_name(func):
 
     def wrapper(*args, **kwargs):
 
-        assert opt.imagen['data']['dataset'] == 'CholecT45' or opt.imagen['data'][
-            'dataset'] == 'CholecSeg8k' or opt.imagen['data']['dataset'] == 'Both', 'Choose an existing dataset: CholecT45, CholecSeg8k or Both'
+        assert opt.datasets['data']['dataset'] == 'CholecT45' or opt.datasets['data'][
+            'dataset'] == 'CholecSeg8k' or opt.datasets['data']['dataset'] == 'Both', 'Choose an existing dataset: CholecT45, CholecSeg8k or Both'
 
         return func(*args, **kwargs)
 
@@ -50,7 +50,7 @@ def model_starter(func):
         
         #TODO: opt.logger.info('Load Imagen model from Checkpoint for Validation')
         
-        if opt.imagen['trainer']['use_existing_model'] or glob.glob(opt.imagen['trainer']['PATH_MODEL_CHECKPOINT']):
+        if opt.conductor['trainer']['use_existing_model'] or glob.glob(opt.conductor['trainer']['PATH_MODEL_CHECKPOINT']):
                 
             opt.logger.info('Load Imagen model from Checkpoint for further Training')
         

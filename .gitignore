@@ -1,9 +1,11 @@
-client_secrets.json
 src/components/data_manager/settings.yml
 data/*
+results/*.png
 results/tuning/*
 results/training/*
 results/testing/*
+results/archive/*
+results/rendevouz/*
 configs/config_neptune.yaml
 configs/config_wandb.yaml
 .vscode

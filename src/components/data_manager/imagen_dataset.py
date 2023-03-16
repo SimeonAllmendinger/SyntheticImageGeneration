@@ -15,11 +15,11 @@ from PIL import Image
 from tqdm import tqdm
 
 from src.components.utils.opt.build_opt import Opt
-from src.components.imagen.data_manager.preprocessing.triplet_coding import get_df_triplets
-from src.components.imagen.data_manager.preprocessing.segment_coding import get_seg8k_df_train
-from src.components.imagen.data_manager.preprocessing.text_embedding import get_text_ohe_embedding, get_text_t5_embedding
+from src.components.data_manager.preprocessing.triplet_coding import get_df_triplets
+from src.components.data_manager.preprocessing.segment_coding import get_seg8k_df_train
+from src.components.data_manager.preprocessing.text_embedding import get_text_ohe_embedding, get_text_t5_embedding
+from src.components.data_manager.preprocessing.phase_label_coding import get_phase_labels_for_videos_as_df
 from src.components.imagen.utils.decorators import check_dataset_name, check_text_encoder
-from src.components.imagen.data_manager.preprocessing.phase_label_coding import get_phase_labels_for_videos_as_df
 
 
 class BaseImagenDataset(Dataset):
@@ -29,11 +29,11 @@ class BaseImagenDataset(Dataset):
         #
         self.TEXT_ENCODER_NAME = opt.imagen['imagen']['text_encoder_name']
         self.DATASET = dataset_name
-        self.use_phase_labels = opt.imagen['data']['Cholec80']['use_phase_labels']
+        self.use_phase_labels = opt.datasets['data']['Cholec80']['use_phase_labels']
         
         #
-        super().__init__(folder=os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['data'][self.DATASET]['PATH_VIDEO_DIR']),
-                         image_size=opt.imagen['data']['image_size'])
+        super().__init__(folder=os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR']),
+                         image_size=opt.datasets['data']['image_size'])
         
     @check_text_encoder
     def _set_text_embeds_(self, opt: Opt):
@@ -47,7 +47,7 @@ class BaseImagenDataset(Dataset):
         
         elif self.TEXT_ENCODER_NAME == 'google/t5-v1_1-base':
 
-            if opt.imagen['data']['Cholec80']['use_phase_labels']:
+            if opt.datasets['data']['Cholec80']['use_phase_labels']:
                 triplets = self.df_train['TEXT PROMPT'].values
                 phase_labels = self.df_train['PHASE LABEL TEXT'].values
                 
@@ -127,7 +127,7 @@ class CholecT45ImagenDataset(BaseImagenDataset):
     @check_dataset_name
     def _set_df_train_(self, opt: Opt):
                 
-        if opt.imagen['data']['Cholec80']['use_phase_labels']:
+        if opt.datasets['data']['Cholec80']['use_phase_labels']:
             
             #
             df_triplets = get_df_triplets(opt=opt)
@@ -136,7 +136,7 @@ class CholecT45ImagenDataset(BaseImagenDataset):
             df_phase_labels = get_phase_labels_for_videos_as_df(opt=opt,
                                                                 videos=df_triplets['VIDEO NUMBER'].to_list(),
                                                                 frames=df_triplets['FRAME NUMBER'].to_list(),
-                                                                fps=opt.imagen['data']['CholecT45']['fps'])
+                                                                fps=opt.datasets['data']['CholecT45']['fps'])
             #
             self.df_train= pd.concat((df_triplets, df_phase_labels[['PHASE LABEL TEXT', 'PHASE LABEL']]), axis=1)
             
@@ -158,7 +158,7 @@ class CholecSeg8kImagenDataset(BaseImagenDataset):
     @check_dataset_name
     def _set_df_train_(self, opt: Opt):
         
-        if opt.imagen['data']['Cholec80']['use_phase_labels']:
+        if opt.datasets['data']['Cholec80']['use_phase_labels']:
             
             #
             df_train = get_seg8k_df_train(opt=opt, folder=self.folder)
@@ -167,7 +167,7 @@ class CholecSeg8kImagenDataset(BaseImagenDataset):
             df_phase_labels = get_phase_labels_for_videos_as_df(opt=opt,
                                                                 videos=df_train['VIDEO NUMBER'].to_list(),
                                                                 frames=df_train['FRAME NUMBER'].to_list(),
-                                                                fps=opt.imagen['data']['CholecSeg8k']['fps'])
+                                                                fps=opt.datasets['data']['CholecSeg8k']['fps'])
             #
             self.df_train= pd.concat((df_train, df_phase_labels[['PHASE LABEL TEXT', 'PHASE LABEL']]), axis=1)
             
@@ -243,13 +243,13 @@ def get_train_valid_ds(opt: Opt, testing=False):
     """
     
     # Check which dataset is specified in the opt object
-    if opt.imagen['data']['dataset'] == 'CholecT45' or (testing and opt.imagen['testing']['only_triplets']):
+    if opt.datasets['data']['dataset'] == 'CholecT45' or (testing and opt.conductor['testing']['only_triplets']):
         imagen_dataset = CholecT45ImagenDataset(opt=opt)
     
-    elif opt.imagen['data']['dataset'] == 'CholecSeg8k':
+    elif opt.datasets['data']['dataset'] == 'CholecSeg8k':
         imagen_dataset = CholecSeg8kImagenDataset(opt=opt)
     
-    elif opt.imagen['data']['dataset'] == 'Both':
+    elif opt.datasets['data']['dataset'] == 'Both':
         imagen_dataset = ConcatImagenDataset(opt=opt)
     
     if testing:
@@ -259,7 +259,7 @@ def get_train_valid_ds(opt: Opt, testing=False):
     else:
         
         # Split the instantiated dataset into training and validation datasets
-        train_valid_split=[opt.imagen['trainer']['train_split'], opt.imagen['trainer']['valid_split']]
+        train_valid_split=[opt.conductor['trainer']['train_split'], opt.conductor['trainer']['valid_split']]
         train_dataset, valid_dataset = random_split(dataset=imagen_dataset, lengths=train_valid_split)
         
         # Return the training and validation datasets
@@ -269,12 +269,12 @@ def get_train_valid_ds(opt: Opt, testing=False):
 def get_train_valid_dl(opt: Opt, train_dataset, valid_dataset):
     
     train_generator = DataLoader(dataset=train_dataset, 
-                                  batch_size=opt.imagen['trainer']['batch_size'], 
-                                  shuffle=opt.imagen['trainer']['shuffle']
+                                  batch_size=opt.conductor['trainer']['batch_size'], 
+                                  shuffle=opt.conductor['trainer']['shuffle']
                                 )
     valid_generator = DataLoader(dataset=valid_dataset, 
-                                  batch_size=opt.imagen['trainer']['batch_size'], 
-                                  shuffle=opt.imagen['trainer']['shuffle']
+                                  batch_size=opt.conductor['trainer']['batch_size'], 
+                                  shuffle=opt.conductor['trainer']['shuffle']
                                 )
     
     return train_generator, valid_generator

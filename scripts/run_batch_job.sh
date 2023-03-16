@@ -13,7 +13,7 @@ then
 fi
 
 # Load the config file
-config_file="/home/kit/stud/uerib/SyntheticImageGeneration/configs/config_bwUnicluster_jobs.yaml"
+config_file="configs/utils/config_SLURM_jobs.yaml"
 
 # Extract the values of the variables in the config using yq
 ## Type

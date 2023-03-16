@@ -12,7 +12,7 @@ from src.components.utils.opt.build_opt import Opt
 
 def get_df_triplets(opt: Opt):
 
-    OPT_DATA = dict(**opt.imagen['data'])
+    OPT_DATA = dict(**opt.datasets['data'])
     
     path_train_df_file = os.path.join(opt.base['PATH_BASE_DIR'], OPT_DATA['CholecT45']['PATH_TRAIN_DF_FILE'])
     
@@ -95,7 +95,7 @@ def get_df_triplets(opt: Opt):
 def get_triplet_file_paths_in_dir_as_list(opt: Opt):
 
     # Fill file_paths list with all paths of the triplets.txt files
-    glob_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.imagen['data']['CholecT45']['PATH_TRIPLETS_DIR'] + "*.txt")
+    glob_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data']['CholecT45']['PATH_TRIPLETS_DIR'] + "*.txt")
     file_paths = sorted(glob.glob(glob_path))
     
     opt.logger.debug('file_paths:' + str(file_paths))
@@ -106,7 +106,7 @@ def get_triplet_file_paths_in_dir_as_list(opt: Opt):
 def get_single_frame_triplet_encoding(video_n :int, frame_n :int, opt: Opt):
     
     # Define load path of triplet encodings of video n
-    load_path = os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['data']['CholecT45']['PATH_TRIPLETS_DIR'] + 'VID' + f'{video_n:02d}' + '.txt')
+    load_path = os.path.join(opt.base['PATH_BASE_DIR'],opt.datasets['data']['CholecT45']['PATH_TRIPLETS_DIR'] + 'VID' + f'{video_n:02d}' + '.txt')
     
     # load .txt data as list
     lines = _load_text_data_(path=load_path, opt=opt)

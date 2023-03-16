@@ -48,7 +48,7 @@ def create_single_segment_frames(opt: Opt, mask_path: str, image_path: str, crop
     classes = set()
 
     # Loop through each class
-    for key, value in opt.imagen['data']['CholecSeg8k']['classes'].items():
+    for key, value in opt.datasets['data']['CholecSeg8k']['classes'].items():
         
         # Skip the white frame and black background classes
         if key in ['white frame', 'black background']:
@@ -90,7 +90,7 @@ def create_single_segment_frames(opt: Opt, mask_path: str, image_path: str, crop
 def create_multi_segment_frames(opt: Opt, image_path: str, segments: list, segment_name: str):
 
     #
-    image_size=opt.imagen['data']['image_size']
+    image_size=opt.datasets['data']['image_size']
     image = np.zeros((image_size, image_size, 3))
     
     #
@@ -160,7 +160,7 @@ def main():
     all_multi_classes=set()
     
     # Create CenterCrop transformer with image ssize
-    image_size=opt.imagen['data']['image_size']
+    image_size=opt.datasets['data']['image_size']
     transformer = T.Compose([
             T.Resize(image_size),
             T.CenterCrop(image_size),
@@ -174,7 +174,7 @@ def main():
                                                       image_path=image_paths[i],
                                                       crop_transformer=transformer)
 
-        for key, value in opt.imagen['data']['CholecSeg8k']['multi_classes'].items():
+        for key, value in opt.datasets['data']['CholecSeg8k']['multi_classes'].items():
             if set(value).issubset(single_classes):
 
                 # Call the create_multi_segment_frames function

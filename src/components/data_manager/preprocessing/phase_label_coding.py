@@ -14,19 +14,19 @@ def get_phase_labels_for_videos_as_df(opt: Opt, videos: list, frames: list, fps:
     df_phase_labels = pd.DataFrame()
     phase=list()
     phase_text=list()
-    phase_dict=dict(**opt.imagen['data']['Cholec80']['classes'])
+    phase_dict=dict(**opt.datasets['data']['Cholec80']['classes'])
     
     for video_k in np.unique(videos):
         
         #
-        video_label_path=os.path.join(opt.base['PATH_BASE_DIR'],opt.imagen['data']['Cholec80']['PATH_PHASE_LABELS'],f'video{video_k:02d}-phase.txt')
+        video_label_path=os.path.join(opt.base['PATH_BASE_DIR'],opt.datasets['data']['Cholec80']['PATH_PHASE_LABELS'],f'video{video_k:02d}-phase.txt')
         
         #
         frame_indices=[frames[i] for i in np.argwhere(np.array(videos) == video_k)[:,0]]
         
         # 25 / fps
         assert fps != 0, 'fps is zero! Please change...'
-        interval = int(opt.imagen['data']['Cholec80']['fps'] / fps)
+        interval = int(opt.datasets['data']['Cholec80']['fps'] / fps)
         
         with open(video_label_path, 'r') as file:
             
