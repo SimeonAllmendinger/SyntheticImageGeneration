@@ -4,15 +4,12 @@ sys.path.append(os.path.abspath(os.curdir))
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import torch
 import bisect
 
-from torch.utils.data import DataLoader, random_split
-from collections import Counter
 from imagen_pytorch.data import Dataset
+from torch.utils.data import ConcatDataset
 from PIL import Image
-from tqdm import tqdm
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.data_manager.preprocessing.triplet_coding import get_df_triplets
@@ -175,7 +172,7 @@ class CholecSeg8kImagenDataset(BaseImagenDataset):
             self.df_train=get_seg8k_df_train(opt=opt, folder=self.folder)
 
 
-class ConcatImagenDataset(torch.utils.data.ConcatDataset):
+class ConcatImagenDataset(ConcatDataset):
     
     def __init__(self, opt: Opt):
         
@@ -224,157 +221,18 @@ class ConcatImagenDataset(torch.utils.data.ConcatDataset):
                                                       return_text=return_text)
         
 
-def get_train_valid_ds(opt: Opt, testing=False):
-    """
-    Returns the training and validation datasets based on the specified options.
-
-    Parameters
-    ----------
-    opt : Opt
-        An object containing various options or configurations.
-
-    Returns
-    -------
-    train_dataset : Dataset
-        The training dataset.
-    valid_dataset : Dataset
-        The validation dataset.
-
-    """
-    
-    # Check which dataset is specified in the opt object
-    if opt.datasets['data']['dataset'] == 'CholecT45' or (testing and opt.conductor['testing']['only_triplets']):
-        imagen_dataset = CholecT45ImagenDataset(opt=opt)
-    
-    elif opt.datasets['data']['dataset'] == 'CholecSeg8k':
-        imagen_dataset = CholecSeg8kImagenDataset(opt=opt)
-    
-    elif opt.datasets['data']['dataset'] == 'Both':
-        imagen_dataset = ConcatImagenDataset(opt=opt)
-    
-    if testing:
-        
-        return imagen_dataset
-    
-    else:
-        
-        # Split the instantiated dataset into training and validation datasets
-        train_valid_split=[opt.conductor['trainer']['train_split'], opt.conductor['trainer']['valid_split']]
-        train_dataset, valid_dataset = random_split(dataset=imagen_dataset, lengths=train_valid_split)
-        
-        # Return the training and validation datasets
-        return train_dataset, valid_dataset
-       
-
-def get_train_valid_dl(opt: Opt, train_dataset, valid_dataset):
-    
-    train_generator = DataLoader(dataset=train_dataset, 
-                                  batch_size=opt.conductor['trainer']['batch_size'], 
-                                  shuffle=opt.conductor['trainer']['shuffle']
-                                )
-    valid_generator = DataLoader(dataset=valid_dataset, 
-                                  batch_size=opt.conductor['trainer']['batch_size'], 
-                                  shuffle=opt.conductor['trainer']['shuffle']
-                                )
-    
-    return train_generator, valid_generator
-
-
-def visualize_class_representation(opt: Opt, dataset, quantity=25):
-    
-    labels=list()
-    
-    # Get the labels for all instances in the dataset
-    for i in tqdm(range(dataset.__len__())):
-        image, embed, text = dataset.__getitem__(index=i, return_text=True)
-        labels.append(text)
-        
-    # Count the number of instances in each class
-    class_counts = Counter(labels)
-    
-    # create a list of tuples by pairing the elements of the two lists
-    zipped_lists = list(zip(class_counts.keys(), class_counts.values()))
-
-    # sort the list of tuples based on the values in the first element of each tuple
-    zipped_lists.sort(key=lambda x: x[1], reverse=True)
-
-    # unzip the sorted list of tuples back into two separate lists
-    keys, values = zip(*zipped_lists)
-    
-    # Plot the proportions
-    fig, ax = plt.subplots(1,1, figsize=(20,15))
-    
-    ax.bar(keys[:quantity], values[:quantity], align='center')
-    ax.set_xlabel('Class')
-    ax.set_ylabel('Count')
-    ax.set_xticks(ax.get_xticks())
-    ax.set_xticklabels(keys[:quantity], rotation=20, ha='right')
-    ax.set_title('Class distribution in the dataset')
-    
-    # save the figure to file
-    fig.savefig(f'./results/{dataset.DATASET}_class_representation_first.png')   
-    plt.close(fig)
-    
-    # Plot the proportions
-    fig, ax = plt.subplots(1,1, figsize=(20,15))
-    
-    ax.bar(keys[-quantity:], values[-quantity:], align='center')
-    ax.set_xlabel('Class')
-    ax.set_ylabel('Count')
-    ax.set_xticks(ax.get_xticks())
-    ax.set_xticklabels(keys[-quantity:], rotation=20, ha='right')
-    ax.set_title('Class distribution in the dataset')
-    
-    # save the figure to file
-    fig.savefig(f'./results/{dataset.DATASET}_class_representation_last.png')   
-    plt.close(fig)
-
-
-def visualize_data_items(opt: Opt, dataset, quantity=2):
-    
-    fig, ax = plt.subplots(2,1, figsize=(6,8))
-    
-    # Plot images
-    for i in range(quantity):
-        
-        # Example image with random index
-        index = np.random.randint(low=0, high=40000)
-        image, embed, text = dataset.__getitem__(index=index, return_text=True)
-        
-        opt.logger.info(f'Embedding Shape: {embed.size()}')
-
-        # Display example
-        opt.logger.info('Text: ' + text)
-        ax[i].set_title(text)
-            
-        if opt.pytorch_cuda.available:
-            image = image.cpu()
-        
-        ax[i].imshow(image.permute(1, 2, 0))
-    
-    file_path=os.path.join(opt.base['PATH_BASE_DIR'], f'./results/imagen_data_item_{dataset.DATASET}.png')
-    
-    # save the figure to file
-    fig.savefig(file_path)   
-    plt.close(fig)
-    
-
 def main():
     opt=Opt()
 
     #
-    dataset = get_train_valid_ds(opt=opt, testing=True)
+    cholcet45_imagen_dataset = CholecT45ImagenDataset(opt=opt)
     
     #
-    visualize_data_items(opt=opt, dataset=dataset, quantity=2)
+    text_embed, image, text = cholcet45_imagen_dataset.__getitem__(index=0, 
+                                                                   return_text=True)
     
     #
-    visualize_class_representation(opt=opt, dataset=dataset)
-    
-    
-    
-    
- 
+    opt.logger.info(f'TEXT: {text} \n IMAGE: {image} \n TEXT EMBED: {text_embed}')
     
 if __name__ == "__main__":
     main()

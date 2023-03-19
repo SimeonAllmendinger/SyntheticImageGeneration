@@ -3,153 +3,242 @@ import os
 sys.path.append(os.path.abspath(os.curdir))
 
 import torch
-from dalle2_pytorch import DALLE2, DiffusionPriorNetwork, DiffusionPrior, Unet, Decoder, CLIP, OpenAIClipAdapter, DecoderTrainer, DiffusionPriorTrainer
+import numpy as np
+import open_clip
+
+from transformers import CLIPProcessor
 from tqdm import tqdm
+from os.path import exists as file_exists
+from dalle2_pytorch import DALLE2, DiffusionPriorNetwork, DiffusionPrior, Decoder, CLIP, OpenAIClipAdapter, DecoderTrainer, DiffusionPriorTrainer
 
 from src.components.utils.opt.build_opt import Opt
+from src.components.utils.neptune.neptune_ai import Neptune_AI
+from src.components.data_manager.dalle2_dataset import get_text_tensor
+from src.components.data_manager.dataset_handler import get_train_valid_dl, get_train_valid_ds
 
 
 class Dalle2_Model(DALLE2):
     
-    def __init__(self, opt: Opt):
-        
+    def __init__(self, opt: Opt, train_dataloader, valid_dataloader):
+
         #
-        self._create_clip_(opt=opt)
-        self._train_clip_(opt=opt)
-        
+        clip = self._create_clip_(opt=opt,
+                                  train_dataloader=train_dataloader,
+                                  valid_dataloader=valid_dataloader)
+
         #
-        self._create_diffusion_prior_(opt=opt)
-        self._train_diffusion_prior_(opt=opt)
-        
+        diffusion_prior = self._create_diffusion_prior_(opt=opt,
+                                                        clip=clip,
+                                                        train_dataloader=train_dataloader,
+                                                        valid_dataloader=valid_dataloader)
+
         #
         self._create_decoder_(opt=opt)
         
         
-        super().__init__(prior=self.diffusion_prior, 
+        super().__init__(prior=diffusion_prior, 
                          decoder=self.decoder)
         
     
-    def _create_clip_(self, opt: Opt):
+    def _create_clip_(self, opt: Opt, train_dataloader, valid_dataloader):
         
+        if file_exists(opt.dalle2['clip']['model_save_path']) and opt.dalle2['clip']['use_existing_model']:
+            clip = torch.load(opt.dalle2['clip']['epochs']['model_save_path'])
+
+        else:
+
+            if opt.dalle2['clip']['pretrained']:
+                
+                clip = OpenAIClipAdapter(name=opt.dalle2['clip']['model_name']).cuda()
+            
+            else:
+                
+                clip = CLIP(**opt.dalle2['clip']['params']).cuda()
+
+                #
+                clip = self._train_clip_(opt=opt,
+                                            clip=clip,
+                                            train_dataloader=train_dataloader,
+                                            valid_dataloader=valid_dataloader)
+            
+        return clip
+
+
+    def _train_clip_(self, opt: Opt, clip: CLIP, train_dataloader, valid_dataloader):
+        
+        # Start run with neptune docs
+        neptune_ai = Neptune_AI(opt=opt)
+        neptune_ai.start_neptune_run(opt)
+        
+        # Upload clip configs to neptune_ai
+        neptune_ai.add_param_neptune_run(opt=opt, 
+                                        data_item=opt.dalle2['clip'],
+                                        neptune_run_save_path='clip_configs')
+    
         #
-        self.clip = CLIP(**opt.dalle2['clip']['params']).cuda()
+        processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+        tokenizer = processor.tokenizer
+            
+        #
+        for epoch_n in tqdm(range(1, opt.dalle2['clip']['epochs'] + 1)):
+            
+            #
+            for i, (image_batch, text_batch) in enumerate(tqdm(train_dataloader)):
+                
+                text_tensor = get_text_tensor(opt=opt, text_batch=list(text_batch),
+                                              tokenizer=tokenizer)
+                
+                loss = clip(
+                    text=text_tensor,
+                    image=image_batch,
+                    return_loss=True,  # needs to be set to True to return contrastive loss
+                )
+                loss.backward()
+                
+                #
+                opt.logger.debug(f'Clip loss in epoch {epoch_n} | {i}: {loss}')
+                
+                # Upload epoch valid loss to neptune_ai
+                neptune_ai.log_neptune_run(opt=opt,
+                                            data_item=loss,
+                                            neptune_run_save_path=f"training/loss_clip")
+            
+            #
+            valid_loss_list = list()
+            for image_batch, _, text_batch in valid_dataloader:
+                valid_loss = clip(
+                    text=text_batch,
+                    images=image_batch,
+                    return_loss=True,  # needs to be set to True to return contrastive loss
+                )
+                valid_loss_list.append(valid_loss)
+            
+            #
+            valid_loss_epoch_mean = np.mean(valid_loss_list)
+            
+            #
+            opt.logger.debug(f'Clip valid_loss in epoch {epoch_n}: {valid_loss_epoch_mean}')
+            
+            # Upload epoch valid loss to neptune_ai
+            neptune_ai.log_neptune_run(opt=opt,
+                                        data_item=valid_loss_epoch_mean,
+                                        neptune_run_save_path=f"training/valid_loss_clip")
+            
+        # Save final model
+        torch.save(self.clip, opt.dalle2['clip']['model_save_path'])
+
+        #
+        neptune_ai.upload_neptune_run(opt=opt,
+                                      data_item=opt.dalle2['clip']['model_save_path'],
+                                      neptune_run_save_path='model')
+
+        #
+        neptune_ai.stop_neptune_run(opt=opt)
         
-        if opt.dalle2['clip']['pretrained']:
-            self.clip = OpenAIClipAdapter()
-
-
-    def _train_clip_(self, opt: Opt):
-        
-        # mock data
-
-        text = torch.randint(0, 49408, (4, 256)).cuda()
-        images = torch.randn(4, 3, 256, 256).cuda()
-
-        # train
-
-        for epoch_n in tqdm(1, range(opt.dalle2['clip']['epochs']) + 1):
-            # TODO Dataloader
-            loss = self.clip(
-                text=text,
-                images=images,
-                return_loss=True,  # needs to be set to True to return contrastive loss
-            )
-            loss.backward()
-            opt.logger.debug(f'Clip loss in epoch {epoch_n}: {loss}')
+        return clip
         
     
-    def _create_diffusion_prior_(self, opt: Opt):
+    def _create_clip_embeds(self, opt: Opt, diffusion_prior: DiffusionPrior, train_dataloader, valid_dataloader):
         
-        self.diffusion_prior_network = DiffusionPriorNetwork(**opt.dalle2['diffusion_prior_network']['params']).cuda()
+        #
+        image_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
+        text_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
+        
+        for i, (image_batch, text_batch) in enumerate(tqdm(train_dataloader)):
+            
+            #
+            clip_image_embeds = diffusion_prior.clip.embed_image(image_batch).image_embed
+            clip_text_embeds = diffusion_prior.clip.embed_text(text_batch).text_embed
+            
+            #
+            torch.save(clip_image_embeds, image_embeds_save_dir_path + f'image_batch_{i+1:05d}.pt')
+            torch.save(clip_text_embeds, text_embeds_save_dir_path + f'text_batch_{i+1:05d}.pt')
+        
+     
+    def _create_diffusion_prior_(self, opt: Opt, clip: CLIP, train_dataloader, valid_dataloader):
+        
+        diffusion_prior_network = DiffusionPriorNetwork(**opt.dalle2['diffusion_prior_network']['params']).cuda()
 
-        self.diffusion_prior = DiffusionPrior(net=self.diffusion_prior_network,
-                                              clip=self.clip,
-                                              **opt.dalle2['diffusion_prior_network']['params']
+        diffusion_prior = DiffusionPrior(net=diffusion_prior_network,
+                                              clip=clip,
+                                              **opt.dalle2['diffusion_prior']['params']
                                               ).cuda()
 
-        self.diffusion_prior_trainer = DiffusionPriorTrainer(
-            diffusion_prior=self.diffusion_prior,
+        diffusion_prior_trainer = DiffusionPriorTrainer(
+            diffusion_prior=diffusion_prior,
             **opt.dalle2['diffusion_prior_trainer']['params']
         )
         
-    def _train_diffusion_prior_(self, opt: Opt):
+        if file_exists(opt.dalle2['diffusion_prior']['model_save_path']) and opt.dalle2['diffusion_prior']['use_existing_model']:
+            diffusion_prior_trainer.load(opt.dalle2['diffusion_prior']['model_save_path'])
         
-        for i in tqdm(range(10000)):
-            loss = self.diffusion_prior(text, images)
-            loss.backward()
-    
+        else:
+            self._create_clip_embeds(opt=opt, 
+                                     diffusion_prior=diffusion_prior,
+                           train_dataloader=train_dataloader,
+                           valid_dataloader=valid_dataloader)
+            self._train_diffusion_prior_(opt=opt,
+                                      diffusion_prior_trainer=diffusion_prior_trainer,
+                           train_dataloader=train_dataloader,
+                           valid_dataloader=valid_dataloader)
         
-    def _set_decoder_(self, opt: Opt, images, text):
+        
+    def _train_diffusion_prior_(self, opt: Opt, diffusion_prior_trainer: DiffusionPriorTrainer, clip_text_embeds, clip_image_embeds):
+        
+        for epoch_n in tqdm(range(1, opt.dalle2['diffusion_prior_trainer']['epochs'] + 1)):
+            loss = diffusion_prior_trainer(text_embed=clip_text_embeds, 
+                                                image_embdes=clip_image_embeds)
+            diffusion_prior_trainer.update()
+        
+        
+    def _create_decoder_(self, opt: Opt, images, text):
         
         self.decoder = Decoder(
             clip = self.clip,
             unet = [dict(**opt.dalle2['unet1']),
                      dict(**opt.dalle2['unet2'])],          # insert both unets in order of low resolution to highest resolution (you can have as many stages as you want here)
-            image_sizes = (128, 256),                       # resolutions, 256 for first unet, 512 for second. these must be unique and in ascending order (matches with the unets passed in)
-            timesteps = 1000,
-            image_cond_drop_prob = 0.1,
-            text_cond_drop_prob = 0.5
+            **opt.dalle2['decoder']['params']
         ).cuda()
         
         self.decoder_trainer = DecoderTrainer(
             decoder=self.decoder,
-            lr = 3e-4,
-            wd = 1e-2,
-            ema_beta = 0.99,
-            ema_update_after_step = 1000,
-            ema_update_every = 10,
-)
+            **opt.dalle2['decoder_trainer']['params']
+        )
+        
+    
+    def _train_decoder_(self, opt: Opt, clip_text_embeds, clip_image_embeds):
         
         for i in tqdm(range(10000)):
 
             for unet_number in (1, 2):
                 loss = self.decoder_trainer(
-                    images,
-                    text = text,
+                    text_embed = clip_text_embeds,
+                    image_embed = clip_image_embeds,
                     unet_number = unet_number, # which unet to train on
-                    max_batch_size = 4         # gradient accumulation - this sets the maximum batch size in which to do forward and backwards pass - for this example 32 / 4 == 8 times
+                    max_batch_size = opt.dalle2['decoder_trainer']['max_batch_size']
                 )
+                
+                # update the specific unet as well as its exponential moving average
+                self.decoder_trainer.update(unet_number) 
 
-                self.decoder_trainer.update(unet_number) # update the specific unet as well as its exponential moving average
-
-    
     
     def _set_dalle2_(self, opt: Opt):
     
         path_model_load = os.path.join(opt.base['PATH_BASE_DIR'],opt.conductor['trainer']['PATH_MODEL_LOAD'])
             
-        if self.testing:
-            
-            #
-            test_model_save = os.path.join(opt.base['PATH_BASE_DIR'],opt.conductor['testing']['PATH_MODEL_TESTING'])
-            self.imagen_model = load_imagen_from_checkpoint(test_model_save)
-            
-        elif (opt.conductor['trainer']['use_existing_model'] and glob.glob(path_model_load)):
-            
-            #
-            self.imagen_model = load_imagen_from_checkpoint(path_model_load)
-
-        else:
-            
-            if self.is_elucidated:
-                # elucidated imagen-config, which contains the unets above (base unet and super resoluting ones)
-                # the config class can be safed and loaded afterwards
-                self.imagen_model = ElucidatedImagenConfig(unets=[dict(**opt.elucidated_imagen['unet1']),
-                                                            dict(**opt.elucidated_imagen['unet2'])],
-                                                     **opt.elucidated_imagen['elucidated_imagen']
-                                                     ).create()
-            else:
-                # imagen-config, which contains the unets above (base unet and super resoluting ones)
-                # the config class can be safed and loaded afterwards
-                self.imagen_model = ImagenConfig(unets=[dict(**opt.imagen['unet1']),
-                                                  dict(**opt.imagen['unet2'])],
-                                           **opt.imagen['imagen']
-                                           ).create()
 
 
 def main():
     opt=Opt()
-    dalle2=Dalle2_Model(opt=opt)
+    
+    # train
+    train_dataset, valid_dataset = get_train_valid_ds(opt=opt, testing=False)
+    train_dataloader, valid_dataloader = get_train_valid_dl(opt=opt, 
+                                                            train_dataset=train_dataset, 
+                                                            valid_dataset=valid_dataset)
+        
+    dalle2=Dalle2_Model(opt=opt, train_dataloader=train_dataloader, valid_dataloader=valid_dataloader)
+    
     
 if __name__ == '__main__':
     main()

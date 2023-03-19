@@ -15,7 +15,7 @@ from torchmetrics.image.kid import KernelInceptionDistance
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.imagen.model.build_imagen import Imagen_Model
-from components.data_manager.imagen_dataset import get_train_valid_ds
+from components.data_manager.dataset_handler import get_train_valid_ds
 
 
 def test_text2images(opt: Opt, 
