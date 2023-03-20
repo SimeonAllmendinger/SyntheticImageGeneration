@@ -2,7 +2,7 @@
 
 # Model
 model:
-  model_type: ElucidatedImagen # Imagen, ElucidatedImagen
+  model_type: Dalle2 # Imagen, ElucidatedImagen, Dalle2
 
 # Trainer
 trainer:
@@ -18,7 +18,7 @@ trainer:
     - text_embeds
 
   # Dataloader
-  shuffle: True
+  shuffle: False
   batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
   train_split: 0.90
   valid_split: 0.10

@@ -1,6 +1,6 @@
 ## Data
 data:
-  dataset: Both # CholecT45, CholecSeg8k, Both
+  dataset: CholecT45 # CholecT45, CholecSeg8k, Both
   image_size: 480
   use_existing_data_files: True
 
@@ -15,9 +15,14 @@ data:
     PATH_VIDEO_DIR: ./data/CholecT45/data/
 
     # Text embedding [PREPROCESSING]
-    PATH_T5_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecT45/t5_unique_embeds.pkl
+    PATH_T5_EMBEDDING_FILE: ./src/assets/data/CholecT45/t5_embeds/t5_unique_embeds.pkl
     PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecT45/ohe_embeds.pkl
-    PATH_TRAIN_DF_FILE: ./src/assets/imagen/train/CholecT45/df_triplets.json
+    PATH_TRAIN_DF_FILE: ./src/assets/data/CholecT45/data_frames/df_triplets.json
+
+    clip:
+      use_existing_embeds: False
+      PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/image_embeds/
+      PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/text_embeds/
 
   # CholecSeg8k Dataset
   CholecSeg8k:
@@ -121,9 +126,14 @@ data:
         - omentum
 
     # Text embedding [PREPROCESSING]
-    PATH_T5_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecSeg8k/t5_unique_embeds.pkl
+    PATH_T5_EMBEDDING_FILE: ./src/assets/data/CholecSeg8k/t5_embeds/t5_unique_embeds.pkl
     PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecSeg8k/ohe_embeds.pkl
-    PATH_TRAIN_DF_FILE: ./src/assets/imagen/train/CholecSeg8k/df_train.json
+    PATH_TRAIN_DF_FILE: ./src/assets/data/CholecSeg8k/data_frames/df_train.json
+
+    clip:
+      use_existing_embeds: False
+      PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecSeg8k/clip_embeds/image_embeds/
+      PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecSeg8k/clip_embeds/text_embeds/
 
   # Cholec80 Dataset
   Cholec80:
@@ -143,4 +153,4 @@ data:
       GallbladderDissection:      gallbladder dissection
       GallbladderPackaging:       gallbladder packaging
       CleaningCoagulation:        cleaning coagulation
-      GallbladderRetraction:      gallbladder etraction
+      GallbladderRetraction:      gallbladder extraction

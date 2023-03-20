@@ -4,7 +4,12 @@
 clip:
     #
     pretrained: True
+    use_existing_model: False
+    model_name: 'ViT-B/32'
+    
     epochs: 10000
+    model_save_path: ./src/assets/dalle2/models/clip.pt
+    seq_length: 49408
     
     params:
         dim_text: 512
@@ -37,6 +42,9 @@ diffusion_prior_network:
 
 # Diffusion Prior Parameters
 diffusion_prior:
+
+    use_existing_model: True
+
     params:
         timesteps: 1000
         sample_timesteps: 64
@@ -44,6 +52,35 @@ diffusion_prior:
 
 # Diffusion Prior Trainer Parameters
 diffusion_prior_trainer:
+
+    model_save_path: ./src/assets/dalle2/models/diffusionPriorTrainer.pt
+    epochs: 1
+
+    params:
+        lr: 0.0003
+        wd: 0.01
+        ema_beta: 0.99
+        ema_update_after_step: 1000
+        ema_update_every: 10
+
+# Decoder
+decoder:
+
+    use_existing_model: False
+
+    params:
+        image_sizes: (128, 256)      # resolutions, 256 for first unet, 512 for second. these must be unique and in ascending order (matches with the unets passed in)
+        timesteps: 1000
+        image_cond_drop_prob: 0.1
+        text_cond_drop_prob: 0.5
+
+# Decoder Trainer
+decoder_trainer:
+
+    model_save_path: ./src/assets/dalle2/models/diffusionPriorTrainer.pt
+    max_batch_size: 16
+    epochs: 1
+
     params:
         lr: 3e-4
         wd: 1e-2

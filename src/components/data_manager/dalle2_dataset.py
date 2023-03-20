@@ -5,13 +5,15 @@ sys.path.append(os.path.abspath(os.curdir))
 import numpy as np
 import pandas as pd
 import torch
+import glob
 import bisect
 
 from torch.utils.data import Dataset, ConcatDataset
-from x_clip import CLIP, TextTransformer
 from torchvision import transforms as T
+from os.path import exists as file_exists
 from PIL import Image
 from tqdm import tqdm
+from transformers import CLIPTokenizerFast
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.data_manager.preprocessing.triplet_coding import get_df_triplets
@@ -38,8 +40,33 @@ class BaseDalle2Dataset(Dataset):
             T.CenterCrop(self.image_size),
             T.ToTensor()
         ])
+
+        #
+        self.tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32")
         
-           
+        
+    def _set_embeds_(self, opt: Opt):
+        
+        self.image_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
+        self.text_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_TEXT_EMBEDDING_DIR'])
+        
+        if file_exists(self.image_embeds_save_dir_path + 'image_batch_00001.pt') and file_exists(self.text_embeds_save_dir_path + 'text_batch_00001.pt'):
+            self.clip_image_embeds_paths = glob.glob(self.image_embeds_save_dir_path + 'image_batch_*.pt')
+            self.clip_text_embeds_paths = glob.glob(self.image_embeds_save_dir_path + 'text_batch_*.pt')
+    
+    
+    def _set_tokens_(self, opt: Opt):
+        
+        tokens = self.tokenizer(self.df_train['TEXT PROMPT'].tolist(),
+                                return_tensors="pt",
+                                padding='max_length',
+                                max_length=256,
+                                truncation=True)
+        
+        self.encoded_texts = tokens.input_ids
+        opt.logger.debug(f'Encoded texts created with size: {self.encoded_texts.size()}')
+
+
     def __len__(self):
         return self.df_train.shape[0]
       
@@ -55,17 +82,37 @@ class BaseDalle2Dataset(Dataset):
         
         # Get triplet text
         text = self.df_train['TEXT PROMPT'].values[index]
+        encoded_text = self.encoded_texts[index]
 
-        # Check gpu availability    
+        # Check gpu availability
         if torch.cuda.is_available():
             image = image.cuda()
-        
-        if return_text:
+            encoded_text = encoded_text.cuda()
             
-            return image, text, text
+        if self.clip_image_embeds_paths and self.clip_text_embeds_paths:
+            
+            embed_image = torch.load(self.clip_image_embeds_paths[index])
+            embed_text = torch.load(self.clip_text_embeds_paths[index])
+            
+            # Check gpu availability
+            if torch.cuda.is_available():
+                embed_image = embed_image.cuda()
+                embed_text = embed_text.cuda()
+            
+            if return_text:
+            
+                return embed_image, embed_text, text
+            
+            else:
+        
+                return embed_image, embed_text
+        
+        elif return_text:
+            
+            return image, encoded_text, text
         
         else:
-             return image, text
+             return image, encoded_text
     
 
 class CholecT45Dalle2Dataset(BaseDalle2Dataset):
@@ -75,6 +122,9 @@ class CholecT45Dalle2Dataset(BaseDalle2Dataset):
         
         #
         self._set_df_train_(opt=opt)
+        self._set_tokens_(opt=opt)
+        self._set_embeds_(opt=opt)
+    
     
     @check_dataset_name
     def _set_df_train_(self, opt: Opt):
@@ -105,8 +155,9 @@ class CholecSeg8kDalle2Dataset(BaseDalle2Dataset):
     def __init__(self, opt: Opt, clip_embedding=False):
         super().__init__(dataset_name='CholecSeg8k', opt=opt)
         
-        self._set_df_train_(opt=opt)    
-        
+        self._set_df_train_(opt=opt)
+        self._set_tokens_(opt=opt)
+        self._set_embeds_(opt=opt)
     
     @check_dataset_name
     def _set_df_train_(self, opt: Opt):
@@ -182,15 +233,3 @@ def concatenate_strings(s1, s2):
     return s1 + ' in ' + s2
 
 
-def get_text_tensor(opt: Opt, text_batch, tokenizer):
-
-    # tokenize the texts
-    tokens = tokenizer(text_batch, padding=True, truncation=True, return_tensors="pt")
-
-    # concatenate the input_ids, attention_mask, and token_type_ids tensors
-    input_ids = tokens['input_ids']
-    attention_mask = tokens['attention_mask']
-    token_type_ids = torch.zeros_like(input_ids)  # set token_type_ids to 0 for all tokens
-    text_tensor = torch.cat((input_ids, attention_mask, token_type_ids), dim=1).cuda()
-        
-    return text_tensor
