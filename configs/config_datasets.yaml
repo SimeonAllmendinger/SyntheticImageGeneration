@@ -20,7 +20,7 @@ data:
     PATH_TRAIN_DF_FILE: ./src/assets/data/CholecT45/data_frames/df_triplets.json
 
     clip:
-      use_existing_embeds: False
+      use_existing_embeds: True
       PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/image_embeds/
       PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/text_embeds/
 

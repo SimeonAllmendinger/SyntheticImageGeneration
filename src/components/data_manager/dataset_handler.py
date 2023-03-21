@@ -94,12 +94,18 @@ def get_train_valid_ds(opt: Opt, testing=False):
         return train_dataset, valid_dataset
        
 
-def get_train_valid_dl(opt: Opt, train_dataset, valid_dataset):
+def get_train_valid_dl(opt: Opt, train_dataset, valid_dataset=None):
     
     train_generator = BaseDataLoader(opt=opt, dataset=train_dataset)
-    valid_generator = BaseDataLoader(opt=opt, dataset=valid_dataset)
     
-    return train_generator, valid_generator
+    if valid_dataset:
+        valid_generator = BaseDataLoader(opt=opt, dataset=valid_dataset)
+        
+        return train_generator, valid_generator
+
+    else:
+        
+        return train_generator
 
 
 def visualize_class_representation(opt: Opt, dataset, quantity=25):

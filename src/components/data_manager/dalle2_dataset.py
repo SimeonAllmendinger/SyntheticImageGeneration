@@ -14,6 +14,7 @@ from os.path import exists as file_exists
 from PIL import Image
 from tqdm import tqdm
 from transformers import CLIPTokenizerFast
+from dalle2_pytorch import OpenAIClipAdapter
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.data_manager.preprocessing.triplet_coding import get_df_triplets
@@ -29,6 +30,7 @@ class BaseDalle2Dataset(Dataset):
         #
         self.DATASET = dataset_name
         self.use_phase_labels = opt.datasets['data']['Cholec80']['use_phase_labels']
+        self.batch_size = opt.conductor['trainer']['batch_size']
         
         #
         self.folder=os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR'])
@@ -43,17 +45,14 @@ class BaseDalle2Dataset(Dataset):
 
         #
         self.tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32")
+        self._set_embed_paths_(opt=opt)
         
         
-    def _set_embeds_(self, opt: Opt):
+    def _set_embed_paths_(self, opt: Opt):
         
         self.image_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
         self.text_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_TEXT_EMBEDDING_DIR'])
         
-        if file_exists(self.image_embeds_save_dir_path + 'image_batch_00001.pt') and file_exists(self.text_embeds_save_dir_path + 'text_batch_00001.pt'):
-            self.clip_image_embeds_paths = glob.glob(self.image_embeds_save_dir_path + 'image_batch_*.pt')
-            self.clip_text_embeds_paths = glob.glob(self.image_embeds_save_dir_path + 'text_batch_*.pt')
-    
     
     def _set_tokens_(self, opt: Opt):
         
@@ -71,7 +70,7 @@ class BaseDalle2Dataset(Dataset):
         return self.df_train.shape[0]
       
       
-    def __getitem__(self, index, return_text=False):
+    def __getitem__(self, index, return_embeds=True, return_text=False):
         
         # Get Image
         path = os.path.join(self.folder, self.df_train['FRAME PATH'].values[index])
@@ -82,37 +81,36 @@ class BaseDalle2Dataset(Dataset):
         
         # Get triplet text
         text = self.df_train['TEXT PROMPT'].values[index]
-        encoded_text = self.encoded_texts[index]
-
+        encoded_text = self.encoded_texts[index]              
+    
         # Check gpu availability
         if torch.cuda.is_available():
             image = image.cuda()
             encoded_text = encoded_text.cuda()
             
-        if self.clip_image_embeds_paths and self.clip_text_embeds_paths:
+        if return_embeds:
             
-            embed_image = torch.load(self.clip_image_embeds_paths[index])
-            embed_text = torch.load(self.clip_text_embeds_paths[index])
+            batch_index = int(index / self.batch_size)
+            embed_image_batch = torch.load(self.image_embeds_save_dir_path + f'image_embeds_{batch_index:05d}.pt')
+            embed_text_batch = torch.load(self.text_embeds_save_dir_path + f'text_embeds_{batch_index:05d}.pt')
             
-            # Check gpu availability
+            item_index = int(index % self.batch_size)
+            embed_image=embed_image_batch[item_index] 
+            embed_text=embed_text_batch[item_index]
+            
             if torch.cuda.is_available():
                 embed_image = embed_image.cuda()
                 embed_text = embed_text.cuda()
             
-            if return_text:
-            
-                return embed_image, embed_text, text
-            
-            else:
-        
-                return embed_image, embed_text
+            return image, encoded_text, embed_image, embed_text
         
         elif return_text:
-            
-            return image, encoded_text, text
+
+            return image, encoded_text, embed_image, embed_text, text
         
         else:
-             return image, encoded_text
+                
+            return image, encoded_text
     
 
 class CholecT45Dalle2Dataset(BaseDalle2Dataset):
@@ -123,8 +121,6 @@ class CholecT45Dalle2Dataset(BaseDalle2Dataset):
         #
         self._set_df_train_(opt=opt)
         self._set_tokens_(opt=opt)
-        self._set_embeds_(opt=opt)
-    
     
     @check_dataset_name
     def _set_df_train_(self, opt: Opt):
@@ -157,7 +153,6 @@ class CholecSeg8kDalle2Dataset(BaseDalle2Dataset):
         
         self._set_df_train_(opt=opt)
         self._set_tokens_(opt=opt)
-        self._set_embeds_(opt=opt)
     
     @check_dataset_name
     def _set_df_train_(self, opt: Opt):

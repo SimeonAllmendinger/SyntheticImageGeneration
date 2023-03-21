@@ -3,62 +3,47 @@ import numpy as np
 import clip
 from x_clip import CLIP
 from tqdm import tqdm
-from dalle2_pytorch import OpenAIClipAdapter
+from dalle2_pytorch import OpenAIClipAdapter, DiffusionPrior, DiffusionPriorNetwork
 from transformers import CLIPProcessor, CLIPModel, CLIPTokenizerFast, CLIPTokenizer
 
-'''MERGES_FILE = "http://download.pytorch.org/models/text/clip_merges.bpe"
-ENCODER_FILE = "http://download.pytorch.org/models/text/clip_encoder.json"
-#tokenizer = CLIPTokenizer(merges_path=MERGES_FILE, encoder_json_path=ENCODER_FILE)
+a=torch.load('src/assets/data/CholecT45/clip_embeds/image_embeds/image_batch_00001.pt')
+b=torch.load('src/assets/data/CholecT45/clip_embeds/text_embeds/text_batch_00001.pt')
 
-clip = CLIP(
-    dim_text = 512,
-    dim_image = 512,
-    dim_latent = 512,
-    num_text_tokens = 49408,
-    text_enc_depth = 6,
-    text_seq_len = 256,
-    text_heads = 8,
-    visual_enc_depth = 6,
-    visual_image_size = 256,
-    visual_patch_size = 32,
-    visual_heads = 8,
-    visual_patch_dropout = 0.5,             # patch dropout probability, used in Kaiming He's FLIP to save compute and improve end results - 0.5 is good value, 0.75 on high end is tolerable
-    use_all_token_embeds = False,           # whether to use fine-grained contrastive learning (FILIP)
-    decoupled_contrastive_learning = True,  # use decoupled contrastive learning (DCL) objective function, removing positive pairs from the denominator of the InfoNCE loss (CLOOB + DCL)
-    extra_latent_projection = True,         # whether to use separate projections for text-to-image vs image-to-text comparisons (CLOOB)
-    use_visual_ssl = True,                  # whether to do self supervised learning on iages
-    use_mlm = False,                        # use masked language learning (MLM) on text (DeCLIP)
-    text_ssl_loss_weight = 0.05,            # weight for text MLM loss
-    image_ssl_loss_weight = 0.05            # weight for image self-supervised learning loss
-)'''
+
+clip = OpenAIClipAdapter()
 
 # mock data
-print('hello')
-clip = OpenAIClipAdapter('ViT-B/32').cuda()
-tokenizer=CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32")
+prior_network = DiffusionPriorNetwork(
+    dim = 512,
+    depth = 6,
+    dim_head = 64,
+    heads = 8
+).cuda()
 
+# diffusion prior network, which contains the CLIP and network (with transformer) above
+
+diffusion_prior = DiffusionPrior(
+    net = prior_network,
+    clip=clip,
+    timesteps = 100,
+    cond_drop_prob = 0.2,
+    condition_on_text_encodings = True  # this probably should be true, but just to get Laion started
+).cuda()
+
+text = torch.randint(0, 49408, (4, 256)).cuda()
 images = torch.randn(4, 3, 256, 256).cuda()
-text=["grasper grasp gallbladder", "grasper retract gallbladder", 'jdjdj', 'jshsgsg']
-tokens = tokenizer(text=text, 
-              return_tensors="pt", 
-              padding='max_length', 
-              max_length=256, 
-              truncation=True)
 
-text = tokens.input_ids.cuda()
-print(text)
-print(text.size())
-print(text.min(), text.max())
+# precompute the text and image embeddings
+# here using the diffusion prior class, but could be done with CLIP alone
 
+clip_image_embeds = diffusion_prior.clip.embed_image(images).image_embed
+clip_text_embeds = diffusion_prior.clip.embed_text(text).text_embed
 
-# train
+# feed text and images into diffusion prior network
 
-for i in tqdm(range(10)):
-    loss = clip(
-        text,
-        images,
-        #return_loss = True              # needs to be set to True to return contrastive loss
-    )
+loss = diffusion_prior(
+    text_embed = clip_text_embeds,
+    image_embed = clip_image_embeds
+)
 
-    loss.backward()
-    print(loss)
+loss.backward()

@@ -18,10 +18,10 @@ trainer:
     - text_embeds
 
   # Dataloader
-  shuffle: False
+  shuffle: True
   batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
-  train_split: 0.90
-  valid_split: 0.10
+  train_split: 0.9
+  valid_split: 0.1
   
   # Training
   max_epochs: 5000
@@ -29,7 +29,7 @@ trainer:
   param_tuning: False
   early_stopping:
     usage: True
-    threshold: 1.0e-7
+    threshold: 1.0e-4
     queue_length: 20
 
 

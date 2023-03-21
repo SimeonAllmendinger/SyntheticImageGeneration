@@ -9,7 +9,7 @@ from imagen_pytorch import Unet, ImagenTrainer, ImagenConfig, ElucidatedImagenCo
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.imagen.utils.decorators import check_text_encoder, model_starter
-from src.components.imagen.utils.early_stopping import EarlyStopping
+from src.components.utils.training.early_stopping import EarlyStopping
 
 
 def _get_unets_(opt: Opt, elucidated: bool):

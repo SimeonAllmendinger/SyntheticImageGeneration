@@ -6,39 +6,15 @@ clip:
     pretrained: True
     use_existing_model: False
     model_name: 'ViT-B/32'
-    
-    epochs: 10000
-    model_save_path: ./src/assets/dalle2/models/clip.pt
-    seq_length: 49408
-    
-    params:
-        dim_text: 512
-        dim_image: 512
-        dim_latent: 512
-        num_text_tokens: 49408
-        text_enc_depth: 1
-        text_seq_len: 256
-        text_heads: 8
-        visual_enc_depth: 1
-        visual_image_size: 256
-        visual_patch_size: 32
-        visual_heads: 8
-        use_all_token_embeds: True            # whether to use fine-grained contrastive learning (FILIP)
-        decoupled_contrastive_learning: True  # use decoupled contrastive learning (DCL) objective function, removing positive pairs from the denominator of the InfoNCE loss (CLOOB + DCL)
-        extra_latent_projection: True         # whether to use separate projections for text-to-image vs image-to-text comparisons (CLOOB)
-        use_visual_ssl: True                  # whether to do self supervised learning on images
-        visual_ssl_type: 'simclr'             # can be either 'simclr' or 'simsiam', depending on using DeCLIP or SLIP
-        use_mlm: False                        # use masked language learning (MLM) on text (DeCLIP)
-        text_ssl_loss_weight: 0.05            # weight for text MLM loss
-        image_ssl_loss_weight: 0.05           # weight for image self-supervised learning loss
 
 # Diffusion Prior Network Parameters
 diffusion_prior_network:
     params:
-        dim: 512
+        dim: 512 
         depth: 6
         dim_head: 64
-        heads: 8
+        heads: 8 
+        # Transformer: 64 x 8 = 512 (=dim)
 
 # Diffusion Prior Parameters
 diffusion_prior:
@@ -46,14 +22,16 @@ diffusion_prior:
     use_existing_model: True
 
     params:
+        image_embed_dim: 512
         timesteps: 1000
         sample_timesteps: 64
         cond_drop_prob: 0.2
+        condition_on_text_encodings: False
 
 # Diffusion Prior Trainer Parameters
 diffusion_prior_trainer:
 
-    model_save_path: ./src/assets/dalle2/models/diffusionPriorTrainer.pt
+    model_save_path: ./src/assets/dalle2/models/DiffusionPriorTrainer.pt
     epochs: 1
 
     params:
@@ -69,7 +47,9 @@ decoder:
     use_existing_model: False
 
     params:
-        image_sizes: (128, 256)      # resolutions, 256 for first unet, 512 for second. these must be unique and in ascending order (matches with the unets passed in)
+        image_sizes: # resolutions, 256 for first unet, 512 for second. these must be unique and in ascending order (matches with the unets passed in)
+            - 128
+            - 256     
         timesteps: 1000
         image_cond_drop_prob: 0.1
         text_cond_drop_prob: 0.5
@@ -77,13 +57,13 @@ decoder:
 # Decoder Trainer
 decoder_trainer:
 
-    model_save_path: ./src/assets/dalle2/models/diffusionPriorTrainer.pt
+    model_save_path: ./src/assets/dalle2/models/DecoderTrainer.pt
     max_batch_size: 16
-    epochs: 1
+    epochs: 10
 
     params:
-        lr: 3e-4
-        wd: 1e-2
+        lr: 0.0003
+        wd: 0.01
         ema_beta: 0.99
         ema_update_after_step: 1000
         ema_update_every: 10
@@ -103,7 +83,7 @@ unet1:
         - 8
 
 unet2:
-    dim: 32
+    dim: 16
     image_embed_dim: 512
     cond_dim: 128
     channels: 3

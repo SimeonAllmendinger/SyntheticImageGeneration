@@ -14,7 +14,7 @@ from ray.air.checkpoint import Checkpoint
 from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
 from src.components.imagen.model.build_imagen import Imagen_Model
-from components.data_manager.dataset_handler import get_train_valid_ds, get_train_valid_dl
+from src.components.data_manager.dataset_handler import get_train_valid_ds, get_train_valid_dl
 from src.components.imagen.testing.test_imagen import test_text2images
 
 
