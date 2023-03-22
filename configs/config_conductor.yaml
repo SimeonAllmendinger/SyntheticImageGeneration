@@ -29,7 +29,7 @@ trainer:
   param_tuning: False
   early_stopping:
     usage: True
-    threshold: 1.0e-4
+    threshold: 1.0e-5
     queue_length: 20
 
 
@@ -56,12 +56,21 @@ testing:
   # Sampling
   unet_number: 1
   sample_quantity: 10
-  sample_seed: 10
+  sample_seed: 10000
   save_samples: True
   only_triplets: True
 
   # Frechet Inception Distance
   FrechetInceptionDistance:
-    fid_features: 2048
-    reset_real_features: False
+    feature: 2048
+    reset_real_features: True
+    normalize: True
+
+  # Kernel Inception Distance
+  KernelInceptionDistance:
+    feature: 2048
+    subsets: 100
+    subset_size: 1000
+    reset_real_features: True
+    normalize: True
 

@@ -20,6 +20,9 @@ data:
     PATH_TRAIN_DF_FILE: ./src/assets/data/CholecT45/data_frames/df_triplets.json
 
     clip:
+      use_existing_encodings: True
+      PATH_CLIP_IMAGE_ENCODING_FILE: ./src/assets/data/CholecT45/clip_tokens/text_tokens.pt
+
       use_existing_embeds: True
       PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/image_embeds/
       PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/text_embeds/
@@ -131,6 +134,9 @@ data:
     PATH_TRAIN_DF_FILE: ./src/assets/data/CholecSeg8k/data_frames/df_train.json
 
     clip:
+      use_existing_encodings: False
+      PATH_CLIP_IMAGE_ENCODING_FILE: ./src/assets/data/CholecSeg8k/clip_tokens/text_tokens.pt
+
       use_existing_embeds: False
       PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecSeg8k/clip_embeds/image_embeds/
       PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecSeg8k/clip_embeds/text_embeds/

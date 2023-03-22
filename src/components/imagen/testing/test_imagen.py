@@ -34,7 +34,7 @@ def test_text2images(opt: Opt,
 
     #
     fid = FrechetInceptionDistance(**opt.conductor['testing']['FrechetInceptionDistance']).cuda()
-    #kid = KernelInceptionDistance().cuda()
+    kid = KernelInceptionDistance(**opt.conductor['testing']['KernelInceptionDistance']).cuda()
     
     #
     sample_images = torch.zeros(sample_quantity,
@@ -67,14 +67,16 @@ def test_text2images(opt: Opt,
         #
         sample_image, sample_text_embed, sample_text = sample_dataset.__getitem__(sample_index,
                                                                                    return_text=True)
-        sample_images[k, :, :, :] = sample_image
+        sample_images[k, :, :, :] = torch.clamp(sample_image, min=0, max=1)
         sample_text_embeds[k, :, :] = sample_text_embed
         sample_texts.append(sample_text)
     
     #
+    #TODO: Sample images range of number in tensor
     opt.logger.debug(f'sample_images_size: {sample_images.size()}')
     opt.logger.debug(f'sample_images: {sample_images}')
-    fid.update((sample_images*255).to(torch.uint8).cuda(), real=True)
+    fid.update(sample_images.cuda(), real=True)
+    kid.update(sample_images.cuda(), real=True)
 
     num_batches = sample_text_embeds.shape[0] // max_sampling_batch_size
     sample_text_embeds_batches = torch.split(sample_text_embeds, max_sampling_batch_size, dim=0)
@@ -86,11 +88,12 @@ def test_text2images(opt: Opt,
                                                         return_pil_images=False,
                                                         stop_at_unet_number=unet_number,
                                                         use_tqdm=not tqdm_disable) 
-        
+        synthetic_images = torch.clamp(synthetic_images, min=0, max=1)
         #
         opt.logger.debug(f'synthetic_images_size: {synthetic_images.size()}')
         opt.logger.debug(f'synthetic_images: {synthetic_images}')
-        fid.update((synthetic_images*255).to(torch.uint8).cuda(), real=False)
+        fid.update(synthetic_images.cuda(), real=False)
+        kid.update(synthetic_images.cuda(), real=False)       
         
         if save_samples: 
             
@@ -109,13 +112,10 @@ def test_text2images(opt: Opt,
                 #
                 opt.logger.info(f'Created image for {sample_texts[text_index]} at {sample_save_path}.')
         
-        #
-        #kid.update(sample_images.to(torch.uint8).cuda(), real=True)
-        #kid.update(synthetic_images.to(torch.uint8).cuda()[:-1], real=False)
         
     #
     fid_result = fid.compute()
-    #kid_mean, kid_std = kid.compute()
+    kid_mean, kid_std = kid.compute()
     
     #
     return fid_result#, (kid_mean, kid_std)

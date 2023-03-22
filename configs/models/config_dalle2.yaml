@@ -3,26 +3,26 @@
 # CLIP
 clip:
     #
-    pretrained: True
-    use_existing_model: False
-    model_name: 'ViT-B/32'
+    context_length: 77
+    model_name: 'ViT-bigG-14' # Best performing model on open_clip (DATE: 21.03.2023)
+    pretrained: 'laion2b_s39b_b160k'
 
 # Diffusion Prior Network Parameters
 diffusion_prior_network:
     params:
-        dim: 512 
+        dim: 1280 
         depth: 6
-        dim_head: 64
-        heads: 8 
-        # Transformer: 64 x 8 = 512 (=dim)
+        dim_head: 80
+        heads: 16 
+        # Transformer: 80 x 16 = 1280 (=dim), which equals the embed dim of clip
 
 # Diffusion Prior Parameters
 diffusion_prior:
 
-    use_existing_model: True
+    use_existing_model: False
 
     params:
-        image_embed_dim: 512
+        image_embed_dim: 1280
         timesteps: 1000
         sample_timesteps: 64
         cond_drop_prob: 0.2
@@ -32,7 +32,8 @@ diffusion_prior:
 diffusion_prior_trainer:
 
     model_save_path: ./src/assets/dalle2/models/DiffusionPriorTrainer.pt
-    epochs: 1
+    train_with_embeds: True
+    epochs: 5
 
     params:
         lr: 0.0003
@@ -59,11 +60,11 @@ decoder_trainer:
 
     model_save_path: ./src/assets/dalle2/models/DecoderTrainer.pt
     max_batch_size: 16
-    epochs: 10
+    epochs: 1
 
     params:
-        lr: 0.0003
-        wd: 0.01
+        lr: 0.00003
+        wd: 0.01  # weight decay
         ema_beta: 0.99
         ema_update_after_step: 1000
         ema_update_every: 10
@@ -71,8 +72,8 @@ decoder_trainer:
 # unet 1
 unet1:
     dim: 32
-    image_embed_dim: 512
-    text_embed_dim: 512
+    image_embed_dim: 1280
+    text_embed_dim: 1280
     cond_dim: 128
     channels: 3
     cond_on_text_encodings: True # set to True for any unets that need to be conditioned on text encodings
@@ -84,7 +85,7 @@ unet1:
 
 unet2:
     dim: 16
-    image_embed_dim: 512
+    image_embed_dim: 1280
     cond_dim: 128
     channels: 3
     dim_mults:

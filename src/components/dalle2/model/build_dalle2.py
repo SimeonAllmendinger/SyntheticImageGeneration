@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 from os.path import exists as file_exists
-from dalle2_pytorch import DALLE2, DiffusionPriorNetwork, DiffusionPrior, Decoder, CLIP, Unet, OpenAIClipAdapter, DecoderTrainer, DiffusionPriorTrainer
+from dalle2_pytorch import DALLE2, DiffusionPriorNetwork, DiffusionPrior, Decoder, CLIP, Unet, OpenClipAdapter, DecoderTrainer, DiffusionPriorTrainer
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
@@ -16,6 +16,17 @@ from src.components.data_manager.dataset_handler import get_train_valid_dl, get_
 from src.components.dalle2.training.train_dalle2 import _train_decoder_
 from src.components.utils.training.early_stopping import EarlyStopping
 
+
+class OpenClipAdapterWithContextLength(OpenClipAdapter):
+    def __init__(self, opt: Opt):
+        self.context_length = opt.dalle2['clip']['context_length']
+        super().__init__(name=opt.dalle2['clip']['model_name'], 
+                         pretrained=opt.dalle2['clip']['pretrained'])
+        
+    @property
+    def max_text_len(self):
+        return self.context_length
+        
 
 class Prior_Model():
     
@@ -32,8 +43,8 @@ class Prior_Model():
         
     def _init_clip_(self, opt: Opt):
                 
-        self.clip = OpenAIClipAdapter(name=opt.dalle2['clip']['model_name']).cuda()
-            
+        self.clip = OpenClipAdapterWithContextLength(opt=opt).cuda()
+    
     
     def _create_clip_embeds(self, opt: Opt,
                             image_embeds_save_dir_path: str, 
@@ -43,14 +54,16 @@ class Prior_Model():
         dataset = get_train_valid_ds(opt=opt, testing=True)
         dataloader = get_train_valid_dl(opt=opt, train_dataset=dataset)
         
-        for i, (image_batch, text_batch) in enumerate(tqdm(dataloader, disable=False)):
+        opt.logger.info('Create text embeddings...')
+        
+        for i, (image_batch, text_enc_batch, *_) in enumerate(tqdm(dataloader, disable=False)):
   
             #
             clip_image_embeds = self.diffusion_prior.clip.embed_image(image_batch).image_embed
             torch.save(clip_image_embeds, image_embeds_save_dir_path + f'image_embeds_{i:05d}.pt')
 
             #
-            clip_text_embeds = self.diffusion_prior.clip.embed_text(text_batch).text_embed
+            clip_text_embeds = self.diffusion_prior.clip.embed_text(text_enc_batch).text_embed
             torch.save(clip_text_embeds, text_embeds_save_dir_path + f'text_embeds_{i:05d}.pt')
             
         opt.logger.debug('Training embeds created')
@@ -113,9 +126,14 @@ class Prior_Model():
         
         for epoch_n in tqdm(range(1, opt.dalle2['diffusion_prior_trainer']['epochs'] + 1)):
 
-            for i, (*_, clip_image_embeds, clip_text_embeds) in enumerate(tqdm(dataloader, disable=False)):
-                loss = self.diffusion_prior_trainer(text_embed=clip_text_embeds,
-                                                    image_embed=clip_image_embeds)
+            for i, (image_batch, text_encodings, clip_image_embeds, clip_text_embeds) in enumerate(tqdm(dataloader, disable=False)):
+                
+                if opt.dalle2['diffusion_prior_trainer']['train_with_embeds']:
+                    loss = self.diffusion_prior_trainer(text_embed=clip_text_embeds,
+                                                        image_embed=clip_image_embeds)
+                else:
+                    loss = self.diffusion_prior_trainer(text=text_encodings,
+                                                        image=image_batch)
                 self.diffusion_prior_trainer.update()
 
                 opt.logger.debug(

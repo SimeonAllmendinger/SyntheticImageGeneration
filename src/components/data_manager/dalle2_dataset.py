@@ -7,14 +7,13 @@ import pandas as pd
 import torch
 import glob
 import bisect
+import open_clip
 
 from torch.utils.data import Dataset, ConcatDataset
 from torchvision import transforms as T
 from os.path import exists as file_exists
 from PIL import Image
 from tqdm import tqdm
-from transformers import CLIPTokenizerFast
-from dalle2_pytorch import OpenAIClipAdapter
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.data_manager.preprocessing.triplet_coding import get_df_triplets
@@ -39,12 +38,13 @@ class BaseDalle2Dataset(Dataset):
         self.transform = T.Compose([
             T.Resize(self.image_size),
             T.RandomHorizontalFlip(),
-            T.CenterCrop(self.image_size),
-            T.ToTensor()
+            T.CenterCrop(self.image_size)
         ])
 
         #
-        self.tokenizer = CLIPTokenizerFast.from_pretrained("openai/clip-vit-base-patch32")
+        *_, self.preprocess = open_clip.create_model_and_transforms(opt.dalle2['clip']['model_name'], 
+                                                               pretrained=opt.dalle2['clip']['pretrained'])
+        self.tokenizer = open_clip.get_tokenizer(model_name=opt.dalle2['clip']['model_name'])
         self._set_embed_paths_(opt=opt)
         
         
@@ -56,14 +56,15 @@ class BaseDalle2Dataset(Dataset):
     
     def _set_tokens_(self, opt: Opt):
         
-        tokens = self.tokenizer(self.df_train['TEXT PROMPT'].tolist(),
-                                return_tensors="pt",
-                                padding='max_length',
-                                max_length=256,
-                                truncation=True)
+        if file_exists(opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_IMAGE_ENCODING_FILE']) and opt.datasets['data'][self.DATASET]['clip']['use_existing_encodings']: 
+            self.encoded_texts = torch.load(opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_IMAGE_ENCODING_FILE'])
+            opt.logger.debug(f'Encoded texts loaded with size: {self.encoded_texts.size()}')
+        else:
+            self.encoded_texts = self.tokenizer(texts=self.df_train['TEXT PROMPT'].tolist(),
+                                context_length=opt.dalle2['clip']['context_length'])
         
-        self.encoded_texts = tokens.input_ids
-        opt.logger.debug(f'Encoded texts created with size: {self.encoded_texts.size()}')
+            torch.save(self.encoded_texts, opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_IMAGE_ENCODING_FILE'])
+            opt.logger.debug(f'Encoded texts created with size: {self.encoded_texts.size()}')
 
 
     def __len__(self):
@@ -77,7 +78,8 @@ class BaseDalle2Dataset(Dataset):
         image = Image.open(path)
 
         # Transform Image
-        image = self.transform(image)
+        #image=self.transform(image)
+        image = self.preprocess(image)
         
         # Get triplet text
         text = self.df_train['TEXT PROMPT'].values[index]
@@ -101,7 +103,7 @@ class BaseDalle2Dataset(Dataset):
             if torch.cuda.is_available():
                 embed_image = embed_image.cuda()
                 embed_text = embed_text.cuda()
-            
+                
             return image, encoded_text, embed_image, embed_text
         
         elif return_text:
