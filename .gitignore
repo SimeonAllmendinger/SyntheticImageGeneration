@@ -1,5 +1,6 @@
 src/components/data_manager/settings.yml
 src/assets/data/*
+src/assets/models/*
 data/*
 results/*.png
 results/tuning/*

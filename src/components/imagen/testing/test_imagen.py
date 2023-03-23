@@ -15,7 +15,7 @@ from torchmetrics.image.kid import KernelInceptionDistance
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.imagen.model.build_imagen import Imagen_Model
-from components.data_manager.dataset_handler import get_train_valid_ds
+from src.components.data_manager.dataset_handler import get_train_valid_ds
 
 
 def test_text2images(opt: Opt, 
@@ -74,7 +74,7 @@ def test_text2images(opt: Opt,
     #
     #TODO: Sample images range of number in tensor
     opt.logger.debug(f'sample_images_size: {sample_images.size()}')
-    opt.logger.debug(f'sample_images: {sample_images}')
+    opt.logger.debug(f'sample_images min | max: {sample_images.min()} | {sample_images.max()}')
     fid.update(sample_images.cuda(), real=True)
     kid.update(sample_images.cuda(), real=True)
 
@@ -91,7 +91,8 @@ def test_text2images(opt: Opt,
         synthetic_images = torch.clamp(synthetic_images, min=0, max=1)
         #
         opt.logger.debug(f'synthetic_images_size: {synthetic_images.size()}')
-        opt.logger.debug(f'synthetic_images: {synthetic_images}')
+        opt.logger.debug(f'synthetic_images: min | max {synthetic_images.min()} | {synthetic_images.max()}')
+
         fid.update(synthetic_images.cuda(), real=False)
         kid.update(synthetic_images.cuda(), real=False)       
         
@@ -112,13 +113,12 @@ def test_text2images(opt: Opt,
                 #
                 opt.logger.info(f'Created image for {sample_texts[text_index]} at {sample_save_path}.')
         
-        
     #
     fid_result = fid.compute()
     kid_mean, kid_std = kid.compute()
     
     #
-    return fid_result#, (kid_mean, kid_std)
+    return fid_result, (kid_mean, kid_std)
 
 
 def main():
@@ -134,7 +134,7 @@ def main():
     
     #
     imagen_dataset = get_train_valid_ds(opt=opt, testing=True)
-    imagen_model= Imagen_Model(opt=opt, testing=True)
+    imagen_model= Imagen_Model(opt=opt, testing=False) ### Should be True ---------------------------
     _, sample_text_embed, _ = imagen_dataset.__getitem__(index=0, 
                                                          return_text=True)
 
@@ -145,22 +145,22 @@ def main():
     os.mkdir(test_sample_folder)
 
     #
-    fid_result = test_text2images(opt=opt,
-                                  sample_dataset=imagen_dataset,
-                                  imagen_model=imagen_model,
-                                  unet_number=unet_number,
-                                  sample_quantity=sample_quantity,
-                                  save_samples=save_samples,
-                                  sample_folder=test_sample_folder,
-                                  embed_shape=sample_text_embed.size(),
-                                  epoch=0,
-                                  seed=seed,
-                                  max_sampling_batch_size=100
-                                  )
+    fid_result, kid_result = test_text2images(opt=opt,
+                                              sample_dataset=imagen_dataset,
+                                              imagen_model=imagen_model,
+                                              unet_number=unet_number,
+                                              sample_quantity=sample_quantity,
+                                              save_samples=save_samples,
+                                              sample_folder=test_sample_folder,
+                                              embed_shape=sample_text_embed.shape,
+                                              epoch=0,
+                                              seed=seed,
+                                              max_sampling_batch_size=100
+                                              )
     
     #
     opt.logger.info(f'FRECHET INCEPTION DISTANCE (FID): {fid_result}')
-    #opt.logger.info(f'KERNEL INCEPTION DISTANCE (FID): {kid_result}')
+    opt.logger.info(f'KERNEL INCEPTION DISTANCE (KID): mean {kid_result[0]} | std {kid_result[1]}')
         
         
 if __name__ == "__main__":

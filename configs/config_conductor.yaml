@@ -2,7 +2,7 @@
 
 # Model
 model:
-  model_type: Dalle2 # Imagen, ElucidatedImagen, Dalle2
+  model_type: Imagen # Imagen, ElucidatedImagen, Dalle2
 
 # Trainer
 trainer:
@@ -55,9 +55,9 @@ testing:
   
   # Sampling
   unet_number: 1
-  sample_quantity: 10
-  sample_seed: 10000
-  save_samples: True
+  sample_quantity: 100
+  sample_seed: 10
+  save_samples: False
   only_triplets: True
 
   # Frechet Inception Distance
@@ -69,8 +69,8 @@ testing:
   # Kernel Inception Distance
   KernelInceptionDistance:
     feature: 2048
-    subsets: 100
-    subset_size: 1000
+    subsets: 5
+    subset_size: 20
     reset_real_features: True
     normalize: True
 

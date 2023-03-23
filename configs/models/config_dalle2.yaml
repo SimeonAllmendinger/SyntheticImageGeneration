@@ -32,8 +32,8 @@ diffusion_prior:
 diffusion_prior_trainer:
 
     model_save_path: ./src/assets/dalle2/models/DiffusionPriorTrainer.pt
-    train_with_embeds: True
-    epochs: 5
+    train_with_embeds: False
+    epochs: 1
 
     params:
         lr: 0.0003
