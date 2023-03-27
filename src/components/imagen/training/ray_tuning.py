@@ -81,11 +81,12 @@ def tune_train_params(opt: Opt):
 def get_ray_tuning_params(opt: Opt):
     
     #
-    ray_tuning_params = dict({'imagen': dict(),
-                             'data': dict()})
+    ray_tuning_params = dict()
     
     for category in opt.param_tuning['search_space'].keys():
-    
+        
+        ray_tuning_params[category] = {}
+        
         #
         for key, value in opt.param_tuning['search_space'][category].items():
 

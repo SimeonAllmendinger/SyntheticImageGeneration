@@ -1,0 +1,162 @@
+## Data
+data:
+  dataset: CholecT45 # CholecT45, CholecSeg8k, Both
+  image_size: 480
+  use_existing_data_files: True
+
+  # CholecT45 Dataset
+  CholecT45:
+
+    fps: 1
+
+    # CholecT45 [RAW]
+    PATH_TRIPLETS_DIR: ./data/CholecT45/triplet/
+    PATH_DICT_DIR: ./data/CholecT45/dict/
+    PATH_VIDEO_DIR: ./data/CholecT45/data/
+
+    # Text embedding [PREPROCESSING]
+    PATH_T5_EMBEDDING_FILE: ./src/assets/data/CholecT45/t5_embeds/t5_unique_embeds.pkl
+    PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecT45/ohe_embeds.pkl
+    PATH_TRAIN_DF_FILE: ./src/assets/data/CholecT45/data_frames/df_triplets.json
+
+    clip:
+      use_existing_encodings: True
+      PATH_CLIP_IMAGE_ENCODING_FILE: ./src/assets/data/CholecT45/clip_tokens/text_tokens.pt
+
+      use_existing_embeds: True
+      PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/image_embeds/
+      PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/text_embeds/
+
+  # CholecSeg8k Dataset
+  CholecSeg8k:
+
+    fps: 25
+    single_classes: True
+    multi_classes: True
+
+    # CholecSeg8k [RAW]
+    PATH_VIDEO_DIR: ./data/CholecSeg8k/
+
+    # Frame segments [PREPARATION]
+    classes:
+      # 0
+      black background: # black background
+        - '#7F7F7F'
+      # 1
+      abdominal wall cavity: # abdominall wall
+        - '#D28C8C'
+      # 2
+      liver: # liver
+        - '#FF7272'
+      # 3
+      gut: # gastrointestinal tract
+        - '#E7469C'
+      # 4
+      omentum: # fat 
+        - '#BAB746'
+        - '#BAB74B'
+      # 5
+      grasper: # grasper 
+        - '#AAFF00'
+      # 6
+      adhesion: # connective tissue
+        - '#FF5500'
+      # 7
+      fluid: # blood
+        - '#FF0000'
+      # 8
+      cystic duct: # cystic duct
+        - '#FFFF00'
+      # 9
+      hook: 
+        - '#A9FFB8'
+      # 10
+      gallbladder: # gallbladder
+        - '#FFA0A5'
+      # 11
+      blood vessel: # hepatic vein
+        - '#003280'
+      # 12
+      liver ligament: 
+        - '#6F4A00'
+      # 13
+      white frame: 
+        - '#FFFFFF'
+
+    multi_classes:
+      # 
+      gallbladder and liver:
+        - gallbladder
+        - liver
+
+      gallbladder and grasper:
+        - gallbladder
+        - grasper
+
+      gallbladder and hoook:
+        - gallbladder
+        - hook
+
+      gallbladder and liver and grasper:
+        - gallbladder
+        - liver
+        - grasper
+
+      gallbladder and liver and hook:
+        - gallbladder
+        - liver
+        - hook
+      
+      abdominal wall cavity and omentum:
+        - abdominal wall cavity
+        - omentum
+
+      abdominal wall cavity and omentum and liver:
+        - abdominal wall cavity
+        - omentum
+        - liver
+
+      abdominal wall cavity and adhesion:
+        - abdominal wall cavity
+        - adhesion
+      
+      omentum and liver:
+        - omentum
+        - liver
+
+      gallbladder and omentum:
+        - gallbladder
+        - omentum
+
+    # Text embedding [PREPROCESSING]
+    PATH_T5_EMBEDDING_FILE: ./src/assets/data/CholecSeg8k/t5_embeds/t5_unique_embeds.pkl
+    PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecSeg8k/ohe_embeds.pkl
+    PATH_TRAIN_DF_FILE: ./src/assets/data/CholecSeg8k/data_frames/df_train.json
+
+    clip:
+      use_existing_encodings: False
+      PATH_CLIP_IMAGE_ENCODING_FILE: ./src/assets/data/CholecSeg8k/clip_tokens/text_tokens.pt
+
+      use_existing_embeds: False
+      PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecSeg8k/clip_embeds/image_embeds/
+      PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecSeg8k/clip_embeds/text_embeds/
+
+  # Cholec80 Dataset
+  Cholec80:
+
+    fps: 25
+    use_phase_labels: True
+
+    # Cholec80 [RAW]
+    PATH_PHASE_LABELS: ./data/Cholec80/phase_annotations/
+    PATH_VIDEO_DIR: ./data/Cholec80/videos/
+
+    # Text embedding [PREPROCESSING]
+    classes:
+      Preparation:                preparation
+      CalotTriangleDissection:    calot triangle dissection
+      ClippingCutting:            clipping cutting
+      GallbladderDissection:      gallbladder dissection
+      GallbladderPackaging:       gallbladder packaging
+      CleaningCoagulation:        cleaning coagulation
+      GallbladderRetraction:      gallbladder extraction

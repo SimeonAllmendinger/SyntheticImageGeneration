@@ -4,7 +4,7 @@ import logging.config
 
 def _get_logger_(path_base_dir: str, verbose=False):
     
-    logging.config.fileConfig(os.path.join(path_base_dir,'configs/config_logger.conf'))
+    logging.config.fileConfig(os.path.join(path_base_dir,'configs/utils/config_logger.conf'))
     master_logger = logging.getLogger('MasterLogger')
     
     if verbose:

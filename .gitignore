@@ -1,12 +1,19 @@
-client_secrets.json
 src/components/data_manager/settings.yml
+src/assets/data/*
+src/assets/models/*
 data/*
+results/*.png
 results/tuning/*
 results/training/*
 results/testing/*
+results/archive/*
+results/rendevouz/*
 configs/config_neptune.yaml
 configs/config_wandb.yaml
 .vscode
+homebrew
+scripts/stderr.txt
+scripts/stdout.txt
 
 # Neptune-Client
 .neptune
