@@ -2,7 +2,7 @@
 
 # Model
 model:
-  model_type: Imagen # Imagen, ElucidatedImagen, Dalle2
+  model_type: Dalle2 # Imagen, ElucidatedImagen, Dalle2
 
 # Trainer
 trainer:

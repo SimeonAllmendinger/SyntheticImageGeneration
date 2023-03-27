@@ -43,7 +43,7 @@ class Prior_Model():
         
     def _init_clip_(self, opt: Opt):
                 
-        self.clip = OpenClipAdapterWithContextLength(opt=opt)
+        self.clip = OpenClipAdapterWithContextLength(opt=opt).cuda()
     
     
     def _create_clip_embeds(self, opt: Opt,
@@ -71,12 +71,12 @@ class Prior_Model():
      
     def _create_diffusion_prior_(self, opt: Opt):
         
-        self.diffusion_prior_network = DiffusionPriorNetwork(**opt.dalle2['diffusion_prior_network']['params'])
+        self.diffusion_prior_network = DiffusionPriorNetwork(**opt.dalle2['diffusion_prior_network']['params']).cuda()
 
         self.diffusion_prior = DiffusionPrior(net=self.diffusion_prior_network,
                                             clip=self.clip,
                                             **opt.dalle2['diffusion_prior']['params']
-                                            )
+                                            ).cuda()
 
         self.diffusion_prior_trainer = DiffusionPriorTrainer(
             diffusion_prior=self.diffusion_prior,
@@ -87,9 +87,6 @@ class Prior_Model():
             self.diffusion_prior_trainer.load(opt.dalle2['diffusion_prior_trainer']['model_save_path'])
         
         else:
-            
-            self.diffusion_prior_network = self.diffusion_prior_network.cuda()
-            self.diffusion_prior  = self.diffusion_prior.cuda()
             
             image_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
             text_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_TEXT_EMBEDDING_DIR'])
