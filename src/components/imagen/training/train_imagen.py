@@ -32,7 +32,7 @@ def train_imagen(tune_config=None, reporter=None):
         
         #
         opt.imagen['imagen'] = tune_config['imagen']
-        opt.elucidated_imagen['elucidated_imagen'] = tune_config['elucidated_imagen']
+        #opt.elucidated_imagen['elucidated_imagen'] = tune_config['elucidated_imagen']
         
         #
         opt.conductor['trainer']['param_tuning'] = True

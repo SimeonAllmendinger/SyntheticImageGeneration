@@ -44,17 +44,7 @@ class BaseImagenDataset(Dataset):
         
         elif self.TEXT_ENCODER_NAME == 'google/t5-v1_1-base':
 
-            if opt.datasets['data']['Cholec80']['use_phase_labels']:
-                triplets = self.df_train['TEXT PROMPT'].values
-                phase_labels = self.df_train['PHASE LABEL TEXT'].values
-                
-                self.text_unique_list=np.unique(["{} in {}".format(a, b) for a, b in zip(triplets, 
-                                                                                         phase_labels)]).tolist()
-
-            else:
-                
-                #
-                self.text_unique_list = self.df_train['TEXT PROMPT'].unique().tolist()
+            self.text_unique_list = self.df_train['TEXT PROMPT'].unique().tolist()
             
             # Create T5 embedding
             self.text_embeds = get_text_t5_embedding(opt=opt,
@@ -131,7 +121,7 @@ class CholecT45ImagenDataset(BaseImagenDataset):
             self.df_train= pd.concat((df_triplets, df_phase_labels[['PHASE LABEL TEXT', 'PHASE LABEL']]), axis=1)
             
             # add the two columns using the custom function and append the resulting strings row-wise
-            self.df_train['TEXT PROMPT'] = self.df_train.apply(lambda row: concatenate_strings(row['TEXT PROMPT'], ' in ',row['PHASE LABEL TEXT']), axis=1)
+            self.df_train['TEXT PROMPT'] = self.df_train.apply(lambda row: concatenate_strings(row['TEXT PROMPT'],row['PHASE LABEL TEXT']), axis=1)
 
         else: 
             
@@ -216,6 +206,10 @@ class ConcatImagenDataset(ConcatDataset):
         return self.datasets[dataset_idx].__getitem__(index=sample_idx, 
                                                       return_text=return_text)
         
+
+# define a function to concatenate two strings with a space in between
+def concatenate_strings(s1, s2):
+    return s1 + ' in ' + s2
 
 def main():
     opt=Opt()

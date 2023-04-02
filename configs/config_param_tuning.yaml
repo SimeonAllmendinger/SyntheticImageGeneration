@@ -3,14 +3,14 @@
 # ray tune parameters
 tune_params:
   scheduler:
-    max_t: 1200 # max_num_epochs
+    max_t: 1400 # max_num_epochs
     grace_period: 300 # Only stop trials at least this old in time.
     reduction_factor: 2 
   resources:
     cpu: 4 # cpus_per_trial
     gpu: 1 # gpus_per_trial
   num_samples: -1
-  time_budget_s: 100000 # if num_samples = -1
+  time_budget_s: 160000 # if num_samples = -1
   metric: valid_loss
   mode: min
 
@@ -68,14 +68,14 @@ search_space:
       values:
         lower: 800
         q: 200
-        upper: 2000
+        upper: 1400
     # 2
     cond_drop_prob: 
       function: ray.tune.quniform
       values:
-        lower: 0
+        lower: 0.1
         q: 0.1
-        upper: 0.3
+        upper: 0.4
     # 3
     loss_type:
       function: ray.tune.choice
@@ -87,15 +87,15 @@ search_space:
     noise_schedules: 
       function: ray.tune.choice
       values:
-        - cosine
+        #- cosine
         - linear
     # 5
     pred_objectives:
       function: ray.tune.choice
       values:
         - noise
-        - x_start
-        - v
+        #- x_start
+        #- v
     # 6
     lowres_noise_schedule:
       function: ray.tune.choice
@@ -105,9 +105,9 @@ search_space:
     lowres_sample_noise_level: 
       function: ray.tune.quniform
       values:
-        lower: 0.1
+        lower: 0.2
         q: 0.1
-        upper: 0.5
+        upper: 0.4
     # 8
     p2_loss_weight_gamma: 
       function: ray.tune.choice
@@ -132,110 +132,6 @@ search_space:
       function: ray.tune.quniform
       values:
         lower: 0.5
-        q: 0.05
-        upper: 1
-
-  ##
-  elucidated_imagen:
-    # Fixed Params
-    image_sizes:
-      values:
-        - 64
-        - 256
-    
-    # Text Embedding
-    text_embed_dim: 
-      values: 768
-    text_encoder_name: 
-      values: google/t5-v1_1-base
-
-    P_std: 
-      values: 1.2                              
-    S_churn: 
-      values: 80                             
-    S_tmin: 
-      values: 0.05
-    S_tmax: 
-      values: 50
-    S_noise: 
-      values: 1.003
-
-    ## Start of Model Tuning Params --------------------------------------------
-    # 1: number of ...
-    num_sample_steps: # (64, 32): 
-      function: ray.tune.qrandint
-      values:
-        - 8
-        - 16
-        - 32
-        - 64
-        - 128
-    # 2
-    cond_drop_prob: 
-      function: ray.tune.quniform
-      values:
-        lower: 0
         q: 0.1
-        upper: 0.3
-    # 3
-    P_mean:
-      function: ray.tune.quniform
-      values:
-        lower: -1.4
-        q: 0.2
-        upper: -1.0
-    # 4
-    rho:
-      function: ray.tune.quniform
-      values:
-        lower: 6
-        q: 1
-        upper: 8
-    # 5
-    sigma_data:   # min noise level
-      function: ray.tune.quniform
-      values:
-        lower: 0.4
-        q: 0.1
-        upper: 0.6
-    # 6
-    lowres_noise_schedule:
-      function: ray.tune.choice
-      values:
-        - linear
-    # 7
-    lowres_sample_noise_level: 
-      function: ray.tune.quniform
-      values:
-        lower: 0.1
-        q: 0.1
-        upper: 0.5
-    # 8
-    sigma_min: 
-      function: ray.tune.quniform
-      values:
-        lower: 0.001
-        q: 0.001
-        upper: 0.003
-    # 9
-    sigma_max: 
-      function: ray.tune.quniform
-      values:
-        lower: 60
-        q: 20
-        upper: 100
-    # 10
-    only_train_unet_number:
-      function: ray.tune.choice
-      values: 
-        - 1
-        #- 2
-        #- None
-    # 11
-    dynamic_thresholding_percentile: 
-      function: ray.tune.quniform
-      values:
-        lower: 0.5
-        q: 0.05
         upper: 1
   

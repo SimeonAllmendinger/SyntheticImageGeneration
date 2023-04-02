@@ -87,7 +87,8 @@ def test_text2images(opt: Opt,
         synthetic_images = imagen_model.trainer.sample(text_embeds=embed_batch,
                                                         return_pil_images=False,
                                                         stop_at_unet_number=unet_number,
-                                                        use_tqdm=not tqdm_disable) 
+                                                        use_tqdm=not tqdm_disable,
+                                                        cond_scale=opt.conductor['testing']['cond_scale']) 
         synthetic_images = torch.clamp(synthetic_images, min=0, max=1)
         #
         opt.logger.debug(f'synthetic_images_size: {synthetic_images.size()}')

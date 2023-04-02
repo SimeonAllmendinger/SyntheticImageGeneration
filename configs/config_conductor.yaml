@@ -59,6 +59,7 @@ testing:
   sample_seed: 10
   save_samples: False
   only_triplets: True
+  cond_scale: 5
 
   # Frechet Inception Distance
   FrechetInceptionDistance:
