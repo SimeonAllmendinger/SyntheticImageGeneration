@@ -1,4 +1,6 @@
 ## Data
+PATH_DATA_DIR: $TMP/ #$HOME/SyntheticImageGeneration/
+
 data:
   dataset: CholecT45 # CholecT45, CholecSeg8k, Both
   image_size: 480

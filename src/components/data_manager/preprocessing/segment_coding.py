@@ -15,7 +15,7 @@ def get_seg8k_df_train(opt: Opt, folder: str):
     OPT_DATA = dict(**opt.datasets['data'])
     
     #
-    path_train_df_file = os.path.join(opt.base['PATH_BASE_DIR'], OPT_DATA['CholecSeg8k']['PATH_TRAIN_DF_FILE'])
+    path_train_df_file = os.path.join(opt.datasets['PATH_DATA_DIR'], OPT_DATA['CholecSeg8k']['PATH_TRAIN_DF_FILE'])
     
     #
     if file_exists(path_train_df_file) and OPT_DATA['use_existing_data_files']:

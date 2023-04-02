@@ -29,7 +29,7 @@ class BaseImagenDataset(Dataset):
         self.use_phase_labels = opt.datasets['data']['Cholec80']['use_phase_labels']
         
         #
-        super().__init__(folder=os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR']),
+        super().__init__(folder=os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR']),
                          image_size=opt.datasets['data']['image_size'])
         
     @check_text_encoder

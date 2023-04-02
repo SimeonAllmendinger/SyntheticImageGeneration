@@ -88,8 +88,8 @@ class Prior_Model():
         
         else:
             
-            image_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
-            text_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_TEXT_EMBEDDING_DIR'])
+            image_embeds_save_dir_path = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
+            text_embeds_save_dir_path = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_TEXT_EMBEDDING_DIR'])
         
             if not opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['use_existing_embeds']:
             

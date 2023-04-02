@@ -32,7 +32,7 @@ class BaseDalle2Dataset(Dataset):
         self.batch_size = opt.conductor['trainer']['batch_size']
         
         #
-        self.folder=os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR'])
+        self.folder=os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR'])
         self.image_size=opt.datasets['data']['image_size']
         
         self.transform = T.Compose([
@@ -50,8 +50,8 @@ class BaseDalle2Dataset(Dataset):
         
     def _set_embed_paths_(self, opt: Opt):
         
-        self.image_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
-        self.text_embeds_save_dir_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_TEXT_EMBEDDING_DIR'])
+        self.image_embeds_save_dir_path = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
+        self.text_embeds_save_dir_path = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][self.DATASET]['clip']['PATH_CLIP_TEXT_EMBEDDING_DIR'])
         
     
     def _set_tokens_(self, opt: Opt):

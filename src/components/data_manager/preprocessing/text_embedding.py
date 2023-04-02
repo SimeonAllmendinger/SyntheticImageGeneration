@@ -28,7 +28,7 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
             representing OHE embeddings of triplets and phase labels.
     """
     
-    path_ohe_embedding_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['PATH_OHE_EMBEDDING_FILE'])
+    path_ohe_embedding_file = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['PATH_OHE_EMBEDDING_FILE'])
     
     if opt.datasets['data']['use_existing_data_files'] and file_exists(path_ohe_embedding_file) :
         
@@ -37,7 +37,7 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
     else:
         
         # Get dictionary .txt file of triplet mapping
-        path_dict_maps=os.path.join(opt.base['PATH_BASE_DIR'],opt.datasets['data']['CholecT45']['PATH_DICT_DIR'] + 'maps.txt')
+        path_dict_maps=os.path.join(opt.datasets['PATH_DATA_DIR'],opt.datasets['data']['CholecT45']['PATH_DICT_DIR'] + 'maps.txt')
         map_dict = _load_text_data_(opt=opt, path=path_dict_maps)
         
         if opt.datasets['data']['Cholec80']['use_phase_labels']:
@@ -87,7 +87,7 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
 
 def get_text_t5_embedding(opt: Opt, dataset_name: str, triplets_unique_list: list, ):
     
-    path_t5_embedding_file = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data'][dataset_name]['PATH_T5_EMBEDDING_FILE'])
+    path_t5_embedding_file = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][dataset_name]['PATH_T5_EMBEDDING_FILE'])
           
     if opt.datasets['data']['use_existing_data_files'] and file_exists(path_t5_embedding_file) :
         

@@ -14,7 +14,7 @@ def get_df_triplets(opt: Opt):
 
     OPT_DATA = dict(**opt.datasets['data'])
     
-    path_train_df_file = os.path.join(opt.base['PATH_BASE_DIR'], OPT_DATA['CholecT45']['PATH_TRAIN_DF_FILE'])
+    path_train_df_file = os.path.join(opt.datasets['PATH_DATA_DIR'], OPT_DATA['CholecT45']['PATH_TRAIN_DF_FILE'])
     
     if OPT_DATA['use_existing_data_files'] and file_exists(path_train_df_file):
         
@@ -26,7 +26,7 @@ def get_df_triplets(opt: Opt):
         triplets_files_paths = get_triplet_file_paths_in_dir_as_list(opt=opt)
         
         # Get dictionary triplet.txt file of triplet text mapping
-        path_triplet_dict = os.path.join(opt.base['PATH_BASE_DIR'], OPT_DATA['CholecT45']['PATH_DICT_DIR'] + 'triplet.txt')
+        path_triplet_dict = os.path.join(opt.datasets['PATH_DATA_DIR'], OPT_DATA['CholecT45']['PATH_DICT_DIR'] + 'triplet.txt')
         triplets_dict = _load_text_data_(opt=opt, path=path_triplet_dict)
         
         # Initialize triplets_text and triplets_embed_path as list
@@ -95,7 +95,7 @@ def get_df_triplets(opt: Opt):
 def get_triplet_file_paths_in_dir_as_list(opt: Opt):
 
     # Fill file_paths list with all paths of the triplets.txt files
-    glob_path = os.path.join(opt.base['PATH_BASE_DIR'], opt.datasets['data']['CholecT45']['PATH_TRIPLETS_DIR'] + "*.txt")
+    glob_path = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data']['CholecT45']['PATH_TRIPLETS_DIR'] + "*.txt")
     file_paths = sorted(glob.glob(glob_path))
     
     opt.logger.debug('file_paths:' + str(file_paths))
@@ -106,7 +106,7 @@ def get_triplet_file_paths_in_dir_as_list(opt: Opt):
 def get_single_frame_triplet_encoding(video_n :int, frame_n :int, opt: Opt):
     
     # Define load path of triplet encodings of video n
-    load_path = os.path.join(opt.base['PATH_BASE_DIR'],opt.datasets['data']['CholecT45']['PATH_TRIPLETS_DIR'] + 'VID' + f'{video_n:02d}' + '.txt')
+    load_path = os.path.join(opt.datasets['PATH_DATA_DIR'],opt.datasets['data']['CholecT45']['PATH_TRIPLETS_DIR'] + 'VID' + f'{video_n:02d}' + '.txt')
     
     # load .txt data as list
     lines = _load_text_data_(path=load_path, opt=opt)
