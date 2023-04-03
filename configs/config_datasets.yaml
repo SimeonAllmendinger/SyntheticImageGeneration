@@ -1,5 +1,5 @@
 ## Data
-PATH_DATA_DIR: $TMP/ #$HOME/SyntheticImageGeneration/
+PATH_DATA_DIR: $HOME/SyntheticImageGeneration/
 
 data:
   dataset: CholecT45 # CholecT45, CholecSeg8k, Both

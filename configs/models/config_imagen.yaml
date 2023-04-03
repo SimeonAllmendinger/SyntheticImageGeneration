@@ -58,7 +58,7 @@ imagen:
   text_encoder_name: google/t5-v1_1-base # T5: google/t5-v1_1-base | OHE: ohe_encoder
 
   # Variables
-  timesteps: 1000
+  timesteps: 800
   cond_drop_prob: 0.1
   loss_type: l2
   noise_schedules: cosine # cosine
@@ -68,4 +68,4 @@ imagen:
   p2_loss_weight_gamma: 0.5
   p2_loss_weight_k: 1
   only_train_unet_number: 1 # None
-  dynamic_thresholding_percentile: 0.95 # 0.95
+  dynamic_thresholding_percentile: 0.9 # 0.95

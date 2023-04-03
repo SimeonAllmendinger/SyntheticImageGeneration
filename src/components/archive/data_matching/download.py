@@ -52,10 +52,10 @@ if __name__ == '__main__':
     CHOLECSEG8K_URL='https://www.kaggle.com/datasets/newslab/cholecseg8k/download?datasetVersionNumber=11'
     CHOLEC80_URL = 'https://drive.google.com/drive/folders/1EzG06wlp-HG9fW6keg3nFFd9q7DNGY0g?usp=share_link'
     CHOLECT50_URL = "https://s3.unistra.fr/camma_public/datasets/cholect50/CholecT50.zip"
-    url_list = [CHOLEC80_URL]
-    name_list = ['Cholec80']
+    url_list = [CHOLECT50_URL]
+    name_list = ['CholecT50']
     
     for i, url in enumerate(url_list):
         download_dataset(download_url=url,
-                        local_path_to_zip_file=f'data/{name_list[i]}', 
+                        local_path_to_zip_file=f'data/{name_list[i]}.zip', 
                         directory_to_extract_to = f'data/{name_list[i]}'.strip('.zip'))

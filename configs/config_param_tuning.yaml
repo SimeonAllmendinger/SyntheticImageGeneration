@@ -35,7 +35,7 @@ search_space:
       function: ray.tune.choice
       values:
         - Both
-        - CholecT45
+        #- CholecT45
         #- CholecSeg8k
 
     use_existing_data_files:
@@ -45,7 +45,7 @@ search_space:
       function: ray.tune.choice
       values:
         - True
-        - False
+        #- False
 
   ##
   imagen:
@@ -68,7 +68,7 @@ search_space:
       values:
         lower: 800
         q: 200
-        upper: 1400
+        upper: 1200
     # 2
     cond_drop_prob: 
       function: ray.tune.quniform

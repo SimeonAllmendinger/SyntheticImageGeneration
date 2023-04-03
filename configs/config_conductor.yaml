@@ -2,7 +2,7 @@
 
 # Model
 model:
-  model_type: Imagen # Imagen, ElucidatedImagen, Dalle2
+  model_type: Dalle2 # Imagen, ElucidatedImagen, Dalle2
 
 # Trainer
 trainer:
@@ -24,7 +24,7 @@ trainer:
   valid_split: 0.1
   
   # Training
-  max_epochs: 5000
+  max_epochs: 20000
   unet_number: 1 # train unet 1 or 2
   param_tuning: False
   early_stopping:
