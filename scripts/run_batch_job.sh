@@ -4,6 +4,9 @@ cd
 cd SyntheticImageGeneration
 source venv/bin/activate
 
+#
+tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz $HOME/SyntheticImageGeneration/src/assets/
+
 # Install yq if it is not already installed
 if ! command -v yq &> /dev/null
 then

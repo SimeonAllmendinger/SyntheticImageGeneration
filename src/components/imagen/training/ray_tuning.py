@@ -3,6 +3,8 @@ import os
 sys.path.append(os.path.abspath(os.curdir))
 
 import json
+import yaml
+import argparse
 import numpy as np
 
 from importlib import import_module
@@ -18,6 +20,14 @@ from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
 from src.components.imagen.training.train_imagen import train_imagen
 from src.components.imagen.training.analyze_tuning import visualize_results
+
+parser = argparse.ArgumentParser(
+                prog='SyntheticImageGeneration',
+                description='Magic with Text2Image',
+                epilog='For help refer to uerib@student.kit.edu')
+
+parser.add_argument('--path_data_dir', default='$HOME/SyntheticImageGeneration/',
+                    help='PATH to data directory')
 
 
 def tune_train_params(opt: Opt):
@@ -119,6 +129,17 @@ def load_ray_func(dotpath : str):
         
         
 def main():
+    
+    #
+    with open('configs/config_datasets.yaml') as f:
+        config = yaml.safe_load(f)
+
+    args = parser.parse_args()
+    config['PATH_DATA_DIR'] = args.path_data_dir
+
+    with open('configs/config_datasets.yaml', 'w') as f:
+        yaml.dump(config, f)
+    
     opt=Opt()
     tune_train_params(opt=opt)
 

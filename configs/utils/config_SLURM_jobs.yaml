@@ -1,5 +1,5 @@
 args:
-  time: 48:00:00	                    # Wall clock time limit.
+  time: 20:00:00	                    # Wall clock time limit.
   nodes: 4                            # Number of nodes to be used.
   ntasks: 1                           # Number of tasks to be launched.
   ntasks_per_node: 1	                # Maximum count (<= 28 and <= 40 resp.) of tasks per node.

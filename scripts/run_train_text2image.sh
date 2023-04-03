@@ -1,3 +1,15 @@
-cd /home/stud01/SyntheticImageGeneration
-source /home/stud01/SyntheticImageGeneration/venv/bin/activate
-/home/stud01/SyntheticImageGeneration/venv/bin/python3 /home/stud01/SyntheticImageGeneration/src/components/imagen/training/train_imagen.py
+#!/bin/bash
+
+# Start session
+# screen -S RAY_TUNING
+
+./scripts/extract_data.sh
+
+# Activate virtual environment (venv)
+# cd /home/stud01/SyntheticImageGeneration
+source ./venv/bin/activate
+
+# Start parameter tuning
+./venv/bin/python3 ./src/components/imagen/training/train_imagen.py --path_data_dir=$TMP/SyntheticImageGeneration/
+
+cp -r $TMP/SyntheticImageGeneration/src/assets/ $HOME/SyntheticImageGeneration/src/assets/

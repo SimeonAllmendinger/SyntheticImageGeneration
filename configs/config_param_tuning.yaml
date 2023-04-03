@@ -3,14 +3,14 @@
 # ray tune parameters
 tune_params:
   scheduler:
-    max_t: 1400 # max_num_epochs
+    max_t: 2000 # max_num_epochs
     grace_period: 300 # Only stop trials at least this old in time.
     reduction_factor: 2 
   resources:
     cpu: 4 # cpus_per_trial
     gpu: 1 # gpus_per_trial
   num_samples: -1
-  time_budget_s: 160000 # if num_samples = -1
+  time_budget_s: 70000 # if num_samples = -1
   metric: valid_loss
   mode: min
 
@@ -35,7 +35,7 @@ search_space:
       function: ray.tune.choice
       values:
         - Both
-        - CholecT45
+        #- CholecT45
         #- CholecSeg8k
 
     use_existing_data_files:
@@ -45,7 +45,7 @@ search_space:
       function: ray.tune.choice
       values:
         - True
-        - False
+        #- False
 
   ##
   imagen:
@@ -68,14 +68,14 @@ search_space:
       values:
         lower: 800
         q: 200
-        upper: 1400
+        upper: 1200
     # 2
     cond_drop_prob: 
       function: ray.tune.quniform
       values:
         lower: 0.1
         q: 0.1
-        upper: 0.4
+        upper: 0.2
     # 3
     loss_type:
       function: ray.tune.choice
@@ -103,11 +103,10 @@ search_space:
         - linear
     # 7
     lowres_sample_noise_level: 
-      function: ray.tune.quniform
+      function: ray.tune.choice
       values:
-        lower: 0.2
-        q: 0.1
-        upper: 0.4
+        - 0.2
+
     # 8
     p2_loss_weight_gamma: 
       function: ray.tune.choice
@@ -131,7 +130,7 @@ search_space:
     dynamic_thresholding_percentile: 
       function: ray.tune.quniform
       values:
-        lower: 0.5
+        lower: 0.6
         q: 0.1
-        upper: 1
+        upper: 0.9
   
