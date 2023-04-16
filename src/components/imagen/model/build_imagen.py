@@ -5,7 +5,8 @@ sys.path.append(os.path.abspath(os.curdir))
 import glob
 import torch
 
-from imagen_pytorch import Unet, ImagenTrainer, ImagenConfig, ElucidatedImagenConfig,load_imagen_from_checkpoint
+from imagen_pytorch import Unet, ImagenTrainer, ImagenConfig, ElucidatedImagenConfig
+from imagen_pytorch.utils import load_imagen_from_checkpoint
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.imagen.utils.decorators import check_text_encoder, model_starter

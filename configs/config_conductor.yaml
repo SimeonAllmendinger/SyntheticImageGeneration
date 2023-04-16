@@ -2,14 +2,14 @@
 
 # Model
 model:
-  model_type: Dalle2 # Imagen, ElucidatedImagen, Dalle2
+  model_type: Imagen # Imagen, ElucidatedImagen, Dalle2
 
 # Trainer
 trainer:
   use_existing_model: False
   PATH_MODEL_CHECKPOINT: imagen_checkpoint.pt
-  PATH_MODEL_SAVE: ./src/assets/imagen/models/imagen_model_u1.pt
-  PATH_MODEL_LOAD: ./src/assets/imagen/models/imagen_model.pt
+  PATH_MODEL_SAVE: ./src/assets/imagen/models/imagen_model_u2.pt
+  PATH_MODEL_LOAD: ./src/assets/imagen/models/imagen_model_u1_best.pt
 
   # Imagen Trainer
   split_valid_from_train: False
@@ -19,17 +19,18 @@ trainer:
 
   # Dataloader
   shuffle: True
+  #num_workers: 0
   batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
   train_split: 0.9
   valid_split: 0.1
   
   # Training
-  max_epochs: 20000
-  unet_number: 1 # train unet 1 or 2
+  max_epochs: 100
+  unet_number: 2 # train unet 1 or 2
   param_tuning: False
   early_stopping:
-    usage: True
-    threshold: 1.0e-5
+    usage: False
+    threshold: 1.0e-8
     queue_length: 20
 
 
@@ -39,8 +40,8 @@ validation:
   PATH_TRAINING_SAMPLE: ./results/training/
 
   interval:
-    valid_loss: 2
-    validate_model: 5000
+    valid_loss: 20
+    validate_model: 1000000
 
   # Sampling
   display_samples: True
@@ -50,28 +51,31 @@ validation:
 
 # Testing
 testing:
-  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_model.pt
+  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_model_u2_dtp95_best.pt
   PATH_TEST_SAMPLE: ./results/testing/
   
   # Sampling
-  unet_number: 1
-  sample_quantity: 100
-  sample_seed: 10
+  unet_number: 2
+  sample_quantity: 10000
+  sample_seed: 1
   save_samples: False
+  save_image_tensors: True
   only_triplets: True
   cond_scale: 5
 
   # Frechet Inception Distance
   FrechetInceptionDistance:
+    usage: True
     feature: 2048
     reset_real_features: True
     normalize: True
 
   # Kernel Inception Distance
   KernelInceptionDistance:
+    usage: True
     feature: 2048
-    subsets: 5
-    subset_size: 20
+    subsets: 10
+    subset_size: 1000
     reset_real_features: True
     normalize: True
 

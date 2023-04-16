@@ -3,10 +3,14 @@ import os
 sys.path.append(os.path.abspath(os.curdir))
 
 import torch
+import glob
+import yaml
+import json
+import argparse
 import numpy as np
-import torchvision.transforms as transforms
 
 from datetime import datetime
+from os.path import exists as file_exists
 from PIL import Image
 from tqdm import tqdm
 from torchmetrics.image.fid import FrechetInceptionDistance
@@ -14,116 +18,200 @@ from torchmetrics.image.kid import KernelInceptionDistance
 
 
 from src.components.utils.opt.build_opt import Opt
+from src.components.utils.neptune.neptune_ai import Neptune_AI
 from src.components.imagen.model.build_imagen import Imagen_Model
-from src.components.data_manager.dataset_handler import get_train_valid_ds
+from src.components.data_manager.dataset_handler import get_train_valid_ds, get_train_valid_dl
+
+parser = argparse.ArgumentParser(
+                prog='SyntheticImageGeneration',
+                description='Magic with Text2Image',
+                epilog='For help refer to uerib@student.kit.edu')
+
+parser.add_argument('--path_data_dir',
+                    default='/home/kit/stud/uerib/SyntheticImageGeneration/',
+                    help='PATH to data directory')
 
 
 def test_text2images(opt: Opt, 
-                     sample_dataset, 
+                     sample_dataloader, 
                      imagen_model: Imagen_Model, 
                      unet_number: int, 
                      sample_quantity: int,
                      save_samples: bool,
+                     save_image_tensors: bool,
                      sample_folder: str,
                      embed_shape: tuple,
-                     epoch: int,
-                     seed: int,
-                     max_sampling_batch_size=100,
                      tqdm_disable=False
                      ):
 
-    #
-    fid = FrechetInceptionDistance(**opt.conductor['testing']['FrechetInceptionDistance']).cuda()
-    kid = KernelInceptionDistance(**opt.conductor['testing']['KernelInceptionDistance']).cuda()
+    # Start run with neptune docs
+    neptune_ai = Neptune_AI(opt=opt)
+    neptune_ai.start_neptune_run(opt)
+        
+    # Define the folder path to save synthetic and real images as .pt and .png
+    cond_scale = opt.conductor['testing']['cond_scale']
+    seed = opt.conductor['testing']['sample_seed']
+    real_image_save_path = sample_folder + f"real_images/cond_scale_{cond_scale}_dtp95/{seed:02d}/"
+    synthetic_image_save_path = sample_folder + f"synthetic_images/cond_scale_{cond_scale}_dtp95/{seed:02d}/"
     
     #
-    sample_images = torch.zeros(sample_quantity,
-                                3, # 3 color channels
-                                opt.datasets['data']['image_size'],
-                                opt.datasets['data']['image_size'])
-    
-    #
-    sample_text_embeds = torch.zeros(sample_quantity,
-                                     embed_shape[0],
-                                     embed_shape[1])
-    
-    #
-    sample_texts = list()
-    excluded_indices = set()
-    
-    #
-    np.random.seed(seed)
-    
-    for k in tqdm(range(sample_quantity), disable=tqdm_disable):
+    if save_image_tensors or save_samples:
         
         #
-        sample_index = np.random.randint(low=0, high=sample_dataset.__len__())
-        
-        while sample_index in excluded_indices:
-            sample_index = np.random.randint(low=0, high=sample_dataset.__len__())
-        
-        excluded_indices.add(sample_index)
-        
-        #
-        sample_image, sample_text_embed, sample_text = sample_dataset.__getitem__(sample_index,
-                                                                                   return_text=True)
-        sample_images[k, :, :, :] = torch.clamp(sample_image, min=0, max=1)
-        sample_text_embeds[k, :, :] = sample_text_embed
-        sample_texts.append(sample_text)
-    
-    #
-    #TODO: Sample images range of number in tensor
-    opt.logger.debug(f'sample_images_size: {sample_images.size()}')
-    opt.logger.debug(f'sample_images min | max: {sample_images.min()} | {sample_images.max()}')
-    fid.update(sample_images.cuda(), real=True)
-    kid.update(sample_images.cuda(), real=True)
-
-    num_batches = sample_text_embeds.shape[0] // max_sampling_batch_size
-    sample_text_embeds_batches = torch.split(sample_text_embeds, max_sampling_batch_size, dim=0)
-    
-    for i, embed_batch in enumerate(sample_text_embeds_batches):
-        
-        # sample an image based on the text embeddings from the cascading ddpm
-        synthetic_images = imagen_model.trainer.sample(text_embeds=embed_batch,
-                                                        return_pil_images=False,
-                                                        stop_at_unet_number=unet_number,
-                                                        use_tqdm=not tqdm_disable,
-                                                        cond_scale=opt.conductor['testing']['cond_scale']) 
-        synthetic_images = torch.clamp(synthetic_images, min=0, max=1)
-        #
-        opt.logger.debug(f'synthetic_images_size: {synthetic_images.size()}')
-        opt.logger.debug(f'synthetic_images: min | max {synthetic_images.min()} | {synthetic_images.max()}')
-
-        fid.update(synthetic_images.cuda(), real=False)
-        kid.update(synthetic_images.cuda(), real=False)       
-        
-        if save_samples: 
+        opt.logger.info('Start Loop')
+        for i, (image_batch, embed_batch, text_batch) in enumerate(tqdm(sample_dataloader, disable=tqdm_disable)):
             
+            opt.logger.info(f'image_batch: {image_batch.size()}')
+            opt.logger.info(f'embed_batch: {embed_batch.size()}')
+            opt.logger.info(f'text_batch: {text_batch}')
+            opt.logger.info(f'torch cuda info: {torch.cuda.mem_get_info()}')
+            
+            if i >= int(sample_quantity / opt.conductor['trainer']['batch_size']):
+                break
+            
+            opt.logger.info('Start Sampling')
+            # sample an image based on the text embeddings from the cascading ddpm
+            synthetic_image_batch = imagen_model.trainer.sample(text_embeds=embed_batch,
+                                                                return_pil_images=False,
+                                                                stop_at_unet_number=unet_number,
+                                                                # use_tqdm=not tqdm_disable,
+                                                                cond_scale=opt.conductor['testing']['cond_scale'])
+
             #
-            for j, synthetic_image in enumerate(synthetic_images):
+            opt.logger.info('Clamp Tensors')
+            synthetic_image_batch = torch.clamp(synthetic_image_batch, min=0, max=1)
+            real_image_batch = torch.clamp(image_batch, min=0, max=1)
+            #embed_batch = torch.clamp(embed_batch, min=0, max=1)
+
+            if save_image_tensors:
+                opt.logger.info('Save Tensors')
+                # Save image and embed tensors
+                torch.save(synthetic_image_batch, synthetic_image_save_path + f'{i:05d}_synthetic_image_batch.pt')
+                torch.save(real_image_batch, real_image_save_path + f'{i:05d}_real_image_batch.pt')
+                #torch.save(embed_batch, sample_folder + f'{i:05d}_image_batch.pt')
+            
+                # Save texts
+                with open(real_image_save_path + f'{i:05d}_text_batch.json', "w") as f:
+                    json.dump(text_batch, f)
+            
+            if save_samples:
+                # Save real images
+                save_images(opt=opt, 
+                            images=real_image_batch, 
+                            text_batch=text_batch, 
+                            batch_size=embed_shape[0], 
+                            unet_number=unet_number, 
+                            sample_folder=real_image_save_path,
+                            epoch=epoch, 
+                            i=i)
                 
-                # 
-                synthetic_image = synthetic_image.cpu().permute(1,2,0)
-                synthetic_image = synthetic_image.numpy() * 255
-                synthetic_image = Image.fromarray(synthetic_image.astype(np.uint8))
-                
-                text_index = i*max_sampling_batch_size + j
-                sample_save_path = sample_folder + f'/e{epoch}-u{unet_number}-{sample_texts[text_index]}.png'
-                synthetic_image.save(sample_save_path)
-                
-                #
-                opt.logger.info(f'Created image for {sample_texts[text_index]} at {sample_save_path}.')
+                save_images(opt=opt, 
+                            images=synthetic_image_batch, 
+                            text_batch=text_batch, 
+                            batch_size=embed_shape[0], 
+                            unet_number=unet_number, 
+                            sample_folder=synthetic_image_save_path,
+                            epoch=epoch,
+                            i=i)
         
+        #
+        opt.logger.debug(f'real_image_batch_size: {real_image_batch.size()}')
+        opt.logger.debug(f'real_image_batch min | max: {real_image_batch.min()} | {real_image_batch.max()}')
+        
+        #
+        opt.logger.debug(f'synthetic_image_batch_size: {synthetic_image_batch.size()}')
+        opt.logger.debug(f'synthetic_image_batch: min | max {synthetic_image_batch.min()} | {synthetic_image_batch.max()}')
+  
     #
-    fid_result = fid.compute()
-    kid_mean, kid_std = kid.compute()
+    if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
+        fid = FrechetInceptionDistance(**opt.conductor['testing']['FrechetInceptionDistance']).cuda()
+        opt.logger.info('FID initialized')
     
     #
-    return fid_result, (kid_mean, kid_std)
+    if opt.conductor['testing']['KernelInceptionDistance']['usage']:
+        kid = KernelInceptionDistance(**opt.conductor['testing']['KernelInceptionDistance']).cuda()
+        opt.logger.info('KID initialized')
+    
+    #
+    if opt.conductor['testing']['FrechetInceptionDistance']['usage'] or opt.conductor['testing']['KernelInceptionDistance']['usage']:
+        
+        opt.logger.info('Start updating FID / KID')
+        
+        real_image_path_list = glob.glob(real_image_save_path + '*_real_image_batch.pt')
+        synthetic_image_path_list = glob.glob(synthetic_image_save_path + '*_synthetic_image_batch.pt')
+        
+        for real_path, synthetic_path in tqdm(zip(real_image_path_list, synthetic_image_path_list), 
+                                              total=len(real_image_path_list),
+                                              disable=tqdm_disable):
+            
+            real_image_batch = torch.load(real_path)
+            synthetic_image_batch = torch.load(synthetic_path)
 
+            # Update FID
+            if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
+                fid.update(real_image_batch.cuda(), real=True)
+                fid.update(synthetic_image_batch.cuda(), real=False)
+            
+            # Update KID
+            if opt.conductor['testing']['KernelInceptionDistance']['usage']:
+                kid.update(real_image_batch.cuda(), real=True)
+                kid.update(synthetic_image_batch.cuda(), real=False)
+        
+    
+    # Compute FID
+    if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
+        fid_result = fid.compute()
+    else:
+        fid_result = None
+    
+    # Compute KID
+    if opt.conductor['testing']['KernelInceptionDistance']['usage']:
+        kid_mean, kid_std = kid.compute()
+    else:
+        kid_mean, kid_std = [None, None]
+        
+    neptune_ai.stop_neptune_run(opt=opt)
+    
+    return fid_result, (kid_mean, kid_std)
+ 
+
+def save_images(opt: Opt, 
+                images, 
+                text_batch: list, 
+                epoch: int,
+                i: int, 
+                batch_size: int, 
+                unet_number: int,
+                sample_folder: str):           
+    
+    
+    for j, image in tqdm(enumerate(images)):
+        
+        # 
+        image = image.cpu().permute(1,2,0)
+        image = image.numpy() * 255
+        image = Image.fromarray(image.astype(np.uint8))
+        
+        image_index = i*batch_size + j
+        image_save_path = sample_folder + f'{image_index:05d}_e{epoch}-u{unet_number}-{text_batch[j]}.png'
+        image.save(image_save_path)
+        
+        #
+        opt.logger.debug(f'Created image for {text_batch[j]} at {image_save_path}.') 
+        
 
 def main():
     
+    #
+    with open('configs/config_datasets.yaml') as f:
+        config = yaml.safe_load(f)
+
+    args = parser.parse_args()
+    config['PATH_DATA_DIR'] = args.path_data_dir
+
+    with open('configs/config_datasets.yaml', 'w') as f:
+        yaml.dump(config, f)
+        
     #
     opt=Opt()
     
@@ -131,32 +219,31 @@ def main():
     sample_quantity=opt.conductor['testing']['sample_quantity']
     unet_number=opt.conductor['testing']['unet_number']
     save_samples=opt.conductor['testing']['save_samples']
-    seed=opt.conductor['testing']['sample_seed']
+    save_image_tensors=opt.conductor['testing']['save_image_tensors']
     
     #
     imagen_dataset = get_train_valid_ds(opt=opt, testing=True)
-    imagen_model= Imagen_Model(opt=opt, testing=False) ### Should be True ---------------------------
-    _, sample_text_embed, _ = imagen_dataset.__getitem__(index=0, 
-                                                         return_text=True)
+    imagen_dataloader = get_train_valid_dl(opt=opt, train_dataset=imagen_dataset)
+    
+    imagen_model= Imagen_Model(opt=opt, testing=True)
+    _, sample_text_embed, _ = imagen_dataset.__getitem__(index=0)
 
     # Make results test folder with timestamp
-    timestamp = f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
+    #timestamp = f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
     test_sample_folder = os.path.join(
-        opt.base['PATH_BASE_DIR'], opt.conductor['testing']['PATH_TEST_SAMPLE'] + timestamp)
-    os.mkdir(test_sample_folder)
+        opt.base['PATH_BASE_DIR'], opt.conductor['testing']['PATH_TEST_SAMPLE'])
 
     #
     fid_result, kid_result = test_text2images(opt=opt,
-                                              sample_dataset=imagen_dataset,
+                                              sample_dataloader=imagen_dataloader,
                                               imagen_model=imagen_model,
                                               unet_number=unet_number,
                                               sample_quantity=sample_quantity,
                                               save_samples=save_samples,
+                                              save_image_tensors=save_image_tensors,
                                               sample_folder=test_sample_folder,
                                               embed_shape=sample_text_embed.shape,
-                                              epoch=0,
-                                              seed=seed,
-                                              max_sampling_batch_size=100
+                                              tqdm_disable=False
                                               )
     
     #

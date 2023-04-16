@@ -1,6 +1,4 @@
-## Data
-PATH_DATA_DIR: $HOME/SyntheticImageGeneration/
-
+PATH_DATA_DIR: /home/kit/stud/uerib/SyntheticImageGeneration/
 data:
   Cholec80:
     PATH_PHASE_LABELS: ./data/Cholec80/phase_annotations/
@@ -106,6 +104,6 @@ data:
       use_existing_embeds: true
       use_existing_encodings: true
     fps: 1
-  dataset: CholecT45
+  dataset: Both
   image_size: 480
   use_existing_data_files: true

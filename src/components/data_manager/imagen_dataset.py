@@ -21,12 +21,13 @@ from src.components.imagen.utils.decorators import check_dataset_name, check_tex
 
 class BaseImagenDataset(Dataset):
     
-    def __init__(self, dataset_name: str, opt: Opt):
+    def __init__(self, dataset_name: str, opt: Opt, return_text=False):
         
         #
         self.TEXT_ENCODER_NAME = opt.imagen['imagen']['text_encoder_name']
         self.DATASET = dataset_name
         self.use_phase_labels = opt.datasets['data']['Cholec80']['use_phase_labels']
+        self.return_text = return_text
         
         #
         super().__init__(folder=os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR']),
@@ -60,7 +61,7 @@ class BaseImagenDataset(Dataset):
         return self.df_train.shape[0]
     
     
-    def __getitem__(self, index, return_text=False):
+    def __getitem__(self, index):
         
         # Get Image
         path = os.path.join(self.folder, self.df_train['FRAME PATH'].values[index])
@@ -87,7 +88,7 @@ class BaseImagenDataset(Dataset):
             image = image.cuda()
             text_embedding = text_embedding.cuda()
         
-        if return_text:
+        if self.return_text:
             return image, text_embedding, text
         
         else:
@@ -96,8 +97,8 @@ class BaseImagenDataset(Dataset):
 
 class CholecT45ImagenDataset(BaseImagenDataset):
     
-    def __init__(self, opt: Opt):
-        super().__init__(dataset_name='CholecT45', opt=opt)
+    def __init__(self, opt: Opt, return_text=False):
+        super().__init__(dataset_name='CholecT45', opt=opt, return_text=return_text)
         
         #
         self._set_df_train_(opt=opt)                          
@@ -130,8 +131,8 @@ class CholecT45ImagenDataset(BaseImagenDataset):
 
 class CholecSeg8kImagenDataset(BaseImagenDataset):
     
-    def __init__(self, opt: Opt):
-        super().__init__(dataset_name='CholecSeg8k', opt=opt)
+    def __init__(self, opt: Opt, return_text=False):
+        super().__init__(dataset_name='CholecSeg8k', opt=opt, return_text=return_text)
         
         #
         self._set_df_train_(opt=opt)                          
@@ -160,11 +161,11 @@ class CholecSeg8kImagenDataset(BaseImagenDataset):
 
 class ConcatImagenDataset(ConcatDataset):
     
-    def __init__(self, opt: Opt):
+    def __init__(self, opt: Opt, return_text=False):
         
         #
-        cholecT45_ds = CholecT45ImagenDataset(opt=opt)
-        cholecSeg8k_ds = CholecSeg8kImagenDataset(opt=opt)
+        cholecT45_ds = CholecT45ImagenDataset(opt=opt, return_text=return_text)
+        cholecSeg8k_ds = CholecSeg8kImagenDataset(opt=opt, return_text=return_text)
         
         #
         self.DATASET = 'Both'
@@ -193,7 +194,7 @@ class ConcatImagenDataset(ConcatDataset):
         super().__init__([cholecT45_ds, cholecSeg8k_ds])
         
         
-    def __getitem__(self, index, return_text=False):
+    def __getitem__(self, index):
         if index < 0:
             if -index > len(self):
                 raise ValueError("absolute value of index should not exceed dataset length")
@@ -203,8 +204,7 @@ class ConcatImagenDataset(ConcatDataset):
             sample_idx = index
         else:
             sample_idx = index - self.cumulative_sizes[dataset_idx - 1]
-        return self.datasets[dataset_idx].__getitem__(index=sample_idx, 
-                                                      return_text=return_text)
+        return self.datasets[dataset_idx].__getitem__(index=sample_idx)
         
 
 # define a function to concatenate two strings with a space in between

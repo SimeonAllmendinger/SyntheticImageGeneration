@@ -16,38 +16,40 @@ from src.components.data_manager.dalle2_dataset import CholecSeg8kDalle2Dataset,
 class BaseDataLoader(DataLoader):
     
     def __init__(self, opt: Opt, dataset):
-        
+
         super().__init__(dataset,
-                         batch_size=opt.conductor['trainer']['batch_size'], 
-                         shuffle=opt.conductor['trainer']['shuffle'])
-        
-    
-def get_cholect45_dataset(opt: Opt):
+                         batch_size=opt.conductor['trainer']['batch_size'],
+                         shuffle=opt.conductor['trainer']['shuffle'],
+                         #num_workers=opt.conductor['trainer']['num_workers'],
+                         worker_init_fn=lambda id: np.random.seed(id*opt.conductor['testing']['sample_seed']))
+
+
+def get_cholect45_dataset(opt: Opt, return_text: bool):
         
         if opt.conductor['model']['model_type'] == 'Imagen':
-            return CholecT45ImagenDataset(opt=opt)
+            return CholecT45ImagenDataset(opt=opt, return_text=return_text)
         elif opt.conductor['model']['model_type'] == 'ElucidatedImagen':
-            return CholecT45ImagenDataset(opt=opt)
+            return CholecT45ImagenDataset(opt=opt, return_text=return_text)
         elif opt.conductor['model']['model_type'] == 'Dalle2':
             return CholecT45Dalle2Dataset(opt=opt)
 
 
-def get_cholecseg8k_dataset(opt: Opt):
+def get_cholecseg8k_dataset(opt: Opt, return_text: bool):
         
     if opt.conductor['model']['model_type'] == 'Imagen':
-        return CholecSeg8kImagenDataset(opt=opt)
+        return CholecSeg8kImagenDataset(opt=opt, return_text=return_text)
     elif opt.conductor['model']['model_type'] == 'ElucidatedImagen':
-        return CholecSeg8kImagenDataset(opt=opt)
+        return CholecSeg8kImagenDataset(opt=opt, return_text=return_text)
     elif opt.conductor['model']['model_type'] == 'Dalle2':
        return CholecSeg8kDalle2Dataset(opt=opt)
 
 
-def get_concat_dataset(opt: Opt):
+def get_concat_dataset(opt: Opt, return_text: bool):
         
     if opt.conductor['model']['model_type'] == 'Imagen':
-        return ConcatImagenDataset(opt=opt)
+        return ConcatImagenDataset(opt=opt, return_text=return_text)
     elif opt.conductor['model']['model_type'] == 'ElucidatedImagen':
-        return ConcatImagenDataset(opt=opt)
+        return ConcatImagenDataset(opt=opt, return_text=return_text)
     elif opt.conductor['model']['model_type'] == 'Dalle2':
         return ConcatDalle2Dataset(opt=opt)
         
@@ -71,14 +73,17 @@ def get_train_valid_ds(opt: Opt, testing=False):
     """
     
     # Check which dataset is specified in the opt object
-    if opt.datasets['data']['dataset'] == 'CholecT45' or (testing and opt.conductor['testing']['only_triplets']):
-        imagen_dataset = get_cholect45_dataset(opt=opt)
+    if testing and opt.conductor['testing']['only_triplets']:
+        imagen_dataset = get_cholect45_dataset(opt=opt, return_text=True)
+        
+    elif opt.datasets['data']['dataset'] == 'CholecT45':
+        imagen_dataset = get_cholect45_dataset(opt=opt, return_text=False)
     
     elif opt.datasets['data']['dataset'] == 'CholecSeg8k':
-        imagen_dataset = get_cholecseg8k_dataset(opt=opt)
+        imagen_dataset = get_cholecseg8k_dataset(opt=opt, return_text=False)
     
     elif opt.datasets['data']['dataset'] == 'Both':
-        imagen_dataset = get_concat_dataset(opt=opt)
+        imagen_dataset = get_concat_dataset(opt=opt, return_text=False)
     
     if testing:
         
@@ -167,7 +172,7 @@ def visualize_data_items(opt: Opt, dataset, quantity=2):
         
         # Example image with random index
         index = np.random.randint(low=0, high=40000)
-        image, embed, text = dataset.__getitem__(index=index, return_text=True)
+        image, embed, text = dataset.__getitem__(index=index)
         
         opt.logger.info(f'Embedding Shape: {embed.size()}')
 

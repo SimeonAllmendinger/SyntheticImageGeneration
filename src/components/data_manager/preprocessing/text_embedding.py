@@ -85,7 +85,7 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
     return triplet_ohe_embeds
 
 
-def get_text_t5_embedding(opt: Opt, dataset_name: str, triplets_unique_list: list, ):
+def get_text_t5_embedding(opt: Opt, dataset_name: str, triplets_unique_list: list):
     
     path_t5_embedding_file = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][dataset_name]['PATH_T5_EMBEDDING_FILE'])
           

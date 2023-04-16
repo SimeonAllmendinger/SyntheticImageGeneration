@@ -24,7 +24,8 @@ parser = argparse.ArgumentParser(
                 description='Magic with Text2Image',
                 epilog='For help refer to uerib@student.kit.edu')
 
-parser.add_argument('--path_data_dir', default='$HOME/SyntheticImageGeneration/',
+parser.add_argument('--path_data_dir',
+                    default='/home/kit/stud/uerib/SyntheticImageGeneration/',
                     help='PATH to data directory')
 
 def train_imagen(tune_config=None, reporter=None):

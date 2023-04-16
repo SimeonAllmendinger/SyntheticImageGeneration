@@ -1,16 +1,19 @@
 ## RAY TUNING
 
+restore_tuner: False
+PATH_RESTORE_TUNER: /home/kit/stud/uerib/SyntheticImageGeneration/results/tuning/experiment_2023-04-05-22:49:15
+
 # ray tune parameters
 tune_params:
   scheduler:
-    max_t: 2000 # max_num_epochs
-    grace_period: 300 # Only stop trials at least this old in time.
+    max_t: 1000 # max_num_epochs
+    grace_period: 200 # Only stop trials at least this old in time.
     reduction_factor: 2 
   resources:
     cpu: 4 # cpus_per_trial
     gpu: 1 # gpus_per_trial
   num_samples: -1
-  time_budget_s: 70000 # if num_samples = -1
+  time_budget_s: 170000 # if num_samples = -1
   metric: valid_loss
   mode: min
 
@@ -68,14 +71,13 @@ search_space:
       values:
         lower: 800
         q: 200
-        upper: 1200
+        upper: 1400
     # 2
     cond_drop_prob: 
-      function: ray.tune.quniform
+      function: ray.tune.choice
       values:
-        lower: 0.1
-        q: 0.1
-        upper: 0.2
+        - 0.1
+
     # 3
     loss_type:
       function: ray.tune.choice
@@ -103,9 +105,11 @@ search_space:
         - linear
     # 7
     lowres_sample_noise_level: 
-      function: ray.tune.choice
+      function: ray.tune.quniform
       values:
-        - 0.2
+        lower: 0.1
+        q: 0.1
+        upper: 0.3
 
     # 8
     p2_loss_weight_gamma: 
@@ -123,14 +127,14 @@ search_space:
       function: ray.tune.choice
       values: 
         - 1
-        #- 2
-        #- None
+        - 2
+        - None
 
     # 11
     dynamic_thresholding_percentile: 
       function: ray.tune.quniform
       values:
-        lower: 0.6
+        lower: 0.7
         q: 0.1
         upper: 0.9
   

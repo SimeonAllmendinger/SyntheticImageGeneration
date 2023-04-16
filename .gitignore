@@ -28,7 +28,7 @@ src/assets/imagen/text_embeddings/*.pkl
 src/assets/imagen/triplets/*.json
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__*
 *.py[cod]
 *$py.class
 

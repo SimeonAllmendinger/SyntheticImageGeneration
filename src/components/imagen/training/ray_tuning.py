@@ -44,35 +44,43 @@ def tune_train_params(opt: Opt):
     scheduler = ASHAScheduler(**opt.param_tuning['tune_params']['scheduler'])
 
     #
-    tuner = tune.Tuner(
+    if opt.param_tuning['restore_tuner']:
         
-        #
-        tune.with_resources(
-            trainable=train_imagen,
-            resources=dict(**opt.param_tuning['tune_params']['resources'])
-        ),
+        tuner=tune.Tuner.restore(
+            path=opt.param_tuning['PATH_RESTORE_TUNER']
+        )
         
-        #
-        tune_config=tune.TuneConfig(
-            metric=opt.param_tuning['tune_params']['metric'],
-            mode=opt.param_tuning['tune_params']['mode'],
-            scheduler=scheduler,
-            num_samples=opt.param_tuning['tune_params']['num_samples'],
-            time_budget_s=opt.param_tuning['tune_params']['time_budget_s'],
-            search_alg=OptunaSearch()
-        ),
-        
-        #
-        run_config=air.RunConfig(
-            local_dir=custom_dir,
-            name=custom_name,
-            log_to_file=True,
-            callbacks=[WandbLoggerCallback(**opt.wandb)]
-        ),
-        
-        #
-        param_space=ray_tuning_params,
-    )
+    else:
+        tuner = tune.Tuner(
+            
+            #
+            tune.with_resources(
+                trainable=train_imagen,
+                resources=dict(**opt.param_tuning['tune_params']['resources'])
+            ),
+            
+            #
+            tune_config=tune.TuneConfig(
+                metric=opt.param_tuning['tune_params']['metric'],
+                mode=opt.param_tuning['tune_params']['mode'],
+                scheduler=scheduler,
+                num_samples=opt.param_tuning['tune_params']['num_samples'],
+                time_budget_s=opt.param_tuning['tune_params']['time_budget_s'],
+                search_alg=OptunaSearch()
+            ),
+            
+            #
+            run_config=air.RunConfig(
+                local_dir=custom_dir,
+                name=custom_name,
+                log_to_file=True,
+                failure_config=air.FailureConfig(fail_fast=True),
+                callbacks=[WandbLoggerCallback(**opt.wandb)]
+            ),
+            
+            #
+            param_space=ray_tuning_params,
+        )
     
     #
     results = tuner.fit()
@@ -85,7 +93,8 @@ def tune_train_params(opt: Opt):
     opt.logger.info("Best trial config: {}".format(best_result.config))
     opt.logger.info("Best trial final validation loss: {}".format(best_result.metrics["valid_loss"]))
 
-    visualize_results(results=results, experiment_path=os.path.join(custom_dir,custom_name))
+    if not opt.param_tuning['restore_tuner']:
+        visualize_results(results=results, experiment_path=os.path.join(custom_dir,custom_name))
 
 
 def get_ray_tuning_params(opt: Opt):
