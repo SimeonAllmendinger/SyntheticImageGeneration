@@ -13,7 +13,7 @@ tune_params:
     cpu: 4 # cpus_per_trial
     gpu: 1 # gpus_per_trial
   num_samples: -1
-  time_budget_s: 170000 # if num_samples = -1
+  time_budget_s: 3600 # if num_samples = -1
   metric: valid_loss
   mode: min
 

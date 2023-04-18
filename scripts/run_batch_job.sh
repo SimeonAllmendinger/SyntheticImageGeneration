@@ -3,7 +3,10 @@
 #
 cd 
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz SyntheticImageGeneration/src/assets/
-#tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/components.tgz SyntheticImageGeneration/src/components/
+tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/components.tgz SyntheticImageGeneration/src/components/
+#tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/venv.tgz SyntheticImageGeneration/venv/
+tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/configs.tgz SyntheticImageGeneration/configs/
+#tar -cvzf $(ws_find data-ssd)/default_config.tgz .cache/huggingface/accelerate/default_config.yaml
 
 cd SyntheticImageGeneration
 source venv/bin/activate

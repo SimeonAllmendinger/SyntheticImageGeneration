@@ -11,7 +11,6 @@ import numpy as np
 from datetime import datetime
 from tqdm import tqdm
 from ray.air import session
-from ray.air.checkpoint import Checkpoint
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
@@ -27,6 +26,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--path_data_dir',
                     default='/home/kit/stud/uerib/SyntheticImageGeneration/',
                     help='PATH to data directory')
+
 
 def train_imagen(tune_config=None, reporter=None):
     

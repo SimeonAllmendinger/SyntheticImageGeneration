@@ -5,8 +5,7 @@ sys.path.append(os.path.abspath(os.curdir))
 import glob
 import torch
 
-from imagen_pytorch import Unet, ImagenTrainer, ImagenConfig, ElucidatedImagenConfig
-from imagen_pytorch.utils import load_imagen_from_checkpoint
+from imagen_pytorch import Unet, ImagenTrainer, ImagenConfig, ElucidatedImagenConfig, load_imagen_from_checkpoint
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.imagen.utils.decorators import check_text_encoder, model_starter
@@ -82,7 +81,7 @@ class Imagen_Model():
                                            **opt.imagen['imagen']
                                            ).create()
 
-        if torch.cuda.is_available():
+        if torch.cuda.is_available() and not opt.conductor['trainer']['multi_gpu']:
             self.imagen_model = self.imagen_model.cuda()
 
 
@@ -94,7 +93,7 @@ class Imagen_Model():
                                 dl_tuple_output_keywords_names = opt.conductor['trainer']['dl_tuple_output_keywords_names']
                                 )
             
-        if torch.cuda.is_available():
+        if torch.cuda.is_available() and not opt.conductor['trainer']['multi_gpu']:
             self.trainer = self.trainer.cuda()
     
 

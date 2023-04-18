@@ -13,6 +13,7 @@ from src.components.utils.opt.build_opt import Opt
 from src.components.data_manager.imagen_dataset import CholecSeg8kImagenDataset, CholecT45ImagenDataset, ConcatImagenDataset
 from src.components.data_manager.dalle2_dataset import CholecSeg8kDalle2Dataset, CholecT45Dalle2Dataset, ConcatDalle2Dataset
 
+
 class BaseDataLoader(DataLoader):
     
     def __init__(self, opt: Opt, dataset):
@@ -20,8 +21,9 @@ class BaseDataLoader(DataLoader):
         super().__init__(dataset,
                          batch_size=opt.conductor['trainer']['batch_size'],
                          shuffle=opt.conductor['trainer']['shuffle'],
-                         #num_workers=opt.conductor['trainer']['num_workers'],
-                         worker_init_fn=lambda id: np.random.seed(id*opt.conductor['testing']['sample_seed']))
+                         num_workers=opt.conductor['trainer']['num_workers'],
+                         worker_init_fn=lambda id: np.random.seed(id*opt.conductor['testing']['sample_seed'])
+                         )
 
 
 def get_cholect45_dataset(opt: Opt, return_text: bool):
