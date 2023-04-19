@@ -45,7 +45,7 @@ validation:
   PATH_TRAINING_SAMPLE: ./results/training/
 
   interval:
-    valid_loss: 40
+    valid_loss: 20
     validate_model: 1000000
 
   # Sampling

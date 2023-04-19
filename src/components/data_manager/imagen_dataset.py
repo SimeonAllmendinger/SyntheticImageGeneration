@@ -29,7 +29,9 @@ class BaseImagenDataset(Dataset):
         self.use_phase_labels = opt.datasets['data']['Cholec80']['use_phase_labels']
         self.return_text = return_text
         self.multi_gpu = opt.conductor['trainer']['multi_gpu']
-                
+                self.return_text = return_text
+        self.multi_gpu = opt.conductor['trainer']['multi_gpu']
+        
         #
         super().__init__(folder=os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR']),
                          image_size=opt.datasets['data']['image_size'])
@@ -85,7 +87,7 @@ class BaseImagenDataset(Dataset):
             text_embedding = self.text_embeds[index_unique]
 
         # Check gpu availability    
-        if torch.cuda.is_available() and not self.multi_gpu and not self.multi_gpu:
+        if torch.cuda.is_available() and not self.multi_gpu and not self.multi_gpu and not self.multi_gpu:
             image = image.cuda()
             text_embedding = text_embedding.cuda()
         
