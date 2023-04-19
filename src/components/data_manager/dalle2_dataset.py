@@ -43,7 +43,7 @@ class BaseDalle2Dataset(Dataset):
 
         #
         *_, self.preprocess = open_clip.create_model_and_transforms(opt.dalle2['clip']['model_name'], 
-                                                               pretrained=opt.dalle2['clip']['pretrained'])
+                                                                    pretrained=opt.dalle2['clip']['pretrained'])
         self.tokenizer = open_clip.get_tokenizer(model_name=opt.dalle2['clip']['model_name'])
         self._set_embed_paths_(opt=opt)
         

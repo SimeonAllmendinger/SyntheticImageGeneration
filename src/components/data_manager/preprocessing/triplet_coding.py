@@ -15,6 +15,7 @@ def get_df_triplets(opt: Opt):
     OPT_DATA = dict(**opt.datasets['data'])
     
     path_train_df_file = os.path.join(opt.datasets['PATH_DATA_DIR'], OPT_DATA['CholecT45']['PATH_TRAIN_DF_FILE'])
+    opt.logger.debug(path_train_df_file)
     
     if OPT_DATA['use_existing_data_files'] and file_exists(path_train_df_file):
         

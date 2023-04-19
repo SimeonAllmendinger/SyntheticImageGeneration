@@ -1,6 +1,8 @@
 src/components/data_manager/settings.yml
 src/assets/data/*
-src/assets/models/*
+src/assets/dalle2/*
+src/assets/imagen/*
+src/assets/rendevouz/*
 data/*
 results/*.png
 results/tuning/*
@@ -14,6 +16,7 @@ configs/config_wandb.yaml
 homebrew
 scripts/stderr.txt
 scripts/stdout.txt
+**__pycache__**
 
 # Neptune-Client
 .neptune
@@ -28,7 +31,7 @@ src/assets/imagen/text_embeddings/*.pkl
 src/assets/imagen/triplets/*.json
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__*
 *.py[cod]
 *$py.class
 

@@ -3,13 +3,15 @@ import os
 sys.path.append(os.path.abspath(os.curdir))
 
 import ray
+import yaml
+import argparse
 import pandas as pd
 import numpy as np
 
 from datetime import datetime
 from tqdm import tqdm
 from ray.air import session
-from ray.air.checkpoint import Checkpoint
+from accelerate.utils import find_executable_batch_size
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
@@ -17,7 +19,16 @@ from src.components.imagen.model.build_imagen import Imagen_Model
 from src.components.data_manager.dataset_handler import get_train_valid_ds, get_train_valid_dl
 from src.components.imagen.testing.test_imagen import test_text2images
 
+parser = argparse.ArgumentParser(
+                prog='SyntheticImageGeneration',
+                description='Magic with Text2Image',
+                epilog='For help refer to uerib@student.kit.edu')
 
+parser.add_argument('--path_data_dir',
+                    default='/home/stud01/SyntheticImageGeneration/',
+                    help='PATH to data directory')
+
+#@find_executable_batch_size(starting_batch_size=Opt().conductor['trainer']['batch_size'])
 def train_imagen(tune_config=None, reporter=None):
     
     #
@@ -200,6 +211,17 @@ def train_imagen(tune_config=None, reporter=None):
     
     
 def main():
+    
+    #
+    with open('configs/config_datasets.yaml') as f:
+        config = yaml.safe_load(f)
+
+    args = parser.parse_args()
+    config['PATH_DATA_DIR'] = args.path_data_dir
+
+    with open('configs/config_datasets.yaml', 'w') as f:
+        yaml.dump(config, f)
+    
     train_imagen()
 
 

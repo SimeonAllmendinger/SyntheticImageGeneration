@@ -38,7 +38,7 @@ class Opt():
         self.param_tuning = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_param_tuning.yaml'))
         self.conductor = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_conductor.yaml'))
         self.datasets = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/config_datasets.yaml'))
-        
+        self.logger.debug(f'DATA_PATH: {self.datasets["PATH_DATA_DIR"]}')
         self.logger.debug('All options gathered')
         
 
