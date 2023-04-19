@@ -11,6 +11,7 @@ import numpy as np
 from datetime import datetime
 from tqdm import tqdm
 from ray.air import session
+from accelerate.utils import find_executable_batch_size
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
@@ -27,7 +28,7 @@ parser.add_argument('--path_data_dir',
                     default='/home/kit/stud/uerib/SyntheticImageGeneration/',
                     help='PATH to data directory')
 
-
+#@find_executable_batch_size(starting_batch_size=Opt().conductor['trainer']['batch_size'])
 def train_imagen(tune_config=None, reporter=None):
     
     #

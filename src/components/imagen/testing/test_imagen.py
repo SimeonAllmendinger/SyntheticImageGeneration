@@ -15,7 +15,7 @@ from PIL import Image
 from tqdm import tqdm
 from torchmetrics.image.fid import FrechetInceptionDistance
 from torchmetrics.image.kid import KernelInceptionDistance
-
+from cleanfid import fid as clean_fid
 
 from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
@@ -41,7 +41,8 @@ def test_text2images(opt: Opt,
                      save_image_tensors: bool,
                      sample_folder: str,
                      embed_shape: tuple,
-                     tqdm_disable=False
+                     tqdm_disable=False,
+                     epoch=0,
                      ):
 
     # Start run with neptune docs
@@ -124,12 +125,12 @@ def test_text2images(opt: Opt,
   
     #
     if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
-        fid = FrechetInceptionDistance(**opt.conductor['testing']['FrechetInceptionDistance']).cuda()
+        fid = FrechetInceptionDistance(**opt.conductor['testing']['FrechetInceptionDistance']['params']).cuda()
         opt.logger.info('FID initialized')
     
     #
     if opt.conductor['testing']['KernelInceptionDistance']['usage']:
-        kid = KernelInceptionDistance(**opt.conductor['testing']['KernelInceptionDistance']).cuda()
+        kid = KernelInceptionDistance(**opt.conductor['testing']['KernelInceptionDistance']['params']).cuda()
         opt.logger.info('KID initialized')
     
     #
@@ -161,15 +162,29 @@ def test_text2images(opt: Opt,
     # Compute FID
     if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
         fid_result = fid.compute()
+        opt.logger.info(f'fid_result: {fid_result}')
     else:
         fid_result = None
     
     # Compute KID
     if opt.conductor['testing']['KernelInceptionDistance']['usage']:
         kid_mean, kid_std = kid.compute()
+        opt.logger.info(f'kid_result: {kid_mean}, {kid_std}')
     else:
         kid_mean, kid_std = [None, None]
-        
+    
+    if opt.conductor['testing']['CleanFID']['usage']:
+        clean_fid_score = clean_fid.compute_fid(**opt.conductor['testing']['CleanFID']['params'])
+        opt.logger.info(f'clean_fid_score: {clean_fid_score}')
+    else:
+        clean_fid_score=None
+         
+    if opt.conductor['testing']['FrechetCLIPDistance']['usage']:
+        fcd_score = clean_fid.compute_fid(**opt.conductor['testing']['CleanFID']['params'])
+        opt.logger.info(f'fcd_score: {fcd_score}')
+    else:
+        fcd_score = None
+         
     neptune_ai.stop_neptune_run(opt=opt)
     
     return fid_result, (kid_mean, kid_std)
@@ -193,7 +208,7 @@ def save_images(opt: Opt,
         image = Image.fromarray(image.astype(np.uint8))
         
         image_index = i*batch_size + j
-        image_save_path = sample_folder + f'{image_index:05d}_e{epoch}-u{unet_number}-{text_batch[j]}.png'
+        image_save_path = sample_folder + f'images/{image_index:05d}_e{epoch}-u{unet_number}-{text_batch[j]}.png'
         image.save(image_save_path)
         
         #

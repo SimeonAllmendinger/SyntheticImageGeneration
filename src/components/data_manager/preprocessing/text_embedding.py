@@ -91,7 +91,7 @@ def get_text_t5_embedding(opt: Opt, dataset_name: str, triplets_unique_list: lis
           
     if opt.datasets['data']['use_existing_data_files'] and file_exists(path_t5_embedding_file) :
         
-        triplet_embeds = torch.load(path_t5_embedding_file)
+        triplet_embeds = torch.load(path_t5_embedding_file, map_location=torch.device('cpu'))
 
     else:
         

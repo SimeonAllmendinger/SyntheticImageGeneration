@@ -194,19 +194,6 @@ class ConcatImagenDataset(ConcatDataset):
         #
         super().__init__([cholecT45_ds, cholecSeg8k_ds])
         
-        
-    def __getitem__(self, index):
-        if index < 0:
-            if -index > len(self):
-                raise ValueError("absolute value of index should not exceed dataset length")
-            index = len(self) + index
-        dataset_idx = bisect.bisect_right(self.cumulative_sizes, index)
-        if dataset_idx == 0:
-            sample_idx = index
-        else:
-            sample_idx = index - self.cumulative_sizes[dataset_idx - 1]
-        return self.datasets[dataset_idx].__getitem__(index=sample_idx)
-        
 
 # define a function to concatenate two strings with a space in between
 def concatenate_strings(s1, s2):

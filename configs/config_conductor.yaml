@@ -25,7 +25,7 @@ trainer:
   # Dataloader
   shuffle: True
   num_workers: 2
-  batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
+  batch_size: 21 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2
   train_split: 0.9
   valid_split: 0.1
   
@@ -71,16 +71,41 @@ testing:
   # Frechet Inception Distance
   FrechetInceptionDistance:
     usage: True
-    feature: 2048
-    reset_real_features: True
-    normalize: True
+    params:
+      feature: 2048
+      reset_real_features: True
+      normalize: True
 
   # Kernel Inception Distance
   KernelInceptionDistance:
     usage: True
-    feature: 2048
-    subsets: 10
-    subset_size: 1000
-    reset_real_features: True
-    normalize: True
+    params:
+      feature: 2048
+      subsets: 10
+      subset_size: 1000
+      reset_real_features: True
+      normalize: True
+
+  # Clean Fréchet Inception Distance
+  CleanFID:
+    usage: False
+    params:
+      fdir1: './results/testing/real_images/cond_scale_5_dtp95/01/images/'
+      fdir2: './results/testing/synthetic_images/cond_scale_5_dtp95/01/images/'
+      mode: clean
+      model_name: inceptionv3
+      num_workers: 12
+      batch_size: 36 
+
+  # Fréchet CLIP Distance
+  FrechetCLIPDistance:
+    usage: False
+    params:
+      fdir1: './results/testing/real_images/cond_scale_5_dtp95/01/images/'
+      fdir2: './results/testing/synthetic_images/cond_scale_5_dtp95/01/images/'
+      mode: clean
+      model_name: clip_vit_b_32
+      num_workers: 12
+      batch_size: 36 
+
 
