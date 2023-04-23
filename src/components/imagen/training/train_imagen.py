@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser(
                 epilog='For help refer to uerib@student.kit.edu')
 
 parser.add_argument('--path_data_dir',
-                    default='/home/kit/stud/uerib/SyntheticImageGeneration/',
+                    default='/home/stud01/SyntheticImageGeneration/',
                     help='PATH to data directory')
 
 #@find_executable_batch_size(starting_batch_size=Opt().conductor['trainer']['batch_size'])

@@ -27,6 +27,7 @@ class BaseImagenDataset(Dataset):
         self.TEXT_ENCODER_NAME = opt.imagen['imagen']['text_encoder_name']
         self.DATASET = dataset_name
         self.use_phase_labels = opt.datasets['data']['Cholec80']['use_phase_labels']
+        
         self.return_text = return_text
         self.multi_gpu = opt.conductor['trainer']['multi_gpu']
         

@@ -1,3 +1,4 @@
+#!/bin/bash
 
 if [ ! -d "$TMP/SyntheticImageGeneration/" ]; then
     mkdir $TMP/SyntheticImageGeneration/

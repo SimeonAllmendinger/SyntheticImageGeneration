@@ -29,7 +29,7 @@ parser = argparse.ArgumentParser(
                 epilog='For help refer to uerib@student.kit.edu')
 
 parser.add_argument('--path_data_dir',
-                    default='/home/kit/stud/uerib/SyntheticImageGeneration/',
+                    default='/home/stud01/SyntheticImageGeneration/',
                     help='PATH to data directory')
 
 
@@ -91,16 +91,16 @@ def test_text2images(opt: Opt,
             
             opt.logger.info('Start Sampling')
             # sample an image based on the text embeddings from the cascading ddpm
-            synthetic_image_batch = imagen_model.trainer.sample(text_embeds=embed_batch,
+            synthetic_image_batch = imagen_model.trainer.sample(text_embeds=embed_batch.cuda(),
                                                                 return_pil_images=False,
                                                                 stop_at_unet_number=unet_number,
                                                                 # use_tqdm=not tqdm_disable,
-                                                                cond_scale=opt.conductor['testing']['cond_scale'])
+                                                                cond_scale=opt.conductor['testing']['cond_scale']).cuda()
 
             #
             opt.logger.info('Clamp Tensors')
-            synthetic_image_batch = torch.clamp(synthetic_image_batch, min=0, max=1)
-            real_image_batch = torch.clamp(image_batch, min=0, max=1)
+            synthetic_image_batch = torch.clamp(synthetic_image_batch.cuda(), min=0, max=1)
+            real_image_batch = torch.clamp(image_batch.cuda(), min=0, max=1)
             #embed_batch = torch.clamp(embed_batch, min=0, max=1)
 
             if save_image_tensors:

@@ -1,4 +1,4 @@
-PATH_DATA_DIR: /scratch/slurm_tmpdir/job_22032935/SyntheticImageGeneration/
+PATH_DATA_DIR: /home/stud01/SyntheticImageGeneration/
 data:
   Cholec80:
     PATH_PHASE_LABELS: ./data/Cholec80/phase_annotations/

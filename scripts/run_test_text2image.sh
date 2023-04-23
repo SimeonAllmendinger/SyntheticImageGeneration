@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start session
-# screen -S RAY_TUNING
+# screen -S TESTING
 
 #./scripts/extract_data.sh
 
