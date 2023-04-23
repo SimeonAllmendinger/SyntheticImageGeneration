@@ -83,11 +83,6 @@ class BaseImagenDataset(Dataset):
                 
             index_unique = self.text_unique_list.index(text)
             text_embedding = self.text_embeds[index_unique]
-
-        # Check gpu availability    
-        if torch.cuda.is_available() and not self.multi_gpu:
-            image = image.cuda()
-            text_embedding = text_embedding.cuda()
         
         if self.return_text:
             return image, text_embedding, text

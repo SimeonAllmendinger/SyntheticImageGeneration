@@ -46,6 +46,11 @@ if [ ! -d "$TMP/SyntheticImageGeneration/configs/" ]; then
     tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/configs.tgz
 fi
 
+## Scripts
+if [ ! -d "$TMP/SyntheticImageGeneration/scripts/" ]; then
+    tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/scripts.tgz
+fi
+
 ## Virtual Environment
 if [ ! -d "$TMP/SyntheticImageGeneration/venv/" ]; then
     tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/venv.tgz
@@ -62,6 +67,7 @@ cd $TMP/SyntheticImageGeneration/
 source ./venv/bin/activate
 
 # Start parameter tuning
-accelerate launch ./src/components/imagen/training/train_imagen.py --path_data_dir=$TMP/SyntheticImageGeneration/
+#accelerate launch ./src/components/imagen/training/train_imagen.py --path_data_dir=$TMP/SyntheticImageGeneration/
+./venv/bin/python3 ./src/components/imagen/training/train_imagen.py --path_data_dir=$TMP/SyntheticImageGeneration/
 
 cp -r $TMP/SyntheticImageGeneration/src/assets/elucidated_imagen/models $HOME/SyntheticImageGeneration/src/assets/elucidated_imagen/

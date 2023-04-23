@@ -37,11 +37,11 @@ class Imagen_Model():
             self.is_elucidated = False
         
         self.testing = testing
+        
+        self.unet1, self.unet2 = _get_unets_(opt=opt, elucidated=self.is_elucidated)
                 
         self._set_imagen_(opt=opt)
         self._set_trainer_(opt=opt)
-        
-        self.unet1, self.unet2 = _get_unets_(opt=opt, elucidated=self.is_elucidated)
         
         if opt.conductor['trainer']['early_stopping']['usage']:
             self.loss_queue = EarlyStopping(opt_early_stopping=opt.conductor['trainer']['early_stopping'])

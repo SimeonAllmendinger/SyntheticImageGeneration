@@ -93,10 +93,17 @@ def train_imagen(tune_config=None, reporter=None):
         neptune_ai = Neptune_AI(opt=opt)
         neptune_ai.start_neptune_run(opt)
         
-        # Upload model configs to neptune_ai
-        neptune_ai.add_param_neptune_run(opt=opt, 
-                                        data_item=opt.imagen,
-                                        neptune_run_save_path='model_configs')
+        if opt.conductor['model']['model_type'] == 'Imagen':
+            # Upload model configs to neptune_ai
+            neptune_ai.add_param_neptune_run(opt=opt, 
+                                            data_item=opt.imagen,
+                                            neptune_run_save_path='model_configs')
+        
+        elif opt.conductor['model']['model_type'] == 'ElucidatedImagen':
+            # Upload model configs to neptune_ai
+            neptune_ai.add_param_neptune_run(opt=opt, 
+                                            data_item=opt.elucidated_imagen,
+                                            neptune_run_save_path='model_configs')
         
         # Upload configs to neptune_ai
         neptune_ai.add_param_neptune_run(opt=opt, 

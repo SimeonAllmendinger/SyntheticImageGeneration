@@ -104,6 +104,6 @@ data:
       use_existing_embeds: true
       use_existing_encodings: true
     fps: 1
-  dataset: Both
+  dataset: CholecT45
   image_size: 480
   use_existing_data_files: true

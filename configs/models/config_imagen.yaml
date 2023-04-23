@@ -64,6 +64,8 @@ imagen:
   noise_schedules: cosine # cosine
   pred_objectives: noise # noise
   lowres_noise_schedule: linear # linear
-  lowres_sample_noise_level: 0.2
+  lowres_sample_noise_level: 0.2 # 0.2
+  p2_loss_weight_gamma: 0.5 # 0.5
+  p2_loss_weight_k: 1 # 1
   only_train_unet_number: None # None
   dynamic_thresholding_percentile: 0.95 # 0.95

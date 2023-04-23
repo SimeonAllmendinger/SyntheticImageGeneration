@@ -8,6 +8,7 @@ import yaml
 import json
 import argparse
 import numpy as np
+import pandas as pd
 
 from datetime import datetime
 from os.path import exists as file_exists
@@ -52,8 +53,23 @@ def test_text2images(opt: Opt,
     # Define the folder path to save synthetic and real images as .pt and .png
     cond_scale = opt.conductor['testing']['cond_scale']
     seed = opt.conductor['testing']['sample_seed']
-    real_image_save_path = sample_folder + f"real_images/cond_scale_{cond_scale}_dtp95/{seed:02d}/"
-    synthetic_image_save_path = sample_folder + f"synthetic_images/cond_scale_{cond_scale}_dtp95/{seed:02d}/"
+    loss_weighting = opt.conductor['testing']['loss_weighting']
+    
+    #
+    model_type = opt.conductor['model']['model_type']
+    
+    #
+    if model_type == 'Imagen':
+        real_image_save_path = sample_folder + f"imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
+        synthetic_image_save_path = sample_folder + f"imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
+    
+    elif model_type == 'ElucidatedImagen':
+        real_image_save_path = sample_folder + f"elucidated_imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        synthetic_image_save_path = sample_folder + f"elucidated_imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        
+    #
+    lower_batch = opt.conductor['testing']['lower_batch']
+    upper_batch = opt.conductor['testing']['upper_batch']
     
     #
     if save_image_tensors or save_samples:
@@ -61,6 +77,9 @@ def test_text2images(opt: Opt,
         #
         opt.logger.info('Start Loop')
         for i, (image_batch, embed_batch, text_batch) in enumerate(tqdm(sample_dataloader, disable=tqdm_disable)):
+            
+            if i < lower_batch or i > upper_batch:
+                continue
             
             opt.logger.info(f'image_batch: {image_batch.size()}')
             opt.logger.info(f'embed_batch: {embed_batch.size()}')
@@ -145,18 +164,18 @@ def test_text2images(opt: Opt,
                                               total=len(real_image_path_list),
                                               disable=tqdm_disable):
             
-            real_image_batch = torch.load(real_path)
-            synthetic_image_batch = torch.load(synthetic_path)
+            real_image_batch = torch.load(real_path).cuda()
+            synthetic_image_batch = torch.load(synthetic_path).cuda()
 
             # Update FID
             if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
-                fid.update(real_image_batch.cuda(), real=True)
-                fid.update(synthetic_image_batch.cuda(), real=False)
+                fid.update(real_image_batch, real=True)
+                fid.update(synthetic_image_batch, real=False)
             
             # Update KID
             if opt.conductor['testing']['KernelInceptionDistance']['usage']:
-                kid.update(real_image_batch.cuda(), real=True)
-                kid.update(synthetic_image_batch.cuda(), real=False)
+                kid.update(real_image_batch, real=True)
+                kid.update(synthetic_image_batch, real=False)
         
     
     # Compute FID
@@ -173,21 +192,35 @@ def test_text2images(opt: Opt,
     else:
         kid_mean, kid_std = [None, None]
     
+    #
     if opt.conductor['testing']['CleanFID']['usage']:
         clean_fid_score = clean_fid.compute_fid(**opt.conductor['testing']['CleanFID']['params'])
         opt.logger.info(f'clean_fid_score: {clean_fid_score}')
     else:
         clean_fid_score=None
-         
+    
+    #     
     if opt.conductor['testing']['FrechetCLIPDistance']['usage']:
         fcd_score = clean_fid.compute_fid(**opt.conductor['testing']['CleanFID']['params'])
         opt.logger.info(f'fcd_score: {fcd_score}')
     else:
         fcd_score = None
-         
+    
+    #
+    results = pd.DataFrame({'FID': [fid_result.cpu()],
+                            'KID_mean': [kid_mean.cpu()],
+                            'KID_std': [kid_std.cpu()],
+                            'Clean_FID': [clean_fid_score],
+                            'FCD': [fcd_score],
+                            })
+    
+    #
+    timestamp = f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
+    results.to_csv(synthetic_image_save_path + timestamp + '_results.csv')
+    
     neptune_ai.stop_neptune_run(opt=opt)
     
-    return fid_result, (kid_mean, kid_std)
+    return results
  
 
 def save_images(opt: Opt, 
@@ -244,28 +277,29 @@ def main():
     _, sample_text_embed, _ = imagen_dataset.__getitem__(index=0)
 
     # Make results test folder with timestamp
-    #timestamp = f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
     test_sample_folder = os.path.join(
-        opt.base['PATH_BASE_DIR'], opt.conductor['testing']['PATH_TEST_SAMPLE'])
+        '/home/kit/stud/uerib/SyntheticImageGeneration/', opt.conductor['testing']['PATH_TEST_SAMPLE'])
 
     #
-    fid_result, kid_result = test_text2images(opt=opt,
-                                              sample_dataloader=imagen_dataloader,
-                                              imagen_model=imagen_model,
-                                              unet_number=unet_number,
-                                              sample_quantity=sample_quantity,
-                                              save_samples=save_samples,
-                                              save_image_tensors=save_image_tensors,
-                                              sample_folder=test_sample_folder,
-                                              embed_shape=sample_text_embed.shape,
-                                              tqdm_disable=False
-                                              )
-    
+    results = test_text2images(opt=opt,
+                               sample_dataloader=imagen_dataloader,
+                               imagen_model=imagen_model,
+                               unet_number=unet_number,
+                               sample_quantity=sample_quantity,
+                               save_samples=save_samples,
+                               save_image_tensors=save_image_tensors,
+                               sample_folder=test_sample_folder,
+                               embed_shape=sample_text_embed.shape,
+                               tqdm_disable=False
+                               )
+
     #
-    opt.logger.info(f'FRECHET INCEPTION DISTANCE (FID): {fid_result}')
-    opt.logger.info(f'KERNEL INCEPTION DISTANCE (KID): mean {kid_result[0]} | std {kid_result[1]}')
-        
-        
+    opt.logger.info(f'FRECHET INCEPTION DISTANCE (FID): {results["FID"]}')
+    opt.logger.info(f'KERNEL INCEPTION DISTANCE (KID): mean {results["KID_mean"]} | std {results["KID_std"]}')
+    opt.logger.info(f'CLEAN - FRECHET INCEPTION DISTANCE (clean-fid): {results["Clean_FID"]}')
+    opt.logger.info(f'FRECHET CLIP DISTANCE (FCD): {results["FCD"]}')  
+
+
 if __name__ == "__main__":
     main()
 

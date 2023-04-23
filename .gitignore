@@ -1,15 +1,22 @@
+# Components
 src/components/data_manager/settings.yml
-src/assets/data/*
-src/assets/models/*
+
+# Data
 data/*
+
+# Results
 results/*.png
 results/tuning/*
 results/training/*
 results/testing/*
 results/archive/*
 results/rendevouz/*
+
+# Configs
 configs/config_neptune.yaml
 configs/config_wandb.yaml
+
+###
 .vscode
 homebrew
 scripts/stderr.txt
@@ -21,12 +28,18 @@ scripts/stdout.txt
 
 # Models
 src/assets/imagen/models/*.pt
+src/assets/elucidated_imagen/models/*.pt
+src/assets/dalle2/models/*.pt
 
 # Embeddings
-src/assets/imagen/text_embeddings/*.pkl
+src/assets/data/CholecT45/clip_embeds/*
+src/assets/data/CholecT45/t5_embeds/*
+src/assets/data/CholecSeg8k/clip_embeds/*
+src/assets/data/CholecSeg8k/t5_embeds/*
 
 # Triplets
-src/assets/imagen/triplets/*.json
+src/assets/data/CholecT45/data_frames/*
+src/assets/data/CholecSeg8k/data_frames/*
 
 # Byte-compiled / optimized / DLL files
 *__pycache__*

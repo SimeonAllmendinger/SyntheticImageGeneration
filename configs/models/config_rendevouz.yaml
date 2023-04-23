@@ -1,15 +1,28 @@
 type:
+  # job
   train: true
   test: false
 
 data:
-  dataset_variant: cholect45-crossval
-  data_dir: /home/stud01/SyntheticImageGeneration/data/CholecT45
-  test_ckpt: /home/stud01/SyntheticImageGeneration/src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth
-  pretrain_dir: /home/stud01/SyntheticImageGeneration/src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth
+  dataset_variant: cholect45-crossval             # cholect50, cholect45, cholect50-challenge, cholect50-crossval, cholect45-crossval
+  data_dir: ./data/CholecT45
+  kfold: 5                                        # choices=[1,2,3,4,5,]. The test split in k-fold cross-validation
+  image_width: 256                                # default=448
+  image_height: 256                               # default=256 
+
+  # weights
+  test_ckpt: ./src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth      # path to pretrain_weight?
+  pretrain_dir: ./src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth   # path to model weight for testing
 
 params:
-  use_ln: True
-  kfold: 5
+  # model
+  use_ln: True          # Whether to use layer norm or batch norm in AddNorm() function. Default: False
+  val_interval: 1       # (for hp tuning). Epoch interval to evaluate on validation data. set -1 for only after final epoch, or a number higher than the total epochs to not validate.
+  
+  #hp
   batch: 32
+  epochs: 100
   version: 1
+
+  # device
+  gpu: 0,1,2             # The gpu device to use. To use multiple gpu put all the device ids comma-separated, e.g: "0,1,2"

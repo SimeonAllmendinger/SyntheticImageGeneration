@@ -2,6 +2,7 @@
 
 #
 cd 
+tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/sripts.tgz SyntheticImageGeneration/scripts/
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz SyntheticImageGeneration/src/assets/
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/components.tgz SyntheticImageGeneration/src/components/
 #tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/venv.tgz SyntheticImageGeneration/venv/
