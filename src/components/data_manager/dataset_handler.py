@@ -26,37 +26,37 @@ class BaseDataLoader(DataLoader):
                          )
 
 
-def get_cholect45_dataset(opt: Opt, return_text: bool):
+def get_cholect45_dataset(opt: Opt, return_text: bool, return_embeds=False):
         
         if opt.conductor['model']['model_type'] == 'Imagen':
             return CholecT45ImagenDataset(opt=opt, return_text=return_text)
         elif opt.conductor['model']['model_type'] == 'ElucidatedImagen':
             return CholecT45ImagenDataset(opt=opt, return_text=return_text)
         elif opt.conductor['model']['model_type'] == 'Dalle2':
-            return CholecT45Dalle2Dataset(opt=opt)
+            return CholecT45Dalle2Dataset(opt=opt, return_text=return_text, return_embeds=return_embeds)
 
 
-def get_cholecseg8k_dataset(opt: Opt, return_text: bool):
+def get_cholecseg8k_dataset(opt: Opt, return_text: bool, return_embeds=False):
         
     if opt.conductor['model']['model_type'] == 'Imagen':
         return CholecSeg8kImagenDataset(opt=opt, return_text=return_text)
     elif opt.conductor['model']['model_type'] == 'ElucidatedImagen':
         return CholecSeg8kImagenDataset(opt=opt, return_text=return_text)
     elif opt.conductor['model']['model_type'] == 'Dalle2':
-       return CholecSeg8kDalle2Dataset(opt=opt)
+       return CholecSeg8kDalle2Dataset(opt=opt, return_text=return_text, return_embeds=return_embeds)
 
 
-def get_concat_dataset(opt: Opt, return_text: bool):
+def get_concat_dataset(opt: Opt, return_text: bool, return_embeds=False):
         
     if opt.conductor['model']['model_type'] == 'Imagen':
         return ConcatImagenDataset(opt=opt, return_text=return_text)
     elif opt.conductor['model']['model_type'] == 'ElucidatedImagen':
         return ConcatImagenDataset(opt=opt, return_text=return_text)
     elif opt.conductor['model']['model_type'] == 'Dalle2':
-        return ConcatDalle2Dataset(opt=opt)
+        return ConcatDalle2Dataset(opt=opt, return_text=return_text, return_embeds=return_embeds)
         
 
-def get_train_valid_ds(opt: Opt, testing=False):
+def get_train_valid_ds(opt: Opt, testing=False, return_text=False, return_embeds=False):
     """
     Returns the training and validation datasets based on the specified options.
 
@@ -75,27 +75,24 @@ def get_train_valid_ds(opt: Opt, testing=False):
     """
     
     # Check which dataset is specified in the opt object
-    if testing and opt.conductor['testing']['only_triplets']:
-        imagen_dataset = get_cholect45_dataset(opt=opt, return_text=True)
-        
-    elif opt.datasets['data']['dataset'] == 'CholecT45':
-        imagen_dataset = get_cholect45_dataset(opt=opt, return_text=False)
+    if opt.datasets['data']['dataset'] == 'CholecT45':
+        dataset = get_cholect45_dataset(opt=opt, return_text=return_text, return_embeds=return_embeds)
     
     elif opt.datasets['data']['dataset'] == 'CholecSeg8k':
-        imagen_dataset = get_cholecseg8k_dataset(opt=opt, return_text=False)
+        dataset = get_cholecseg8k_dataset(opt=opt, return_text=return_text, return_embeds=return_embeds)
     
     elif opt.datasets['data']['dataset'] == 'Both':
-        imagen_dataset = get_concat_dataset(opt=opt, return_text=False)
+        dataset = get_concat_dataset(opt=opt, return_text=return_text, return_embeds=return_embeds)
     
-    if testing:
+    if testing and opt.conductor['testing']['only_triplets']:
         
-        return imagen_dataset
+        return dataset
     
     else:
         
         # Split the instantiated dataset into training and validation datasets
         train_valid_split=[opt.conductor['trainer']['train_split'], opt.conductor['trainer']['valid_split']]
-        train_dataset, valid_dataset = random_split(dataset=imagen_dataset, lengths=train_valid_split)
+        train_dataset, valid_dataset = random_split(dataset=dataset, lengths=train_valid_split)
         
         # Return the training and validation datasets
         return train_dataset, valid_dataset

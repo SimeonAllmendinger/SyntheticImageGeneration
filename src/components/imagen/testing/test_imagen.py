@@ -29,7 +29,7 @@ parser = argparse.ArgumentParser(
                 epilog='For help refer to uerib@student.kit.edu')
 
 parser.add_argument('--path_data_dir',
-                    default='/home/stud01/SyntheticImageGeneration/',
+                    default='/home/kit/stud/uerib/SyntheticImageGeneration',
                     help='PATH to data directory')
 
 
@@ -43,12 +43,8 @@ def test_text2images(opt: Opt,
                      sample_folder: str,
                      embed_shape: tuple,
                      tqdm_disable=False,
-                     epoch=0,
+                     text_list=None
                      ):
-
-    # Start run with neptune docs
-    neptune_ai = Neptune_AI(opt=opt)
-    neptune_ai.start_neptune_run(opt)
         
     # Define the folder path to save synthetic and real images as .pt and .png
     cond_scale = opt.conductor['testing']['cond_scale']
@@ -60,8 +56,8 @@ def test_text2images(opt: Opt,
     
     #
     if model_type == 'Imagen':
-        real_image_save_path = sample_folder + f"imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
-        synthetic_image_save_path = sample_folder + f"imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
+        real_image_save_path = sample_folder + f"imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        synthetic_image_save_path = sample_folder + f"imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
     
     elif model_type == 'ElucidatedImagen':
         real_image_save_path = sample_folder + f"elucidated_imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
@@ -72,161 +68,187 @@ def test_text2images(opt: Opt,
     upper_batch = opt.conductor['testing']['upper_batch']
     
     #
-    if save_image_tensors or save_samples:
+    if text_list is not None:
+        if save_image_tensors or save_samples:
         
-        #
-        opt.logger.info('Start Loop')
-        for i, (image_batch, embed_batch, text_batch) in enumerate(tqdm(sample_dataloader, disable=tqdm_disable)):
-            
-            if i < lower_batch or i > upper_batch:
-                continue
-            
-            opt.logger.info(f'image_batch: {image_batch.size()}')
-            opt.logger.info(f'embed_batch: {embed_batch.size()}')
-            opt.logger.info(f'text_batch: {text_batch}')
-            opt.logger.info(f'torch cuda info: {torch.cuda.mem_get_info()}')
-            
-            if i >= int(sample_quantity / opt.conductor['trainer']['batch_size']):
-                break
-            
-            opt.logger.info('Start Sampling')
-            # sample an image based on the text embeddings from the cascading ddpm
-            synthetic_image_batch = imagen_model.trainer.sample(text_embeds=embed_batch.cuda(),
-                                                                return_pil_images=False,
-                                                                stop_at_unet_number=unet_number,
-                                                                # use_tqdm=not tqdm_disable,
-                                                                cond_scale=opt.conductor['testing']['cond_scale']).cuda()
-
             #
-            opt.logger.info('Clamp Tensors')
-            synthetic_image_batch = torch.clamp(synthetic_image_batch.cuda(), min=0, max=1)
-            real_image_batch = torch.clamp(image_batch.cuda(), min=0, max=1)
-            #embed_batch = torch.clamp(embed_batch, min=0, max=1)
-
-            if save_image_tensors:
-                opt.logger.info('Save Tensors')
-                # Save image and embed tensors
-                torch.save(synthetic_image_batch, synthetic_image_save_path + f'{i:05d}_synthetic_image_batch.pt')
-                torch.save(real_image_batch, real_image_save_path + f'{i:05d}_real_image_batch.pt')
-                #torch.save(embed_batch, sample_folder + f'{i:05d}_image_batch.pt')
-            
-                # Save texts
-                with open(real_image_save_path + f'{i:05d}_text_batch.json', "w") as f:
-                    json.dump(text_batch, f)
-            
-            if save_samples:
-                # Save real images
-                save_images(opt=opt, 
-                            images=real_image_batch, 
-                            text_batch=text_batch, 
-                            batch_size=embed_shape[0], 
-                            unet_number=unet_number, 
-                            sample_folder=real_image_save_path,
-                            epoch=epoch, 
-                            i=i)
+            opt.logger.info('Start Sampling Loop')
+            for i, (image_batch, embed_batch, text_batch) in enumerate(tqdm(sample_dataloader, disable=tqdm_disable)):
                 
-                save_images(opt=opt, 
-                            images=synthetic_image_batch, 
-                            text_batch=text_batch, 
-                            batch_size=embed_shape[0], 
-                            unet_number=unet_number, 
-                            sample_folder=synthetic_image_save_path,
-                            epoch=epoch,
-                            i=i)
-        
-        #
-        opt.logger.debug(f'real_image_batch_size: {real_image_batch.size()}')
-        opt.logger.debug(f'real_image_batch min | max: {real_image_batch.min()} | {real_image_batch.max()}')
-        
-        #
-        opt.logger.debug(f'synthetic_image_batch_size: {synthetic_image_batch.size()}')
-        opt.logger.debug(f'synthetic_image_batch: min | max {synthetic_image_batch.min()} | {synthetic_image_batch.max()}')
-  
-    #
-    if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
-        fid = FrechetInceptionDistance(**opt.conductor['testing']['FrechetInceptionDistance']['params']).cuda()
-        opt.logger.info('FID initialized')
-    
-    #
-    if opt.conductor['testing']['KernelInceptionDistance']['usage']:
-        kid = KernelInceptionDistance(**opt.conductor['testing']['KernelInceptionDistance']['params']).cuda()
-        opt.logger.info('KID initialized')
-    
-    #
-    if opt.conductor['testing']['FrechetInceptionDistance']['usage'] or opt.conductor['testing']['KernelInceptionDistance']['usage']:
-        
-        opt.logger.info('Start updating FID / KID')
-        
-        real_image_path_list = glob.glob(real_image_save_path + '*_real_image_batch.pt')
-        synthetic_image_path_list = glob.glob(synthetic_image_save_path + '*_synthetic_image_batch.pt')
-        
-        for real_path, synthetic_path in tqdm(zip(real_image_path_list, synthetic_image_path_list), 
-                                              total=len(real_image_path_list),
-                                              disable=tqdm_disable):
-            
-            real_image_batch = torch.load(real_path).cuda()
-            synthetic_image_batch = torch.load(synthetic_path).cuda()
+                if i < lower_batch or i > upper_batch:
+                    continue
+                
+                opt.logger.debug(f'image_batch: {image_batch.size()}')
+                opt.logger.debug(f'embed_batch: {embed_batch.size()}')
+                opt.logger.debug(f'text_batch: {text_batch}')
+                opt.logger.debug(f'torch cuda info: {torch.cuda.mem_get_info()}')
+                
+                if i >= int(sample_quantity / opt.conductor['trainer']['batch_size']):
+                    break
+                
+                # sample an image based on the text embeddings from the cascading ddpm
+                synthetic_image_batch = imagen_model.trainer.sample(text_embeds=embed_batch.cuda(),
+                                                                    return_pil_images=False,
+                                                                    stop_at_unet_number=unet_number,
+                                                                    # use_tqdm=not tqdm_disable,
+                                                                    cond_scale=opt.conductor['testing']['cond_scale'])
 
-            # Update FID
-            if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
-                fid.update(real_image_batch, real=True)
-                fid.update(synthetic_image_batch, real=False)
+                #
+                opt.logger.info('Clamp Tensors')
+                synthetic_image_batch = torch.clamp(synthetic_image_batch.cuda(), min=0, max=1)
+                real_image_batch = torch.clamp(image_batch.cuda(), min=0, max=1)
+                #embed_batch = torch.clamp(embed_batch, min=0, max=1)
+
+                if save_image_tensors:
+                    opt.logger.info('Save Tensors')
+                    # Save image and embed tensors
+                    torch.save(synthetic_image_batch, synthetic_image_save_path + f'{i:05d}_synthetic_image_batch.pt')
+                    torch.save(real_image_batch, real_image_save_path + f'{i:05d}_real_image_batch.pt')
+                    #torch.save(embed_batch, sample_folder + f'{i:05d}_image_batch.pt')
+                
+                    # Save texts
+                    with open(real_image_save_path + f'{i:05d}_text_batch.json', "w") as f:
+                        json.dump(text_batch, f)
+                
+                if save_samples:
+                    # Save real images
+                    save_images(opt=opt, 
+                                images=real_image_batch, 
+                                text_batch=text_batch, 
+                                batch_size=embed_shape[0], 
+                                unet_number=unet_number, 
+                                sample_folder=real_image_save_path, 
+                                i=i)
+                    
+                    save_images(opt=opt, 
+                                images=synthetic_image_batch, 
+                                text_batch=text_batch, 
+                                batch_size=embed_shape[0], 
+                                unet_number=unet_number, 
+                                sample_folder=synthetic_image_save_path,
+                                i=i)
             
-            # Update KID
-            if opt.conductor['testing']['KernelInceptionDistance']['usage']:
-                kid.update(real_image_batch, real=True)
-                kid.update(synthetic_image_batch, real=False)
+            #
+            opt.logger.debug(f'real_image_batch_size: {real_image_batch.size()}')
+            opt.logger.debug(f'real_image_batch min | max: {real_image_batch.min()} | {real_image_batch.max()}')
+            
+            #
+            opt.logger.debug(f'synthetic_image_batch_size: {synthetic_image_batch.size()}')
+            opt.logger.debug(f'synthetic_image_batch: min | max {synthetic_image_batch.min()} | {synthetic_image_batch.max()}')
+
+        #
+        if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
+            fid = FrechetInceptionDistance(**opt.conductor['testing']['FrechetInceptionDistance']['params']).cuda()
+            opt.logger.info('FID initialized')
         
-    
-    # Compute FID
-    if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
-        fid_result = fid.compute()
-        opt.logger.info(f'fid_result: {fid_result}')
-    else:
-        fid_result = None
-    
-    # Compute KID
-    if opt.conductor['testing']['KernelInceptionDistance']['usage']:
-        kid_mean, kid_std = kid.compute()
-        opt.logger.info(f'kid_result: {kid_mean}, {kid_std}')
-    else:
-        kid_mean, kid_std = [None, None]
-    
+        #
+        if opt.conductor['testing']['KernelInceptionDistance']['usage']:
+            kid = KernelInceptionDistance(**opt.conductor['testing']['KernelInceptionDistance']['params']).cuda()
+            opt.logger.info('KID initialized')
+        
+        #
+        if opt.conductor['testing']['FrechetInceptionDistance']['usage'] or opt.conductor['testing']['KernelInceptionDistance']['usage']:
+            
+            opt.logger.info('Start updating FID / KID')
+            
+            real_image_path_list = glob.glob(real_image_save_path + '*_real_image_batch.pt')
+            synthetic_image_path_list = glob.glob(synthetic_image_save_path + '*_synthetic_image_batch.pt')
+            
+            for real_path, synthetic_path in tqdm(zip(real_image_path_list, synthetic_image_path_list), 
+                                                total=len(real_image_path_list),
+                                                disable=tqdm_disable):
+                
+                real_image_batch = torch.load(real_path).cuda()
+                synthetic_image_batch = torch.load(synthetic_path).cuda()
+
+                # Update FID
+                if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
+                    fid.update(real_image_batch, real=True)
+                    fid.update(synthetic_image_batch, real=False)
+                
+                # Update KID
+                if opt.conductor['testing']['KernelInceptionDistance']['usage']:
+                    kid.update(real_image_batch, real=True)
+                    kid.update(synthetic_image_batch, real=False)
+            
+        
+        # Compute FID
+        if opt.conductor['testing']['FrechetInceptionDistance']['usage']:
+            fid_result = fid.compute().cpu().item()
+            opt.logger.info(f'fid_result: {fid_result}')
+        else:
+            fid_result = None
+        
+        # Compute KID
+        if opt.conductor['testing']['KernelInceptionDistance']['usage']:
+            kid_mean, kid_std = kid.compute()
+            kid_mean, kid_std = (kid_mean.cpu().item(), kid_std.cpu().item())
+            opt.logger.info(f'kid_result: {kid_mean}, {kid_std}')
+        else:
+            kid_mean, kid_std = [None, None]
+        
+        #
+        if opt.conductor['testing']['CleanFID']['usage']:
+            fdir1 = real_image_save_path + 'images/'
+            fdir2 = synthetic_image_save_path + 'images/'
+            clean_fid_score = clean_fid.compute_fid(fdir1=fdir1,
+                                                    fdir2=fdir2,
+                                                    **opt.conductor['testing']['CleanFID']['params'])
+            opt.logger.info(f'clean_fid_score: {clean_fid_score}')
+        else:
+            clean_fid_score = None
+
+        #
+        if opt.conductor['testing']['FrechetCLIPDistance']['usage']:
+            fdir1 = real_image_save_path + 'images/'
+            fdir2 = synthetic_image_save_path + 'images/'
+            fcd_score = clean_fid.compute_fid(fdir1=fdir1,
+                                            fdir2=fdir2,
+                                            **opt.conductor['testing']['FrechetCLIPDistance']['params'])
+            opt.logger.info(f'fcd_score: {fcd_score}')
+        else:
+            fcd_score = None
+            
+        #
+        results = pd.DataFrame({'cond_scale': cond_scale,
+                                'Dataset': opt.datasets['data']['dataset'],
+                                'Model': model_type,
+                                'FID': [fid_result],
+                                'KID_mean': [kid_mean],
+                                'KID_std': [kid_std],
+                                'Clean_FID': [clean_fid_score],
+                                'FCD': [fcd_score]
+                                })
+
+        #
+        timestamp = f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
+        results.to_csv(synthetic_image_save_path + timestamp + '_results.csv')
+
+        return results
+        
     #
-    if opt.conductor['testing']['CleanFID']['usage']:
-        clean_fid_score = clean_fid.compute_fid(**opt.conductor['testing']['CleanFID']['params'])
-        opt.logger.info(f'clean_fid_score: {clean_fid_score}')
     else:
-        clean_fid_score=None
-    
-    #     
-    if opt.conductor['testing']['FrechetCLIPDistance']['usage']:
-        fcd_score = clean_fid.compute_fid(**opt.conductor['testing']['CleanFID']['params'])
-        opt.logger.info(f'fcd_score: {fcd_score}')
-    else:
-        fcd_score = None
-    
-    #
-    results = pd.DataFrame({'FID': [fid_result.cpu()],
-                            'KID_mean': [kid_mean.cpu()],
-                            'KID_std': [kid_std.cpu()],
-                            'Clean_FID': [clean_fid_score],
-                            'FCD': [fcd_score],
-                            })
-    
-    #
-    timestamp = f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}"
-    results.to_csv(synthetic_image_save_path + timestamp + '_results.csv')
-    
-    neptune_ai.stop_neptune_run(opt=opt)
-    
-    return results
+        # sample an image based on the text embeddings from the cascading ddpm
+        synthetic_images = imagen_model.trainer.sample(texts=text_list,
+                                                            return_pil_images=True,
+                                                            stop_at_unet_number=unet_number,
+                                                            use_tqdm=not tqdm_disable,
+                                                            cond_scale=opt.conductor['testing']['cond_scale'])
+
+        for j, synthetic_image in enumerate(synthetic_images):
+            image_save_path_dir = os.path.join(synthetic_image_save_path, 'evaluation', text_list[j]) 
+            
+            if not file_exists(image_save_path_dir):
+                os.mkdir(image_save_path_dir)
+            
+            image_save_path = os.path.join(image_save_path_dir, f"u{unet_number}-{opt.conductor['model']['model_type']}-{j:05d}-{text_list[j]}.png")
+            synthetic_image.save(image_save_path)
+
  
 
 def save_images(opt: Opt, 
                 images, 
-                text_batch: list, 
-                epoch: int,
+                text_batch: list,
                 i: int, 
                 batch_size: int, 
                 unet_number: int,
@@ -241,7 +263,7 @@ def save_images(opt: Opt,
         image = Image.fromarray(image.astype(np.uint8))
         
         image_index = i*batch_size + j
-        image_save_path = sample_folder + f'images/{image_index:05d}_e{epoch}-u{unet_number}-{text_batch[j]}.png'
+        image_save_path = sample_folder + f'images/{image_index:05d}_u{unet_number}-{text_batch[j]}.png'
         image.save(image_save_path)
         
         #
@@ -263,11 +285,20 @@ def main():
     #
     opt=Opt()
     
+    # Start run with neptune docs
+    neptune_ai = Neptune_AI(opt=opt)
+    neptune_ai.start_neptune_run(opt)
     #
     sample_quantity=opt.conductor['testing']['sample_quantity']
     unet_number=opt.conductor['testing']['unet_number']
     save_samples=opt.conductor['testing']['save_samples']
     save_image_tensors=opt.conductor['testing']['save_image_tensors']
+    
+    if opt.conductor['testing']['text'] != '':
+        text = opt.conductor['testing']['text']
+        text_list=[text] * sample_quantity
+    else:
+        text_list=None
     
     #
     imagen_dataset = get_train_valid_ds(opt=opt, testing=True)
@@ -290,7 +321,8 @@ def main():
                                save_image_tensors=save_image_tensors,
                                sample_folder=test_sample_folder,
                                embed_shape=sample_text_embed.shape,
-                               tqdm_disable=False
+                               tqdm_disable=False,
+                               text_list=text_list
                                )
 
     #
@@ -299,6 +331,7 @@ def main():
     opt.logger.info(f'CLEAN - FRECHET INCEPTION DISTANCE (clean-fid): {results["Clean_FID"]}')
     opt.logger.info(f'FRECHET CLIP DISTANCE (FCD): {results["FCD"]}')  
 
+    neptune_ai.stop_neptune_run(opt=opt)
 
 if __name__ == "__main__":
     main()

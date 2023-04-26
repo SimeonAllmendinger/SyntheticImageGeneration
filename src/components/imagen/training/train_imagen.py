@@ -17,7 +17,6 @@ from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
 from src.components.imagen.model.build_imagen import Imagen_Model
 from src.components.data_manager.dataset_handler import get_train_valid_ds, get_train_valid_dl
-from src.components.imagen.testing.test_imagen import test_text2images
 
 parser = argparse.ArgumentParser(
                 prog='SyntheticImageGeneration',
@@ -68,6 +67,7 @@ def train_imagen(tune_config=None, reporter=None):
     train_generator, valid_generator = get_train_valid_dl(opt=opt, 
                                                           train_dataset=train_dataset,
                                                           valid_dataset=valid_dataset)
+    sample_dataloader = get_train_valid_dl(opt=opt, train_dataset=sample_dataset)
     
     # Add data size (length of all elements) to imagen config
     opt.conductor['trainer']['train_size'] = train_dataset.__len__()
@@ -111,8 +111,8 @@ def train_imagen(tune_config=None, reporter=None):
                                         neptune_run_save_path='training_configs')
         
         # Make results folder with timestamp for samples
-        path_run_dir = opt.conductor['validation']['PATH_TRAINING_SAMPLE'] + f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}" + f"_u{opt.conductor['trainer']['unet_number']}"
-        path_run_dir = os.path.join(opt.base['PATH_BASE_DIR'], path_run_dir)
+        path_run_dir = opt.conductor['validation']['PATH_TRAINING_SAMPLE'] + f"{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}" + f"_u{opt.conductor['trainer']['unet_number']}_" + opt.conductor['model']['model_type']
+        path_run_dir = os.path.join('/home/kit/stud/uerib/SyntheticImageGeneration/', path_run_dir)
         os.mkdir(path_run_dir)
         
         #
@@ -147,12 +147,8 @@ def train_imagen(tune_config=None, reporter=None):
             opt.logger.debug(f'Epoch validation loss-unet{unet_number}: {valid_loss}')
             
             if opt.conductor['trainer']['param_tuning']:
-                
-                #
-                if 'fid_result' not in locals():
-                    fid_result=800
             
-                session.report({"fid": fid_result, "loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
+                session.report({"loss": loss, "valid_loss": valid_loss})  # Send the scores to Tune.
             
             else:
                 # Upload epoch valid loss to neptune_ai
@@ -162,23 +158,23 @@ def train_imagen(tune_config=None, reporter=None):
 
         # is_main makes sure this can run in distributed
         if not (epoch % opt.conductor['validation']['interval']['validate_model']) and imagen_model.trainer.is_main:
-    
-            #
-            fid_result = test_text2images(opt=opt,
-                                sample_dataset=sample_dataset,
-                                imagen_model=imagen_model,
-                                unet_number=unet_number,
-                                sample_quantity=opt.conductor['validation']['sample_quantity'],
-                                save_samples=opt.conductor['validation']['display_samples'],
-                                sample_folder=path_run_dir,
-                                embed_shape=sample_dataset.__getitem__(index=0)[1].size(),
-                                epoch=epoch,
-                                seed=opt.conductor['validation']['sample_seed'],
-                                max_sampling_batch_size=100,
-                                tqdm_disable=tqdm_disable)
-            fid_result = fid_result.item()
             
-            opt.logger.debug(f'FRECHET INCEPTION DISTANCE (FID): {fid_result}')
+            #
+            if opt.conductor['validation']['display_samples']:
+                n = int(np.ceil(opt.conductor['validation']['sample_quantity'] / opt.conductor['trainer']['batch_size']))
+                
+                for i in range(n):
+                    _, embed_batch, text_batch = next(iter(sample_dataloader))
+                    synthetic_images = imagen_model.trainer.sample(text_embeds=embed_batch.cuda(),
+                                                                    return_pil_images=True,
+                                                                    stop_at_unet_number=unet_number,
+                                                                    use_tqdm=not tqdm_disable,
+                                                                    cond_scale=opt.conductor['testing']['cond_scale'])
+                
+                    for j, synthetic_image in enumerate(synthetic_images):
+                        image_save_path = os.path.join(path_run_dir, f'e{epoch}-u{unet_number}-{j:05d}-{text_batch[j]}.png')
+                        synthetic_image.save(image_save_path)
+            
             
             #
             if not opt.conductor['trainer']['param_tuning']:
@@ -190,10 +186,6 @@ def train_imagen(tune_config=None, reporter=None):
                 neptune_ai.upload_neptune_run(opt=opt, 
                                   data_item=model_checkpoint_path,
                                   neptune_run_save_path='model')
-                
-                # Upload epoch loss to neptune_ai
-                neptune_ai.log_neptune_run(
-                    opt=opt, data_item=fid_result, neptune_run_save_path=f"train/fid-{unet_number}")
 
         #
         if not opt.conductor['trainer']['param_tuning']:
