@@ -7,7 +7,7 @@ tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz SyntheticI
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/components.tgz SyntheticImageGeneration/src/components/
 #tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/venv.tgz SyntheticImageGeneration/venv/
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/configs.tgz SyntheticImageGeneration/configs/
-#tar -cvzf $(ws_find data-ssd)/default_config.tgz .cache/huggingface/accelerate/default_config.yaml
+#tar -cvzf $(ws_find data-ssd)/cache_config.tgz .cache/huggingface/
 
 cd SyntheticImageGeneration
 source venv/bin/activate
@@ -47,3 +47,6 @@ sbatch --partition=$partition --gres=$gres --time=$time --nodes=$nodes --ntasks=
     #--cpu-per-gpu=$cpu_per_gpu  --mem-per-cpu=$mem_per_cpu  --mem=$mem 
 
 squeue
+
+#salloc --partition=$partition --gres=$gres --time=$time --nodes=$nodes --ntasks=$ntasks --mem-per-gpu=$mem_per_gpu --ntasks-per-node=$ntasks_per_node --cpus-per-task=$cpus_per_task
+ 

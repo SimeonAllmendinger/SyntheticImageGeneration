@@ -13,7 +13,7 @@ args:
   output: scripts/stdout.txt          # File in which job output is stored.
   error: scripts/stderr.txt           # File in which job error messages are stored.
   job_name: TR_ELUCID     	          # Job name.
-  partition: gpu_8    	              # Request a specific queue for the resource allocation.
+  partition: gpu_4    	              # Request a specific queue for the resource allocation.
   gres: gpu:1   #gpu:3
   job: /home/kit/stud/uerib/SyntheticImageGeneration/scripts/run_train_text2image.sh #
   #/home/kit/stud/uerib/SyntheticImageGeneration/scripts/run_train_text2image.sh

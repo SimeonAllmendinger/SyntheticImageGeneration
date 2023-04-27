@@ -1,4 +1,4 @@
-PATH_DATA_DIR: /home/stud01/SyntheticImageGeneration/
+PATH_DATA_DIR: /home/kit/stud/uerib/SyntheticImageGeneration/
 data:
   Cholec80:
     PATH_PHASE_LABELS: ./data/Cholec80/phase_annotations/
@@ -101,9 +101,9 @@ data:
       PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/image_embeds/
       PATH_CLIP_IMAGE_ENCODING_FILE: ./src/assets/data/CholecT45/clip_tokens/text_tokens.pt
       PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/text_embeds/
-      use_existing_embeds: true
-      use_existing_encodings: true
+      use_existing_embeds: True
+      use_existing_encodings: True
     fps: 1
-  dataset: CholecT45
+  dataset: Both
   image_size: 480
   use_existing_data_files: true

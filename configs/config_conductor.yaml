@@ -2,7 +2,7 @@
 
 # Model
 model:
-  model_type: ElucidatedImagen # Imagen, ElucidatedImagen, Dalle2
+  model_type: ElucidatedImagen  # Imagen, ElucidatedImagen, Dalle2
 
 # Trainer
 trainer:
@@ -11,10 +11,10 @@ trainer:
   multi_gpu: False # True | False
 
   # Model
-  use_existing_model: False
+  use_existing_model: True
   PATH_MODEL_CHECKPOINT: elucidated_imagen_checkpoint.pt
-  PATH_MODEL_SAVE: ./src/assets/elucidated_imagen/models/elucidated_imagen_model_u1_p2_dtp95_T45.pt
-  PATH_MODEL_LOAD: ./src/assets/elucidated_imagen/models/elucidated_imagen_model_u1_p2_dtp95_T45.pt
+  PATH_MODEL_SAVE: ./src/assets/elucidated_imagen/models/elucidated_imagen_model_u2_p2_dtp95_Seg8k.pt
+  PATH_MODEL_LOAD: ./src/assets/elucidated_imagen/models/elucidated_imagen_model_u1_p2_dtp95_Seg8k.pt
 
   # Imagen Trainer
   split_valid_from_train: False
@@ -24,14 +24,14 @@ trainer:
 
   # Dataloader
   shuffle: True
-  num_workers: 1 # 3 | 1
+  num_workers: 8 # 3 | 1
   batch_size: 16 # max.16 for stud01 VM on server - otherwise gpu (32GB) storage not sufficient for unet2 # 100 | 30 | 60
   train_split: 0.9
   valid_split: 0.1
   
   # Training
-  max_epochs: 100000
-  unet_number: 1 # train unet 1 or 2
+  max_epochs: 40000
+  unet_number: 2 # train unet 1 or 2
   param_tuning: False
   early_stopping:
     usage: False
@@ -46,32 +46,33 @@ validation:
 
   interval:
     valid_loss: 20
-    validate_model: 1000000
+    validate_model: 5000
 
   # Sampling
   display_samples: True
-  sample_quantity: 5
-  sample_seed: 50
+  sample_quantity: 10
+  sample_seed: 1
 
 
 # Testing
 testing:
-  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_model_u2_p2_dtp95_T45.pt
+  PATH_MODEL_TESTING: ./src/assets/elucidated_imagen/models/elucidated_imagen_model_u2_p2_dtp95_T45.pt
   PATH_TEST_SAMPLE: ./results/testing/
   
   # Sampling
   unet_number: 2
   sample_quantity: 10000
   sample_seed: 1
-  save_samples: False
-  save_image_tensors: False
+  save_samples: True
+  save_image_tensors: True
   only_triplets: True
-  cond_scale: 5   # 1 to 10
+  cond_scale: 10  # 1 to 10
   loss_weighting: p2   # p2
+  text: ''
 
   # Batches
   lower_batch: 0
-  upper_batch: 0 # 905 number of batches
+  upper_batch: 100 # 905 number of batches
 
   # Frechet Inception Distance
   FrechetInceptionDistance:
@@ -93,21 +94,17 @@ testing:
 
   # Clean Fréchet Inception Distance
   CleanFID:
-    usage: False
+    usage: True
     params:
-      fdir1: /home/kit/stud/uerib/SyntheticImageGeneration/results/testing/imagen/real_images/cond_scale_1_dtp95_p2_Seg8k/01/images
-      fdir2: /home/kit/stud/uerib/SyntheticImageGeneration/results/testing/imagen/synthetic_images/cond_scale_1_dtp95_p2_Seg8k/01/images
       mode: clean
-      model_name: inceptionv3
+      model_name: inception_v3
       num_workers: 8
       batch_size: 36 
 
   # Fréchet CLIP Distance
   FrechetCLIPDistance:
-    usage: False
+    usage: True
     params:
-      fdir1: /home/kit/stud/uerib/SyntheticImageGeneration/results/testing/imagen/real_images/cond_scale_1_dtp95_p2_Seg8k/01/images
-      fdir2: /home/kit/stud/uerib/SyntheticImageGeneration/results/testing/imagen/synthetic_images/cond_scale_1_dtp95_p2_Seg8k/01/images
       mode: clean
       model_name: clip_vit_b_32
       num_workers: 8

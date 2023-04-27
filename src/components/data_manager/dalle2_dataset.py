@@ -24,12 +24,14 @@ from src.components.imagen.utils.decorators import check_dataset_name
 
 class BaseDalle2Dataset(Dataset):
     
-    def __init__(self, dataset_name: str, opt: Opt):
+    def __init__(self, dataset_name: str, opt: Opt, return_text: bool, return_embeds: bool):
     
         #
         self.DATASET = dataset_name
         self.use_phase_labels = opt.datasets['data']['Cholec80']['use_phase_labels']
         self.batch_size = opt.conductor['trainer']['batch_size']
+        self.return_text=return_text
+        self.return_embeds=return_embeds
         
         #
         self.folder=os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][self.DATASET]['PATH_VIDEO_DIR'])
@@ -71,7 +73,7 @@ class BaseDalle2Dataset(Dataset):
         return self.df_train.shape[0]
       
       
-    def __getitem__(self, index, return_embeds=True, return_text=False):
+    def __getitem__(self, index):
         
         # Get Image
         path = os.path.join(self.folder, self.df_train['FRAME PATH'].values[index])
@@ -84,41 +86,33 @@ class BaseDalle2Dataset(Dataset):
         # Get triplet text
         text = self.df_train['TEXT PROMPT'].values[index]
         encoded_text = self.encoded_texts[index]              
-    
-        # Check gpu availability
-        if torch.cuda.is_available():
-            image = image.cuda()
-            encoded_text = encoded_text.cuda()
             
-        if return_embeds:
+        if self.return_embeds:
             
             batch_index = int(index / self.batch_size)
-            embed_image_batch = torch.load(self.image_embeds_save_dir_path + f'image_embeds_{batch_index:05d}.pt')
-            embed_text_batch = torch.load(self.text_embeds_save_dir_path + f'text_embeds_{batch_index:05d}.pt')
+            embed_image_batch = torch.load(self.image_embeds_save_dir_path + f'image_embeds_{batch_index:05d}.pt', 
+                                           map_location=torch.device('cpu'))
+            embed_text_batch = torch.load(self.text_embeds_save_dir_path + f'text_embeds_{batch_index:05d}.pt', 
+                                          map_location=torch.device('cpu'))
             
             item_index = int(index % self.batch_size)
             embed_image=embed_image_batch[item_index] 
             embed_text=embed_text_batch[item_index]
-            
-            if torch.cuda.is_available():
-                embed_image = embed_image.cuda()
-                embed_text = embed_text.cuda()
                 
-            return image, encoded_text, embed_image, embed_text
-        
-        elif return_text:
-
-            return image, encoded_text, embed_image, embed_text, text
+            if self.return_text:
+                return image, encoded_text, embed_image, embed_text, text
+            
+            else:
+                return image, encoded_text, embed_image, embed_text
         
         else:
-                
             return image, encoded_text
     
 
 class CholecT45Dalle2Dataset(BaseDalle2Dataset):
     
-    def __init__(self, opt: Opt, clip_embedding=False):
-        super().__init__(dataset_name='CholecT45', opt=opt)
+    def __init__(self, opt: Opt, return_text: bool, return_embeds=False):
+        super().__init__(dataset_name='CholecT45', opt=opt, return_text=return_text, return_embeds=return_embeds)
         
         #
         self._set_df_train_(opt=opt)
@@ -150,8 +144,8 @@ class CholecT45Dalle2Dataset(BaseDalle2Dataset):
         
 class CholecSeg8kDalle2Dataset(BaseDalle2Dataset):
     
-    def __init__(self, opt: Opt, clip_embedding=False):
-        super().__init__(dataset_name='CholecSeg8k', opt=opt)
+    def __init__(self, opt: Opt, return_embeds=False):
+        super().__init__(dataset_name='CholecSeg8k', opt=opt, return_embeds=return_embeds)
         
         self._set_df_train_(opt=opt)
         self._set_tokens_(opt=opt)
@@ -181,11 +175,11 @@ class CholecSeg8kDalle2Dataset(BaseDalle2Dataset):
 
 class ConcatDalle2Dataset(ConcatDataset):
     
-    def __init__(self, opt: Opt):
+    def __init__(self, opt: Opt, return_text: bool, return_embeds=False):
         
         #
-        cholecT45_ds = CholecT45Dalle2Dataset(opt=opt)
-        cholecSeg8k_ds = CholecSeg8kDalle2Dataset(opt=opt)
+        cholecT45_ds = CholecT45Dalle2Dataset(opt=opt, return_text=return_text, return_embeds=return_embeds)
+        cholecSeg8k_ds = CholecSeg8kDalle2Dataset(opt=opt, return_text=return_text, return_embeds=return_embeds)
         
         #
         self.DATASET = 'Both'

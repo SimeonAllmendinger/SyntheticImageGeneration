@@ -4,25 +4,25 @@
 clip:
     #
     context_length: 77
-    model_name: 'ViT-bigG-14' # Best performing model on open_clip (DATE: 21.03.2023)
-    pretrained: 'laion2b_s39b_b160k'
+    model_name: ViT-B-32            #ViT-H-14 | ViT-g-14 | ViT-bigG-14  # Best performing model on open_clip (DATE: 21.03.2023)
+    pretrained: laion2B-s34B-b79K     #laion2B-s32B-b79K | laion2B-s12B-b42K | laion2b_s39b_b160k
 
 # Diffusion Prior Network Parameters
 diffusion_prior_network:
     params:
-        dim: 1280 
+        dim: 512 # 1024 | 1280 
         depth: 6
-        dim_head: 80
+        dim_head: 32 #64 | 80
         heads: 16 
         # Transformer: 80 x 16 = 1280 (=dim), which equals the embed dim of clip
 
 # Diffusion Prior Parameters
 diffusion_prior:
 
-    use_existing_model: False
+    use_existing_model: True
 
     params:
-        image_embed_dim: 1280
+        image_embed_dim: 512 # 1024 | 1280
         timesteps: 1000
         sample_timesteps: 64
         cond_drop_prob: 0.2
@@ -31,8 +31,8 @@ diffusion_prior:
 # Diffusion Prior Trainer Parameters
 diffusion_prior_trainer:
 
-    model_save_path: ./src/assets/dalle2/models/DiffusionPriorTrainer.pt
-    train_with_embeds: False
+    model_save_path: ./src/assets/dalle2/models/DiffusionPriorTrainer_T45.pt
+    train_with_embeds: True
     epochs: 1
 
     params:
@@ -58,7 +58,8 @@ decoder:
 # Decoder Trainer
 decoder_trainer:
 
-    model_save_path: ./src/assets/dalle2/models/DecoderTrainer.pt
+    model_save_path: ./src/assets/dalle2/models/DecoderTrainer_T45.pt
+    train_with_embeds: True
     max_batch_size: 16
     epochs: 1
 
@@ -72,8 +73,8 @@ decoder_trainer:
 # unet 1
 unet1:
     dim: 32
-    image_embed_dim: 1280
-    text_embed_dim: 1280
+    image_embed_dim: 512    # 1280
+    text_embed_dim: 512     # 1280
     cond_dim: 128
     channels: 3
     cond_on_text_encodings: True # set to True for any unets that need to be conditioned on text encodings
@@ -85,7 +86,7 @@ unet1:
 
 unet2:
     dim: 16
-    image_embed_dim: 1280
+    image_embed_dim: 512    # 1280
     cond_dim: 128
     channels: 3
     dim_mults:
