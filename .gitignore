@@ -33,8 +33,10 @@ src/assets/dalle2/models/*.pt
 
 # Embeddings
 src/assets/data/CholecT45/clip_embeds/*
+src/assets/data/CholecT45/clip_tokens/*
 src/assets/data/CholecT45/t5_embeds/*
 src/assets/data/CholecSeg8k/clip_embeds/*
+src/assets/data/CholecSeg8k/clip_tokens/*
 src/assets/data/CholecSeg8k/t5_embeds/*
 
 # Triplets
