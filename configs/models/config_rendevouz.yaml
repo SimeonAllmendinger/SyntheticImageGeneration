@@ -6,7 +6,7 @@ type:
 data:
   dataset_variant: cholect45-crossval             # cholect50, cholect45, cholect50-challenge, cholect50-crossval, cholect45-crossval
   data_dir: ./data/CholecT45
-  kfold: 5                                        # choices=[1,2,3,4,5,]. The test split in k-fold cross-validation
+  kfold: 4                                        # choices=[1,2,3,4,5,]. The test split in k-fold cross-validation
   image_width: 256                                # default=448
   image_height: 256                               # default=256 
 
@@ -18,11 +18,12 @@ params:
   # model
   use_ln: True          # Whether to use layer norm or batch norm in AddNorm() function. Default: False
   val_interval: 1       # (for hp tuning). Epoch interval to evaluate on validation data. set -1 for only after final epoch, or a number higher than the total epochs to not validate.
-  
+  accelerate: False
+
   #hp
   batch: 32
   epochs: 100
   version: 1
 
   # device
-  gpu: 0,1,2             # The gpu device to use. To use multiple gpu put all the device ids comma-separated, e.g: "0,1,2"
+  gpu: 0 #,1,2             # The gpu device to use. To use multiple gpu put all the device ids comma-separated, e.g: "0,1,2"

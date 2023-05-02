@@ -61,7 +61,7 @@ def train_imagen(tune_config=None, reporter=None):
     
     # 
     train_dataset, valid_dataset = get_train_valid_ds(opt=opt)
-    sample_dataset = get_train_valid_ds(opt=opt, testing=True)
+    sample_dataset = get_train_valid_ds(opt=opt, testing=True, return_text=True)
 
     # instantiate train_dataloader and val_dataloader
     train_generator, valid_generator = get_train_valid_dl(opt=opt, 
@@ -169,7 +169,7 @@ def train_imagen(tune_config=None, reporter=None):
                                                                     return_pil_images=True,
                                                                     stop_at_unet_number=unet_number,
                                                                     use_tqdm=not tqdm_disable,
-                                                                    cond_scale=opt.conductor['testing']['cond_scale'])
+                                                                    cond_scale=opt.conductor['validation']['cond_scale'])
                 
                     for j, synthetic_image in enumerate(synthetic_images):
                         image_save_path = os.path.join(path_run_dir, f'e{epoch}-u{unet_number}-{j:05d}-{text_batch[j]}.png')

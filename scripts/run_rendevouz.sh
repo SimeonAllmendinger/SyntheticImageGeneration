@@ -14,8 +14,8 @@ fi
 
 # Extract compressed input data files on local SSD
 ## Data
-if [ ! -d "$TMP/SyntheticImageGeneration/data/CholecT50/" ]; then
-    tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/data/CholecT50.tgz
+if [ ! -d "$TMP/SyntheticImageGeneration/data/CholecT45/" ]; then
+    tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/data/CholecT45.tgz
 fi
 
 ## Assets
@@ -56,7 +56,7 @@ then
 fi
 
 # Load the config file
-config_file="./configs/config_rendevouz.yaml"
+config_file="./configs/models/config_rendevouz.yaml"
 
 # Extract the values of the variables in the config using yq
 ## Type
@@ -79,22 +79,25 @@ batch=$(yq e '.params.batch' $config_file)
 epochs=$(yq e '.params.epochs' $config_file)
 version=$(yq e '.params.version' $config_file)
 gpu=$(yq e '.params.gpu' $config_file)
+accelerate=$(yq e '.params.accelerate' $config_file)
 
 # Use the variables to start the script
-if $test
+if [ "$test" = true ] ;
 then
     echo "----- TESTING -----"
-    accelerate launch src/components/rendezvous/pytorch/run.py -e --data_dir=$data_dir --dataset_variant=$dataset_variant --use_ln --kfold $kfold --batch $batch --version=$version --test_ckpt=$test_ckpt
+    #accelerate launch 
+    ./venv/bin/python3 src/components/rendezvous/pytorch/run.py -e --data_dir=$data_dir --dataset_variant=$dataset_variant --use_ln --kfold $kfold --batch $batch --version=$version --test_ckpt=$test_ckpt
 fi
 
 # Use the variables to start the script
-if $train
+if [ "$train" = true ]
 then
     echo "----- TRAINING -----"
-    accelerate launch src/components/rendezvous/pytorch/run.py -t \
+    #accelerate launch 
+    ./venv/bin/python3 \
+        src/components/rendezvous/pytorch/run.py -t \
         --data_dir=$data_dir \
         --dataset_variant=$dataset_variant \
-        --use_ln \
         --kfold $kfold \
         --batch $batch \
         --version=$version \
@@ -104,5 +107,7 @@ then
         --val_interval=$val_interval \
         --epochs=$epochs \
         --version=$version \
-        --gpu=$gpu
+        --gpu=$gpu 
+        #--accelerate=$accelerate
+        #--use_ln \
 fi

@@ -73,10 +73,10 @@ source ./venv/bin/activate
 
 # Start parameter tuning
 #accelerate launch ./src/components/imagen/training/train_imagen.py --path_data_dir=$TMP/SyntheticImageGeneration/
-./venv/bin/python3 ./src/components/imagen/training/train_imagen.py --path_data_dir=$TMP/SyntheticImageGeneration/
-#./venv/bin/python3 ./src/components/dalle2/model/build_dalle2.py --path_data_dir=$TMP/SyntheticImageGeneration/
+#./venv/bin/python3 ./src/components/imagen/training/train_imagen.py --path_data_dir=$TMP/SyntheticImageGeneration/
+./venv/bin/python3 ./src/components/dalle2/model/build_dalle2.py --path_data_dir=$TMP/SyntheticImageGeneration/
 
-cp -r $TMP/SyntheticImageGeneration/src/assets/elucidated_imagen/models $HOME/SyntheticImageGeneration/src/assets/elucidated_imagen/
-#cp -r $TMP/SyntheticImageGeneration/src/assets/dalle2/models $HOME/SyntheticImageGeneration/src/assets/dalle2/
+#cp -r $TMP/SyntheticImageGeneration/src/assets/elucidated_imagen/models $HOME/SyntheticImageGeneration/src/assets/elucidated_imagen/
+cp -r $TMP/SyntheticImageGeneration/src/assets/dalle2/models $HOME/SyntheticImageGeneration/src/assets/dalle2/
 #cp -r $TMP/SyntheticImageGeneration/src/assets/data/CholecT45/clip_embeds $HOME/SyntheticImageGeneration/src/assets/data/CholecT45/
 #cp -r $TMP/SyntheticImageGeneration/src/assets/data/CholecT45/clip_tokens $HOME/SyntheticImageGeneration/src/assets/data/CholecT45/

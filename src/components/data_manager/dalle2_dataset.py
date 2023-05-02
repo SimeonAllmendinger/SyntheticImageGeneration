@@ -106,7 +106,11 @@ class BaseDalle2Dataset(Dataset):
                 return image, encoded_text, embed_image, embed_text
         
         else:
-            return image, encoded_text
+            if self.return_text:
+                return image, encoded_text, text
+            
+            else:
+                return image, encoded_text
     
 
 class CholecT45Dalle2Dataset(BaseDalle2Dataset):

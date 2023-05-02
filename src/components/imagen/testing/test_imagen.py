@@ -14,6 +14,7 @@ from datetime import datetime
 from os.path import exists as file_exists
 from PIL import Image
 from tqdm import tqdm
+from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.image.fid import FrechetInceptionDistance
 from torchmetrics.image.kid import KernelInceptionDistance
 from cleanfid import fid as clean_fid
@@ -56,19 +57,19 @@ def test_text2images(opt: Opt,
     
     #
     if model_type == 'Imagen':
-        real_image_save_path = sample_folder + f"imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
-        synthetic_image_save_path = sample_folder + f"imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        real_image_save_path = sample_folder + f"imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
+        synthetic_image_save_path = sample_folder + f"imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
     
     elif model_type == 'ElucidatedImagen':
-        real_image_save_path = sample_folder + f"elucidated_imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
-        synthetic_image_save_path = sample_folder + f"elucidated_imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        real_image_save_path = sample_folder + f"elucidated_imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
+        synthetic_image_save_path = sample_folder + f"elucidated_imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
         
     #
     lower_batch = opt.conductor['testing']['lower_batch']
     upper_batch = opt.conductor['testing']['upper_batch']
     
     #
-    if text_list is not None:
+    if text_list is None:
         if save_image_tensors or save_samples:
         
             #
@@ -147,7 +148,13 @@ def test_text2images(opt: Opt,
             opt.logger.info('KID initialized')
         
         #
-        if opt.conductor['testing']['FrechetInceptionDistance']['usage'] or opt.conductor['testing']['KernelInceptionDistance']['usage']:
+        if opt.conductor['testing']['LearnedPerceptualImagePatchSimilarity']['usage']:
+            lpips = LearnedPerceptualImagePatchSimilarity(**opt.conductor['testing']['LearnedPerceptualImagePatchSimilarity']['params']).cuda()
+            lpips_batch_score_list = []
+            opt.logger.info('lpips initialized')
+            
+        #
+        if opt.conductor['testing']['FrechetInceptionDistance']['usage'] or opt.conductor['testing']['KernelInceptionDistance']['usage'] or opt.conductor['testing']['LearnedPerceptualImagePatchSimilarity']['usage']:
             
             opt.logger.info('Start updating FID / KID')
             
@@ -170,6 +177,12 @@ def test_text2images(opt: Opt,
                 if opt.conductor['testing']['KernelInceptionDistance']['usage']:
                     kid.update(real_image_batch, real=True)
                     kid.update(synthetic_image_batch, real=False)
+                    
+                # Update LPIPS
+                if opt.conductor['testing']['LearnedPerceptualImagePatchSimilarity']['usage']:
+                    real_image_batch = rescale_tensor(real_image_batch)
+                    synthetic_image_batch = rescale_tensor(synthetic_image_batch)
+                    lpips_batch_score_list.append(lpips(real_image_batch, synthetic_image_batch).tolist())
             
         
         # Compute FID
@@ -198,7 +211,7 @@ def test_text2images(opt: Opt,
         else:
             clean_fid_score = None
 
-        #
+        # FCD
         if opt.conductor['testing']['FrechetCLIPDistance']['usage']:
             fdir1 = real_image_save_path + 'images/'
             fdir2 = synthetic_image_save_path + 'images/'
@@ -208,6 +221,13 @@ def test_text2images(opt: Opt,
             opt.logger.info(f'fcd_score: {fcd_score}')
         else:
             fcd_score = None
+        
+        # LPIPS
+        if opt.conductor['testing']['LearnedPerceptualImagePatchSimilarity']['usage']:
+            lpips_mean = np.mean(lpips_batch_score_list)
+            opt.logger.info(f'lpips_mean: {lpips_mean}')
+        else:
+            lpips_mean = None
             
         #
         results = pd.DataFrame({'cond_scale': cond_scale,
@@ -217,7 +237,8 @@ def test_text2images(opt: Opt,
                                 'KID_mean': [kid_mean],
                                 'KID_std': [kid_std],
                                 'Clean_FID': [clean_fid_score],
-                                'FCD': [fcd_score]
+                                'FCD': [fcd_score],
+                                'LPIPS': [lpips_mean]
                                 })
 
         #
@@ -270,6 +291,11 @@ def save_images(opt: Opt,
         opt.logger.debug(f'Created image for {text_batch[j]} at {image_save_path}.') 
         
 
+def rescale_tensor(x):
+    y = 2 * (x - torch.min(x)) / (torch.max(x) - torch.min(x)) - 1
+    return y
+
+
 def main():
     
     #
@@ -301,7 +327,7 @@ def main():
         text_list=None
     
     #
-    imagen_dataset = get_train_valid_ds(opt=opt, testing=True)
+    imagen_dataset = get_train_valid_ds(opt=opt, testing=True, return_text=True)
     imagen_dataloader = get_train_valid_dl(opt=opt, train_dataset=imagen_dataset)
     
     imagen_model= Imagen_Model(opt=opt, testing=True)

@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
+from PIL import Image
 from os.path import exists as file_exists
 from dalle2_pytorch import DALLE2, DiffusionPriorNetwork, DiffusionPrior, Decoder, CLIP, Unet, OpenClipAdapter, DecoderTrainer, DiffusionPriorTrainer
 
@@ -41,7 +42,9 @@ class OpenClipAdapterWithContextLength(OpenClipAdapter):
 
 class Prior_Model():
     
-    def __init__(self, opt: Opt):
+    def __init__(self, opt: Opt, testing=False):
+        
+        self.testing = testing
         
         if opt.conductor['trainer']['early_stopping']['usage']:
             self.loss_queue = EarlyStopping(opt_early_stopping=opt.conductor['trainer']['early_stopping'])
@@ -96,7 +99,7 @@ class Prior_Model():
         if file_exists(opt.dalle2['diffusion_prior_trainer']['model_save_path']) and opt.dalle2['diffusion_prior']['use_existing_model']:
             self.diffusion_prior_trainer.load(opt.dalle2['diffusion_prior_trainer']['model_save_path'])
         
-        else:
+        if not self.testing:
             
             image_embeds_save_dir_path = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_IMAGE_EMBEDDING_DIR'])
             text_embeds_save_dir_path = os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['clip']['PATH_CLIP_TEXT_EMBEDDING_DIR'])
@@ -168,10 +171,10 @@ class Prior_Model():
 
 class Dalle2_Model(DALLE2):
     
-    def __init__(self, opt: Opt):
+    def __init__(self, opt: Opt, testing=False):
 
         prior = Prior_Model(opt=opt)
-        
+        self.testing=testing
         #
         decoder_trainer = self._create_decoder_(opt=opt, 
                                                 clip=prior.clip)
@@ -200,7 +203,8 @@ class Dalle2_Model(DALLE2):
         if file_exists(opt.dalle2['decoder_trainer']['model_save_path']) and opt.dalle2['decoder']['use_existing_model']:
             decoder_trainer.load(opt.dalle2['decoder_trainer']['model_save_path'])
             
-        else:
+        if not self.testing:
+            
             decoder_trainer = _train_decoder_(opt=opt, decoder_trainer=decoder_trainer)
             
             decoder_trainer.save(opt.dalle2['decoder_trainer']['model_save_path'])
@@ -223,16 +227,23 @@ def main():
     #
     opt=Opt()
     
-    dalle2=Dalle2_Model(opt=opt)
+    dalle2=Dalle2_Model(opt=opt, testing=False)
     
-    image = dalle2(['grasper grasp gallbladder'],
-                    # classifier free guidance strength (> 1 would strengthen the condition)
-                    cond_scale=2.0,
-                    return_pil_images = True
-                    )
+    # Dataloader
+    train_dataset, valid_dataset = get_train_valid_ds(opt=opt, return_text=True, return_embeds=False)
+    train_dl, valid_dl = get_train_valid_dl(opt=opt, train_dataset=train_dataset, valid_dataset=valid_dataset)
     
-    image[0].save('./results/image_test_dalle2.png')
+    image_batch, text_encodings, text_batch = next(iter(train_dl))
     
+    images = dalle2(text_batch,
+                # classifier free guidance strength (> 1 would strengthen the condition)
+                cond_scale=opt.conductor['validation']['cond_scale'],
+                return_pil_images = True
+                )
+    
+    for i, image in enumerate(images):
+        image.save(f'/home/kit/stud/uerib/SyntheticImageGeneration/results/image_{i}_dalle2.png')
+
 if __name__ == '__main__':
     main()
     

@@ -3,11 +3,12 @@
 #
 cd 
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/sripts.tgz SyntheticImageGeneration/scripts/
-tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz SyntheticImageGeneration/src/assets/
+#tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz SyntheticImageGeneration/src/assets/
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/components.tgz SyntheticImageGeneration/src/components/
-#tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/venv.tgz SyntheticImageGeneration/venv/
+tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/venv.tgz SyntheticImageGeneration/venv/
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/configs.tgz SyntheticImageGeneration/configs/
 #tar -cvzf $(ws_find data-ssd)/cache_config.tgz .cache/huggingface/
+#tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/data/CholecT50.tgz SyntheticImageGeneration/data/CholecT50/
 
 cd SyntheticImageGeneration
 source venv/bin/activate
