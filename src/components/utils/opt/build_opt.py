@@ -27,7 +27,7 @@ class Opt():
         self.imagen = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/models/config_imagen.yaml'))
         self.elucidated_imagen = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/models/config_elucidated_imagen.yaml'))
         self.dalle2 = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/models/config_dalle2.yaml'))
-        #self.rendevouz = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/models/config_rendevouz.yaml'))
+        self.rendevouz = _get_config_(path=os.path.join(self.base['PATH_BASE_DIR'],'configs/models/config_rendevouz.yaml'))
         self.logger.debug(f'Model configs loaded')
                
         # Visualization tools

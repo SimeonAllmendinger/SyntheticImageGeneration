@@ -14,6 +14,7 @@ from datetime import datetime
 from os.path import exists as file_exists
 from PIL import Image
 from tqdm import tqdm
+from torchvision import transforms as T
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.image.fid import FrechetInceptionDistance
 from torchmetrics.image.kid import KernelInceptionDistance
@@ -23,6 +24,7 @@ from src.components.utils.opt.build_opt import Opt
 from src.components.utils.neptune.neptune_ai import Neptune_AI
 from src.components.imagen.model.build_imagen import Imagen_Model
 from src.components.data_manager.dataset_handler import get_train_valid_ds, get_train_valid_dl
+from src.components.dalle2.model.build_dalle2 import Dalle2_Model
 
 parser = argparse.ArgumentParser(
                 prog='SyntheticImageGeneration',
@@ -36,7 +38,7 @@ parser.add_argument('--path_data_dir',
 
 def test_text2images(opt: Opt, 
                      sample_dataloader, 
-                     imagen_model: Imagen_Model, 
+                     model, 
                      unet_number: int, 
                      sample_quantity: int,
                      save_samples: bool,
@@ -57,13 +59,20 @@ def test_text2images(opt: Opt,
     
     #
     if model_type == 'Imagen':
-        real_image_save_path = sample_folder + f"imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
-        synthetic_image_save_path = sample_folder + f"imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
+        real_image_save_path = sample_folder + f"imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        synthetic_image_save_path = sample_folder + f"imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        imagen_model = model
     
     elif model_type == 'ElucidatedImagen':
-        real_image_save_path = sample_folder + f"elucidated_imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
-        synthetic_image_save_path = sample_folder + f"elucidated_imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}_Seg8k/{seed:02d}/"
+        real_image_save_path = sample_folder + f"elucidated_imagen/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        synthetic_image_save_path = sample_folder + f"elucidated_imagen/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        imagen_model = model
         
+    elif model_type == 'Dalle2':
+        real_image_save_path = sample_folder + f"dalle2/real_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        synthetic_image_save_path = sample_folder + f"dalle2/synthetic_images/cond_scale_{cond_scale}_dtp95_{loss_weighting}/{seed:02d}/"
+        dalle2_model = model
+    
     #
     lower_batch = opt.conductor['testing']['lower_batch']
     upper_batch = opt.conductor['testing']['upper_batch']
@@ -79,20 +88,23 @@ def test_text2images(opt: Opt,
                 if i < lower_batch or i > upper_batch:
                     continue
                 
-                opt.logger.debug(f'image_batch: {image_batch.size()}')
-                opt.logger.debug(f'embed_batch: {embed_batch.size()}')
-                opt.logger.debug(f'text_batch: {text_batch}')
-                opt.logger.debug(f'torch cuda info: {torch.cuda.mem_get_info()}')
-                
                 if i >= int(sample_quantity / opt.conductor['trainer']['batch_size']):
                     break
                 
-                # sample an image based on the text embeddings from the cascading ddpm
-                synthetic_image_batch = imagen_model.trainer.sample(text_embeds=embed_batch.cuda(),
-                                                                    return_pil_images=False,
-                                                                    stop_at_unet_number=unet_number,
-                                                                    # use_tqdm=not tqdm_disable,
-                                                                    cond_scale=opt.conductor['testing']['cond_scale'])
+                if model_type == 'Imagen' or model_type == 'ElucidatedImagen':
+        
+                    # sample an image based on the text embeddings from the cascading ddpm
+                    synthetic_image_batch = imagen_model.trainer.sample(text_embeds=embed_batch.cuda(),
+                                                                        return_pil_images=False,
+                                                                        stop_at_unet_number=unet_number,
+                                                                        # use_tqdm=not tqdm_disable,
+                                                                        cond_scale=opt.conductor['testing']['cond_scale'])
+                elif model_type == 'Dalle2':
+                    synthetic_image_batch = dalle2_model(text_batch,
+                                                        # classifier free guidance strength (> 1 would strengthen the condition)
+                                                        cond_scale=opt.conductor['testing']['cond_scale'],
+                                                        return_pil_images=False
+                                                        )
 
                 #
                 opt.logger.info('Clamp Tensors')
@@ -226,6 +238,11 @@ def test_text2images(opt: Opt,
         if opt.conductor['testing']['LearnedPerceptualImagePatchSimilarity']['usage']:
             lpips_mean = np.mean(lpips_batch_score_list)
             opt.logger.info(f'lpips_mean: {lpips_mean}')
+            pd.DataFrame({'cond_scale': cond_scale,
+                          'Dataset': opt.datasets['data']['dataset'],
+                          'Model': model_type,
+                          'lpips': lpips_batch_score_list}).to_json(
+                synthetic_image_save_path + timestamp + '_lpips.json')
         else:
             lpips_mean = None
             
@@ -249,24 +266,101 @@ def test_text2images(opt: Opt,
         
     #
     else:
-        # sample an image based on the text embeddings from the cascading ddpm
-        synthetic_images = imagen_model.trainer.sample(texts=text_list,
+        
+        batch_size = opt.conductor['trainer']['batch_size']
+        
+        if opt.conductor['testing']['cond_scale'] == 3:
+            save_real_images(opt=opt, real_image_save_path=real_image_save_path)
+        
+        for i in range(int(np.ceil(len(text_list)/100))):
+            
+            if i < lower_batch or i > upper_batch:
+                continue
+            
+            if (i+1)*batch_size >= len(text_list):
+                text_list_batch = text_list[i*batch_size:]
+            else:
+                text_list_batch = text_list[i*batch_size:(i+1)*batch_size]
+                
+            if model_type == 'Imagen' or model_type == 'ElucidatedImagen':
+                # sample an image based on the text embeddings from the cascading ddpm
+                synthetic_images = imagen_model.trainer.sample(texts=text_list_batch,
                                                             return_pil_images=True,
                                                             stop_at_unet_number=unet_number,
                                                             use_tqdm=not tqdm_disable,
                                                             cond_scale=opt.conductor['testing']['cond_scale'])
+            
+            elif model_type == 'Dalle2':
+                #
+                synthetic_image_batch = dalle2_model(text_list_batch,
+                                                    # classifier free guidance strength (> 1 would strengthen the condition)
+                                                    cond_scale=opt.conductor['testing']['cond_scale'],
+                                                    return_pil_images=True
+                                                    )
 
-        for j, synthetic_image in enumerate(synthetic_images):
-            image_save_path_dir = os.path.join(synthetic_image_save_path, 'evaluation', text_list[j]) 
+            for j, synthetic_image in enumerate(synthetic_images):
+                image_index = batch_size * i + j
+                image_save_path_dir = synthetic_image_save_path + f'evaluation/{text_list[image_index]}/'
+                
+                if not file_exists(image_save_path_dir):
+                    os.mkdir(image_save_path_dir)
+                
+                image_save_path = os.path.join(image_save_path_dir, f"{image_index:05d}-{opt.conductor['model']['model_type']}-{text_list[image_index]}.png")
+                synthetic_image.save(image_save_path)
+            
+                
+def save_real_images(opt: Opt, real_image_save_path: str):
+    
+    text_dict_index = opt.conductor['testing']['text_dict_index']
+    text_dict = np.zeros(100)
+    text_dict[text_dict_index] = 1
+    
+    folder=os.path.join(opt.datasets['PATH_DATA_DIR'], opt.datasets['data'][opt.datasets['data']['dataset']]['PATH_VIDEO_DIR'])
+    transform = T.Compose([
+            T.Resize(opt.datasets['data']['image_size']),
+            T.CenterCrop(opt.datasets['data']['image_size'])
+        ])
+    
+    n = 0
+    
+    for video_index in tqdm(range(1,81)):
+        try:
+            triplet_labels = np.loadtxt(f'/home/kit/stud/uerib/SyntheticImageGeneration/data/CholecT45/triplet/VID{video_index:02d}.txt', dtype=np.int32, delimiter=',')
+            phase_labels = pd.read_csv(f'/home/kit/stud/uerib/SyntheticImageGeneration/data/Cholec80/phase_annotations/video{video_index:02d}-phase.txt', sep='\t')
+        except FileNotFoundError:
+            continue
+        
+        triplet_indices = np.where(np.all(triplet_labels[:, 1:]==text_dict,axis=1))[0]
+        
+        for image_index in triplet_indices:
+            if phase_labels.iloc[image_index*25,1] != opt.conductor['testing']['phase_name']:
+                continue
+            
+            path = os.path.join(folder, f'VID{video_index:02d}/{int(image_index):06d}.png')
+            image = Image.open(path)
+
+            # Transform Image
+            image = transform(image)
+            
+            # Save Image
+            image_save_path_dir = real_image_save_path + f"evaluation/{opt.conductor['testing']['text']}/"
             
             if not file_exists(image_save_path_dir):
                 os.mkdir(image_save_path_dir)
             
-            image_save_path = os.path.join(image_save_path_dir, f"u{unet_number}-{opt.conductor['model']['model_type']}-{j:05d}-{text_list[j]}.png")
-            synthetic_image.save(image_save_path)
-
- 
-
+            image_save_path = os.path.join(image_save_path_dir, f"{n:05d}-{opt.conductor['model']['model_type']}-{opt.conductor['testing']['text']}.png")
+            image.save(image_save_path)
+            
+            # Update Counter
+            n+=1               
+            if n >= opt.conductor['testing']['sample_quantity']:
+                break
+        
+        # Update Counter                
+        if n >= 1000:
+            break
+            
+        
 def save_images(opt: Opt, 
                 images, 
                 text_batch: list,
@@ -319,6 +413,7 @@ def main():
     unet_number=opt.conductor['testing']['unet_number']
     save_samples=opt.conductor['testing']['save_samples']
     save_image_tensors=opt.conductor['testing']['save_image_tensors']
+    model_type=opt.conductor['model']['model_type']
     
     if opt.conductor['testing']['text'] != '':
         text = opt.conductor['testing']['text']
@@ -329,10 +424,14 @@ def main():
     #
     imagen_dataset = get_train_valid_ds(opt=opt, testing=True, return_text=True)
     imagen_dataloader = get_train_valid_dl(opt=opt, train_dataset=imagen_dataset)
-    
-    imagen_model= Imagen_Model(opt=opt, testing=True)
     _, sample_text_embed, _ = imagen_dataset.__getitem__(index=0)
-
+    
+    
+    if model_type == 'Imagen' or model_type == 'ElucidatedImagen':
+        model= Imagen_Model(opt=opt, testing=True)
+    elif model_type == 'Dalle2':
+        model= Dalle2_Model(opt=opt, testing=True)
+        
     # Make results test folder with timestamp
     test_sample_folder = os.path.join(
         '/home/kit/stud/uerib/SyntheticImageGeneration/', opt.conductor['testing']['PATH_TEST_SAMPLE'])
@@ -340,7 +439,7 @@ def main():
     #
     results = test_text2images(opt=opt,
                                sample_dataloader=imagen_dataloader,
-                               imagen_model=imagen_model,
+                               model=model,
                                unet_number=unet_number,
                                sample_quantity=sample_quantity,
                                save_samples=save_samples,

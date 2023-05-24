@@ -85,7 +85,6 @@ accelerate=$(yq e '.params.accelerate' $config_file)
 if [ "$test" = true ] ;
 then
     echo "----- TESTING -----"
-    #accelerate launch 
     ./venv/bin/python3 src/components/rendezvous/pytorch/run.py -e --data_dir=$data_dir --dataset_variant=$dataset_variant --use_ln --kfold $kfold --batch $batch --version=$version --test_ckpt=$test_ckpt
 fi
 
@@ -93,7 +92,6 @@ fi
 if [ "$train" = true ]
 then
     echo "----- TRAINING -----"
-    #accelerate launch 
     ./venv/bin/python3 \
         src/components/rendezvous/pytorch/run.py -t \
         --data_dir=$data_dir \

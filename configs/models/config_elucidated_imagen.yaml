@@ -45,7 +45,7 @@ unet2:
     - False
     - True
 
-# Imagen
+# Elucidated Imagen Model
 elucidated_imagen:
 
   # Parameter
@@ -54,13 +54,13 @@ elucidated_imagen:
     - 256
 
   # Text Embedding
-  text_embed_dim: 768 #T5: 768 | OHE: 29 (with phase label: 36)
-  text_encoder_name: google/t5-v1_1-base # T5: google/t5-v1_1-base | OHE: ohe_encoder
+  text_embed_dim: 768                     #T5: 768
+  text_encoder_name: google/t5-v1_1-base  # T5: google/t5-v1_1-base
 
   # Variables
   lowres_sample_noise_level: 0.2
   dynamic_thresholding_percentile: 0.95   # 0.95
-  only_train_unet_number: 1               # None
+  only_train_unet_number: None            # None
   lowres_noise_schedule: linear           # linear
   num_sample_steps: 32                    # (64, 32)
   cond_drop_prob: 0.1

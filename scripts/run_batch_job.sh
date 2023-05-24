@@ -1,14 +1,14 @@
 #!/bin/bash
 
-#
+# Create tar files on temp drive
 cd 
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/sripts.tgz SyntheticImageGeneration/scripts/
-#tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz SyntheticImageGeneration/src/assets/
+tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz SyntheticImageGeneration/src/assets/
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/components.tgz SyntheticImageGeneration/src/components/
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/venv.tgz SyntheticImageGeneration/venv/
 tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/configs.tgz SyntheticImageGeneration/configs/
-#tar -cvzf $(ws_find data-ssd)/cache_config.tgz .cache/huggingface/
-#tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/data/CholecT50.tgz SyntheticImageGeneration/data/CholecT50/
+tar -cvzf $(ws_find data-ssd)/cache_config.tgz .cache/huggingface/
+tar -cvzf $(ws_find data-ssd)/SyntheticImageGeneration/data/CholecT45.tgz SyntheticImageGeneration/data/CholecT45/
 
 cd SyntheticImageGeneration
 source venv/bin/activate
@@ -31,10 +31,7 @@ nodes=$(yq e '.args.nodes' $config_file)
 ntasks=$(yq e '.args.ntasks' $config_file)
 ntasks_per_node=$(yq e '.args.ntasks_per_node' $config_file)
 cpus_per_task=$(yq e '.args.cpus_per_task' $config_file)
-mem=$(yq e '.args.mem' $config_file)
-mem_per_cpu=$(yq e '.args.mem_per_cpu' $config_file)
 mem_per_gpu=$(yq e '.args.mem_per_gpu' $config_file)
-cpu_per_gpu=$(yq e '.args.cpu_per_gpu' $config_file)
 mail_type=$(yq e '.args.mail_type' $config_file)
 mail_user=$(yq e '.args.mail_user' $config_file)
 output=$(yq e '.args.output' $config_file)
@@ -44,10 +41,16 @@ partition=$(yq e '.args.partition' $config_file)
 gres=$(yq e '.args.gres' $config_file)
 job=$(yq e '.args.job' $config_file)
 
-sbatch --partition=$partition --gres=$gres --time=$time --nodes=$nodes --ntasks=$ntasks --mem-per-gpu=$mem_per_gpu --ntasks-per-node=$ntasks_per_node --mail-type=$mail_type --mail-user=$mail_user --output=$output --error=$error --cpus-per-task=$cpus_per_task --job-name=$job_name --reservation=$reservation $job 
-    #--cpu-per-gpu=$cpu_per_gpu  --mem-per-cpu=$mem_per_cpu  --mem=$mem 
+if [[ $job == 'salloc' ]]; then
+    # Actions to be performed when $job equals 'salloc'
+    echo "salloc"
+    salloc --partition=$partition --gres=$gres --time=$time --nodes=$nodes --ntasks=$ntasks --mem-per-gpu=$mem_per_gpu --ntasks-per-node=$ntasks_per_node --cpus-per-task=$cpus_per_task
+    
+else
+    # Actions to be performed when $job is not equal to 'salloc'
+    echo "sbatch"
+    sbatch --partition=$partition --gres=$gres --time=$time --nodes=$nodes --ntasks=$ntasks --mem-per-gpu=$mem_per_gpu --ntasks-per-node=$ntasks_per_node --mail-type=$mail_type --mail-user=$mail_user --output=$output --error=$error --cpus-per-task=$cpus_per_task --job-name=$job_name --reservation=$reservation $job 
+    
+fi
 
 squeue
-
-#salloc --partition=$partition --gres=$gres --time=$time --nodes=$nodes --ntasks=$ntasks --mem-per-gpu=$mem_per_gpu --ntasks-per-node=$ntasks_per_node --cpus-per-task=$cpus_per_task
- 

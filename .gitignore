@@ -9,19 +9,18 @@ results/*.png
 results/tuning/*
 results/training/*
 results/testing/*
-results/archive/*
+results/TSNE/*
 results/rendevouz/*
 
 # Configs
-configs/config_neptune.yaml
-configs/config_wandb.yaml
+configs/visualization/config_neptune.yaml
+configs/visualization/config_wandb.yaml
 
 ###
 .vscode
 homebrew
 scripts/stderr.txt
 scripts/stdout.txt
-**__pycache__**
 
 # Neptune-Client
 .neptune
@@ -30,6 +29,7 @@ scripts/stdout.txt
 src/assets/imagen/models/*.pt
 src/assets/elucidated_imagen/models/*.pt
 src/assets/dalle2/models/*.pt
+src/assets/rendevouz/*.pt
 
 # Embeddings
 src/assets/data/CholecT45/clip_embeds/*
@@ -47,9 +47,6 @@ src/assets/data/CholecSeg8k/data_frames/*
 *__pycache__*
 *.py[cod]
 *$py.class
-
-# C extensions
-*.so
 
 # Distribution / packaging
 .Python
@@ -72,53 +69,6 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
 # Jupyter Notebook
 .ipynb_checkpoints
 
@@ -129,23 +79,6 @@ ipython_config.py
 # pyenv
 .python-version
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
 # Environments
 .env
 .venv
@@ -154,21 +87,3 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/

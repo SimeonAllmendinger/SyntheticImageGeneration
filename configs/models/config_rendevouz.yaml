@@ -1,7 +1,7 @@
 type:
   # job
-  train: true
-  test: false
+  train: true # true
+  test: false # false
 
 data:
   dataset_variant: cholect45-crossval             # cholect50, cholect45, cholect50-challenge, cholect50-crossval, cholect45-crossval
@@ -11,8 +11,8 @@ data:
   image_height: 256                               # default=256 
 
   # weights
-  test_ckpt: ./src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth      # path to pretrain_weight?
-  pretrain_dir: ./src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth   # path to model weight for testing
+  test_ckpt: ./results/rendevouz/run_1/ElucidatedImagen-5-rendezvous_l8_cholectcholect45-crossval_k4_batchnorm_lowres.pth   # path to model weight for testing
+  pretrain_dir: ./src/assets/rendevouz/rendezvous_l8_cholect50_crossval_k4_layernorm_lowres.pth                             # path to pretrain_weight?
 
 params:
   # model
@@ -22,8 +22,12 @@ params:
 
   #hp
   batch: 32
-  epochs: 100
+  epochs: 200
   version: 1
 
   # device
   gpu: 0 #,1,2             # The gpu device to use. To use multiple gpu put all the device ids comma-separated, e.g: "0,1,2"
+
+synthetic_data:
+  cond_scale: 0
+  model: Base

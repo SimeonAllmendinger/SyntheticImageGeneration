@@ -1,4 +1,4 @@
-PATH_DATA_DIR: /home/kit/stud/uerib/SyntheticImageGeneration/
+PATH_DATA_DIR: /home/kit/stud/uerib/SyntheticImageGeneration
 data:
   Cholec80:
     PATH_PHASE_LABELS: ./data/Cholec80/phase_annotations/
