@@ -10,7 +10,6 @@ numpy==1.24.2
 open_clip_torch==2.16.0
 opencv_python==4.7.0.68
 pandas==1.5.3
-Pillow==9.4.0
 Pillow==9.5.0
 ray==2.3.0
 Requests==2.31.0
