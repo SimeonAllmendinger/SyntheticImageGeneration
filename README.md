@@ -4,7 +4,7 @@ Master Thesis
 ## Clone Repository
 
 ```
-git clone 
+git clone https://git.scc.kit.edu/xq5986/master-thesis-simeon-allmendinger.git
 cd SyntheticImageGeneration
 ```
 
@@ -36,6 +36,17 @@ git submodule init
 git submodule update --remote
 git submodule add https://github.com/CAMMA-public/rendezvous.git
 ```
+
+## git LFS
+
+Install git LFS with homebrew: https://brew.sh/index_de
+```
+brew install git-lfs
+git lfs install
+git lfs track "*.pt"
+git add .gitattributes
+```
+
 ## Results
 Before running the code, create a directory to store the results:
 
@@ -55,6 +66,7 @@ To download the required datasets (CholecT45, CholecSeg8k, CholecT50, Cholec80),
 1. Create a directory to store the data:
 
 ```
+cd
 cd SyntheticImageGeneration
 mkdir data
 cd data
@@ -67,14 +79,39 @@ cd data
 -   CholecSeg8k: https://www.kaggle.com/datasets/newslab/cholecseg8k/download?datasetVersionNumber=11
 
 ### Preparation
-To prepare the data for the experiments, run the following script:
+To enable proper visualization please copy your configs in the according .yaml file:
 
+```
+cd
+cd SyntheticImageGeneration/configs/visualization/
+touch config_neptune.yaml
+touch config_wandb.yaml
+```
+
+1. Neptune.ai (https://neptune.ai):
+Insert your acceess configs in the file config_neptune.yaml 
+```
+project: "your-project-name" 
+api_token: "your-api-token"
+```
+2. Weights&Biases:
+Insert your access configs in the file config_neptune.yaml 
+```
+project: "your-project-name" 
+api_keey: "your-api-key"
+```
+
+To prepare the data for the experiments, run the following script:
 ```
 cd SyntheticImageGeneration
 ./scripts/run_test_rendevouz.sh
 ```
 
 ## SLURM
-If you are using SLURM for job scheduling, create a temporary directory for SLURM:
+If you are using SLURM for job scheduling and the bwunicluster HPC server, create a temporary directory in the server terminal (valid for 60 days):
 
-mkdir TMP
+```
+ws_allocate data-ssd 60
+cd $(ws_find data-ssd)
+mkdir SyntheticImageGeneration
+```
