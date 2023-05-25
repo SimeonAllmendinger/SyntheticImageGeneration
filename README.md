@@ -1,5 +1,7 @@
 # SyntheticImageGeneration
-Master Thesis
+Recent advancements in computer-generated synthetic images open up opportunities for obtaining additional data in the field of surgical imaging. This data can provide reliable supplements for surgical videos supporting training and simulation purposes. Our study presents a method for generating synthetic laparoscopic images from short text prompts using diffusion-based generative models. We demonstrate the usage of state-of-the-art text-to-image architectures in the context of laparoscopic imaging with regard to cholecystectomy surgery as an example. First, the three models Dalle2, Imagen, and Elucidated Imagen were trained to acquire knowledge about the style and semantics of laparoscopic images and assessed with FID, FCD, and KID scores among others to evaluate their potential. Our results show that the Imagen and Eluci- dated Imagen models outperform the Dall-e2 model in terms of fidelity and diversity of the produced images. Second, the performance of a state-of-the-art machine learn- ing task in medical imaging is evaluated, which exhibits promising indications when trained with our additional synthetic images. Moreover, this work also introduces a questionnaire to measure the persuasive power of the synthetic images on partici- pants with medical and non-medical backgrounds and discusses current limitations of computer-generated laparoscopic images. Overall, the findings contribute to the development of computer-generated images that can certainly become an essential data tool in surgical research and practice.
+
+This repository is the code base used for our research. Please follow the guide:
 
 ## Clone Repository
 
@@ -26,6 +28,11 @@ source venv/bin/activate
 
 ```
 pip install -r requirements.txt
+```
+## Testing
+To test the generation of laparoscopic images by the Elucidated Imagen model, please do the following:
+```
+./test.sh
 ```
 
 ## Submodules
