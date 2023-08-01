@@ -10,7 +10,7 @@ import numpy as np
 from imagen_pytorch.t5 import t5_encode_text
 
 from src.components.utils.opt.build_opt import Opt
-from src.components.data_manager.preprocessing.triplet_coding import _load_text_data_, get_df_triplets
+from src.components.data_manager.preprocessing.triplet_coding import load_text_data, get_df_triplets
 
 
 def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: list, opt: Opt):
@@ -38,7 +38,7 @@ def get_text_ohe_embedding(triplet_dict_indices: list, phase_label_encoding: lis
         
         # Get dictionary .txt file of triplet mapping
         path_dict_maps=os.path.join(opt.datasets['PATH_DATA_DIR'],opt.datasets['data']['CholecT45']['PATH_DICT_DIR'] + 'maps.txt')
-        map_dict = _load_text_data_(opt=opt, path=path_dict_maps)
+        map_dict = load_text_data(opt=opt, path=path_dict_maps)
         
         if opt.datasets['data']['Cholec80']['use_phase_labels']:
             triplet_ohe_embeds = np.zeros((len(triplet_dict_indices),3,29+7)) # add 7 surgical phases

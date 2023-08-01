@@ -272,7 +272,9 @@ def test_text2images(opt: Opt,
         if opt.conductor['testing']['cond_scale'] == 3:
             save_real_images(opt=opt, real_image_save_path=real_image_save_path)
         
-        for i in range(int(np.ceil(len(text_list)/100))):
+        for i in tqdm(range(int(np.ceil(len(text_list)/100)))):
+            
+            print(f'Iterator: {i}')
             
             if i < lower_batch or i > upper_batch:
                 continue
@@ -289,7 +291,7 @@ def test_text2images(opt: Opt,
                                                             stop_at_unet_number=unet_number,
                                                             use_tqdm=not tqdm_disable,
                                                             cond_scale=opt.conductor['testing']['cond_scale'])
-            
+                                        
             elif model_type == 'Dalle2':
                 #
                 synthetic_image_batch = dalle2_model(text_list_batch,
@@ -307,6 +309,9 @@ def test_text2images(opt: Opt,
                 
                 image_save_path = os.path.join(image_save_path_dir, f"{image_index:05d}-{opt.conductor['model']['model_type']}-{text_list[image_index]}.png")
                 synthetic_image.save(image_save_path)
+                print(f'Image Index: {image_index}')
+                
+        return None
             
                 
 def save_real_images(opt: Opt, real_image_save_path: str):
@@ -451,10 +456,11 @@ def main():
                                )
 
     #
-    opt.logger.info(f'FRECHET INCEPTION DISTANCE (FID): {results["FID"]}')
-    opt.logger.info(f'KERNEL INCEPTION DISTANCE (KID): mean {results["KID_mean"]} | std {results["KID_std"]}')
-    opt.logger.info(f'CLEAN - FRECHET INCEPTION DISTANCE (clean-fid): {results["Clean_FID"]}')
-    opt.logger.info(f'FRECHET CLIP DISTANCE (FCD): {results["FCD"]}')  
+    if results is not None:
+        opt.logger.info(f'FRECHET INCEPTION DISTANCE (FID): {results["FID"]}')
+        opt.logger.info(f'KERNEL INCEPTION DISTANCE (KID): mean {results["KID_mean"]} | std {results["KID_std"]}')
+        opt.logger.info(f'CLEAN - FRECHET INCEPTION DISTANCE (clean-fid): {results["Clean_FID"]}')
+        opt.logger.info(f'FRECHET CLIP DISTANCE (FCD): {results["FCD"]}')  
 
     neptune_ai.stop_neptune_run(opt=opt)
 

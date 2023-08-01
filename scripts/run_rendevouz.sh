@@ -82,18 +82,18 @@ gpu=$(yq e '.params.gpu' $config_file)
 accelerate=$(yq e '.params.accelerate' $config_file)
 
 # Use the variables to start the script
-if [ "$test" = true ] ;
-then
-    echo "----- TESTING -----"
-    ./venv/bin/python3 src/components/rendezvous/pytorch/run.py -e --data_dir=$data_dir --dataset_variant=$dataset_variant --use_ln --kfold $kfold --batch $batch --version=$version --test_ckpt=$test_ckpt
-fi
+#if [ "$test" = true ] ;
+#then
+#    echo "----- TESTING -----"
+#    ./venv/bin/python3 src/components/rendezvous/pytorch/run.py -e --data_dir=$data_dir --dataset_variant=$dataset_variant --use_ln --kfold $kfold --batch $batch --version=$version --test_ckpt=$test_ckpt
+#fi
 
 # Use the variables to start the script
 if [ "$train" = true ]
 then
     echo "----- TRAINING -----"
     ./venv/bin/python3 \
-        src/components/rendezvous/pytorch/run.py -t \
+        src/components/rendezvous/pytorch/run.py -t -e\
         --data_dir=$data_dir \
         --dataset_variant=$dataset_variant \
         --kfold $kfold \

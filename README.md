@@ -105,13 +105,13 @@ api_token: "your-api-token"
 Insert your access configs in the file config_neptune.yaml 
 ```
 project: "your-project-name" 
-api_keey: "your-api-key"
+api_key: "your-api-key"
 ```
 
 To prepare the data for the experiments, run the following script:
 ```
 cd SyntheticImageGeneration
-./scripts/run_test_rendevouz.sh
+./scripts/run_data_preparation.sh
 ```
 
 ## SLURM
