@@ -13,11 +13,6 @@ if [ ! -d "$TMP/SyntheticImageGeneration/src/" ]; then
 fi
 
 # Extract compressed input data files on local SSD
-## Data
-if [ ! -d "$TMP/SyntheticImageGeneration/data/CholecT45/" ]; then
-    tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/data/CholecT45.tgz
-fi
-
 ## Assets
 if [ ! -d "$TMP/SyntheticImageGeneration/src/assets/" ]; then
     tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/src/assets.tgz
@@ -30,6 +25,11 @@ fi
 ## Configs
 if [ ! -d "$TMP/SyntheticImageGeneration/configs/" ]; then
     tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/configs.tgz
+fi
+
+## Data
+if [ ! -d "$TMP/SyntheticImageGeneration/data/CholecT45/" ]; then
+    tar -C $TMP/ -xvzf $(ws_find data-ssd)/SyntheticImageGeneration/data/CholecT45.tgz
 fi
 
 ## Virtual Environment

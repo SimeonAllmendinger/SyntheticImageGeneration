@@ -6,7 +6,7 @@ type:
 data:
   dataset_variant: cholect45-crossval             # cholect50, cholect45, cholect50-challenge, cholect50-crossval, cholect45-crossval
   data_dir: ./data/CholecT45
-  kfold: 4                                        # choices=[1,2,3,4,5,]. The test split in k-fold cross-validation
+  kfold: 1                                        # choices=[1,2,3,4,5,]. The test split in k-fold cross-validation
   image_width: 256                                # default=448
   image_height: 256                               # default=256 
 
@@ -30,5 +30,7 @@ params:
 
 synthetic_data:
   cond_scale: 5
-  model: ElucidatedImagen
-  max_synthetic_images: 8000
+  model: EluicdatedImagen
+  only_train_synthetic: True
+  max_synthetic_images_list: 
+    - 10000

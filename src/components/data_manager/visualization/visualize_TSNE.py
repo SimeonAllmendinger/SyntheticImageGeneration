@@ -88,4 +88,4 @@ for k in range(2):
 
 fig.legend(handles, labels, loc='lower center',ncols=3)   
 #fig.savefig(f'/home/kit/stud/uerib/SyntheticImageGeneration/results/TSNE/TSNE_{model_type}_{cond_scale}-{text}.png')
-fig.savefig(f'/home/kit/stud/uerib/SyntheticImageGeneration/results/TSNE/TSNE_{model_type}_ALL.png')
+fig.savefig(f'/home/kit/stud/uerib/SyntheticImageGeneration/results/TSNE/TSNE_{model_type}_{cond_scale}_10082023.png')
