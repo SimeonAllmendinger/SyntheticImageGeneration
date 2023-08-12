@@ -1,0 +1,22 @@
+/* Style Sheet of Github Page*/
+
+.row {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+}
+
+figure {
+  margin: 0;
+  margin-right: 20px;
+
+  width: 200px;
+  height: 400px;
+  /*background: white;*/
+}
+
+figcaption {
+    font-style: italic;
+    text-align: center;
+}
