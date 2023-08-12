@@ -1,0 +1,109 @@
+PATH_DATA_DIR: /home/kit/stud/uerib/SyntheticImageGeneration
+data:
+  Cholec80:
+    PATH_PHASE_LABELS: ./data/Cholec80/phase_annotations/
+    PATH_VIDEO_DIR: ./data/Cholec80/videos/
+    classes:
+      CalotTriangleDissection: calot triangle dissection
+      CleaningCoagulation: cleaning coagulation
+      ClippingCutting: clipping cutting
+      GallbladderDissection: gallbladder dissection
+      GallbladderPackaging: gallbladder packaging
+      GallbladderRetraction: gallbladder extraction
+      Preparation: preparation
+    fps: 25
+    use_phase_labels: true
+  CholecSeg8k:
+    PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecSeg8k/ohe_embeds.pkl
+    PATH_T5_EMBEDDING_FILE: ./src/assets/data/CholecSeg8k/t5_embeds/t5_unique_embeds.pkl
+    PATH_TRAIN_DF_FILE: ./src/assets/data/CholecSeg8k/data_frames/df_train.json
+    PATH_VIDEO_DIR: ./data/CholecSeg8k/
+    classes:
+      abdominal wall cavity:
+      - '#D28C8C'
+      adhesion:
+      - '#FF5500'
+      black background:
+      - '#7F7F7F'
+      blood vessel:
+      - '#003280'
+      cystic duct:
+      - '#FFFF00'
+      fluid:
+      - '#FF0000'
+      gallbladder:
+      - '#FFA0A5'
+      grasper:
+      - '#AAFF00'
+      gut:
+      - '#E7469C'
+      hook:
+      - '#A9FFB8'
+      liver:
+      - '#FF7272'
+      liver ligament:
+      - '#6F4A00'
+      omentum:
+      - '#BAB746'
+      - '#BAB74B'
+      white frame:
+      - '#FFFFFF'
+    clip:
+      PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecSeg8k/clip_embeds/image_embeds/
+      PATH_CLIP_IMAGE_ENCODING_FILE: ./src/assets/data/CholecSeg8k/clip_tokens/text_tokens.pt
+      PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecSeg8k/clip_embeds/text_embeds/
+      use_existing_embeds: false
+      use_existing_encodings: false
+    fps: 25
+    multi_classes:
+      abdominal wall cavity and adhesion:
+      - abdominal wall cavity
+      - adhesion
+      abdominal wall cavity and omentum:
+      - abdominal wall cavity
+      - omentum
+      abdominal wall cavity and omentum and liver:
+      - abdominal wall cavity
+      - omentum
+      - liver
+      gallbladder and grasper:
+      - gallbladder
+      - grasper
+      gallbladder and hoook:
+      - gallbladder
+      - hook
+      gallbladder and liver:
+      - gallbladder
+      - liver
+      gallbladder and liver and grasper:
+      - gallbladder
+      - liver
+      - grasper
+      gallbladder and liver and hook:
+      - gallbladder
+      - liver
+      - hook
+      gallbladder and omentum:
+      - gallbladder
+      - omentum
+      omentum and liver:
+      - omentum
+      - liver
+    single_classes: true
+  CholecT45:
+    PATH_DICT_DIR: ./data/CholecT45/dict/
+    PATH_OHE_EMBEDDING_FILE: ./src/assets/imagen/text_embeddings/CholecT45/ohe_embeds.pkl
+    PATH_T5_EMBEDDING_FILE: ./src/assets/data/CholecT45/t5_embeds/t5_unique_embeds.pkl
+    PATH_TRAIN_DF_FILE: ./src/assets/data/CholecT45/data_frames/df_triplets.json
+    PATH_TRIPLETS_DIR: ./data/CholecT45/triplet/
+    PATH_VIDEO_DIR: ./data/CholecT45/data/
+    clip:
+      PATH_CLIP_IMAGE_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/image_embeds/
+      PATH_CLIP_IMAGE_ENCODING_FILE: ./src/assets/data/CholecT45/clip_tokens/text_tokens.pt
+      PATH_CLIP_TEXT_EMBEDDING_DIR: ./src/assets/data/CholecT45/clip_embeds/text_embeds/
+      use_existing_embeds: true
+      use_existing_encodings: true
+    fps: 1
+  dataset: CholecT45
+  image_size: 480
+  use_existing_data_files: true

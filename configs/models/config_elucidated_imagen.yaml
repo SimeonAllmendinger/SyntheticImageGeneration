@@ -1,0 +1,82 @@
+## Architecture
+# U-Net 1
+unet1:
+  dim: 32
+  cond_dim: 512
+  dim_mults: 
+    - 1
+    - 2
+    - 4
+    - 8
+  num_resnet_blocks: 3
+  layer_attns:
+    - False
+    - True
+    - True
+    - True
+  layer_cross_attns: 
+    - False
+    - True
+    - True
+    - True
+
+# U-Net 2
+unet2:
+  dim: 32
+  cond_dim: 512
+  dim_mults: 
+    - 1
+    - 2
+    - 4
+    - 8
+  num_resnet_blocks:
+    - 2
+    - 4
+    - 8
+    - 8
+  layer_attns:
+    - False
+    - False
+    - False
+    - True
+  layer_cross_attns: 
+    - False
+    - False
+    - False
+    - True
+
+# Elucidated Imagen Model
+elucidated_imagen:
+
+  # Parameter
+  image_sizes:
+    - 64
+    - 256
+
+  # Text Embedding
+  text_embed_dim: 768                     #T5: 768
+  text_encoder_name: google/t5-v1_1-base  # T5: google/t5-v1_1-base
+
+  # Variables
+  lowres_sample_noise_level: 0.2
+  dynamic_thresholding_percentile: 0.95   # 0.95
+  only_train_unet_number: None            # None
+  lowres_noise_schedule: linear           # linear
+  num_sample_steps: 32                    # (64, 32)
+  cond_drop_prob: 0.1
+  sigma_min: 0.002                        # min noise level
+  sigma_max: 80                           # max noise level
+  sigma_data: 0.5                         # standard deviation of data distribution
+  rho: 7                                  # controls the sampling schedule
+  P_mean: -1.2                            # mean of log-normal distribution from which noise is drawn for training
+  P_std: 1.2                              # standard deviation of log-normal distribution from which noise is drawn for training
+  S_churn: 80                             # parameters for stochastic sampling - depends on dataset, Table 5 in apper
+  S_tmin: 0.05
+  S_tmax: 50
+  S_noise: 1.003
+
+ 
+  
+  
+
+  

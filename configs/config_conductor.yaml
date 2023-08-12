@@ -1,0 +1,119 @@
+## Conductor
+
+# Model
+model:
+  model_type: Imagen  # Imagen, ElucidatedImagen, Dalle2
+
+# Trainer
+trainer:
+
+  # Setup
+  multi_gpu: False # True | False
+
+  # Model
+  use_existing_model: False
+  PATH_MODEL_CHECKPOINT: elucidated_imagen_checkpoint.pt
+  PATH_MODEL_SAVE: ./src/assets/elucidated_imagen/models/elucidated_imagen_model_u2_p2_dtp95_T45.pt
+  PATH_MODEL_LOAD: ./src/assets/elucidated_imagen/models/elucidated_imagen_model_u1_p2_dtp95_T45.pt
+
+  # Imagen Trainer
+  split_valid_from_train: False
+  dl_tuple_output_keywords_names:
+    - images
+    - text_embeds
+
+  # Dataloader
+  shuffle: True
+  num_workers: 8    # 3 | 1
+  batch_size: 100    # Training: max. 16 for GPU with 32GB | Testing: max. 100 for GPU with 32GB
+  train_split: 0.9
+  valid_split: 0.1
+  
+  # Training
+  max_epochs: 2000
+  unet_number: 2 # train unet 1 or 2
+  param_tuning: False
+  early_stopping:
+    usage: False
+    threshold: 1.0e-8
+    queue_length: 20
+
+
+# Validation
+validation:
+  PATH_MODEL_VALIDATION: ./src/assets/elucidated_imagen/models/elucidated_imagen_checkpoint.pt
+  PATH_TRAINING_SAMPLE: ./results/training/
+
+  interval:
+    valid_loss: 20
+    validate_model: 5000
+
+  # Sampling
+  sample_quantity: 10
+  sample_seed: 1
+  cond_scale: 7  # 1 to 10 for image sampling
+
+
+# Testing
+testing:
+  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_model_u2_p2_dtp95_T45.pt
+  PATH_TEST_SAMPLE: ./results/testing/
+  
+  # Sampling
+  unet_number: 2
+  sample_quantity: 10000
+  sample_seed: 1
+  save_samples: True
+  save_image_tensors: True
+  only_triplets: True
+  cond_scale: 5  # 1 to 10
+  loss_weighting: p2   # p2
+  text: grasper retract gallbladder in calot triangle dissection # grasper retract liver in gallbladder dissection | hook dissect gallbladder in gallbladder dissection | grasper retract gallbladder in calot triangle dissection
+  text_dict_index: 17 #19 | 60 | 17
+  phase_name: CalotTriangleDissection # GallbladderDissection | GallbladderDissection | CalotTriangleDissection
+
+  # Batches
+  lower_batch: 87
+  upper_batch: 100 
+
+  # Frechet Inception Distance
+  FrechetInceptionDistance:
+    usage: False
+    params:
+      feature: 2048
+      reset_real_features: True
+      normalize: True
+
+  # Kernel Inception Distance
+  KernelInceptionDistance:
+    usage: False
+    params:
+      feature: 2048
+      subsets: 10
+      subset_size: 1000
+      reset_real_features: True
+      normalize: True
+
+  # Clean Fréchet Inception Distance
+  CleanFID:
+    usage: False
+    params:
+      mode: clean
+      model_name: inception_v3
+      num_workers: 8
+      batch_size: 36 
+
+  # Fréchet CLIP Distance
+  FrechetCLIPDistance:
+    usage: False
+    params:
+      mode: clean
+      model_name: clip_vit_b_32
+      num_workers: 8
+      batch_size: 36 
+
+  #
+  LearnedPerceptualImagePatchSimilarity:
+    usage: False
+    params:
+      net_type: vgg
