@@ -1,3 +1,5 @@
 # * @SimeonAllmendinger
 theme: minima
-
+author:
+  name: Simeon Allmendinger
+  email: "simeon.allmendinger@fim-rc.de"
