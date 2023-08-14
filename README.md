@@ -1,5 +1,26 @@
-# Navigating the Synthetic Realm: Harnessing Diffusion-based Models for Laparoscopic Image Generation
-Recent advancements in computer-generated synthetic images open up opportunities for obtaining additional data in the field of surgical imaging. This data can provide reliable supplements for surgical videos supporting training and simulation purposes. Our study presents a method for generating synthetic laparoscopic images from short text prompts using diffusion-based generative models. We demonstrate the usage of state-of-the-art text-to-image architectures in the context of laparoscopic imaging with regard to cholecystectomy surgery as an example. First, the three models Dalle2, Imagen, and Elucidated Imagen were trained to acquire knowledge about the style and semantics of laparoscopic images and assessed with FID, FCD, and KID scores among others to evaluate their potential. Our results show that the Imagen and Eluci- dated Imagen models outperform the Dall-e2 model in terms of fidelity and diversity of the produced images. Second, the performance of a state-of-the-art machine learn- ing task in medical imaging is evaluated, which exhibits promising indications when trained with our additional synthetic images. Moreover, this work also introduces a questionnaire to measure the persuasive power of the synthetic images on partici- pants with medical and non-medical backgrounds and discusses current limitations of computer-generated laparoscopic images. Overall, the findings contribute to the development of computer-generated images that can certainly become an essential data tool in surgical research and practice.
+<link href="./docs/style.css" rel="stylesheet"/>
+
+# About the generation of synthetic laparascopic images using diffusion-based models
+
+<div class="row">
+  <figure>
+    <h4>Dall-e2</h4>
+    <img src="./docs/assets/Dalle2/dalle2_3_T45-grasper%20retract%20gallbladder%20in%20preparation.png" alt="Dall-e2_3_CholecT45" width='250'>
+    <figcaption>"grasper retract gallbladder in preparation"</figcaption>
+  </figure>
+  <figure>
+    <h4>Imagen</h4>
+    <img src="./docs/assets/Imagen/Imagen_7_T45-grasper%20grasp%20gallbladder%20and%20grasper%20retract%20gallbladder%20and%20hook%20dissect%20gallbladder%20in%20calot%20triangle%20dissection.png" alt="Imagen_7_CholecT45" width='250'>
+    <figcaption>"grasper grasp gallbladder and grasper retract gallbladder and hook dissect gallbladder in calot triangle dissection"</figcaption>
+  </figure>
+  <figure>
+    <h4>Elucidated Imagen</h4>
+    <img src="./docs/assets/EluciatedImagen/ElucidatedImagen_5_T45-grasper%20retract%20gallbladder%20and%20grasper%20retract%20omentum%20and%20hook%20dissect%20omentum%20in%20calot%20triangle%20dissection.png" alt="Dall-e2" width='250'>
+    <figcaption>"grasper retract gallbladder and hook dissect gallbladder in calot triangle dissection"</figcaption>
+  </figure>
+</div>
+
+<div class="row"></div>
 
 This repository is the code base used for our research. Please follow the guide:
 
@@ -12,13 +33,13 @@ cd SyntheticImageGeneration
 
 ## Virtual Environment
 To set up a virtual environment, follow these steps:
-1. Create a virtual environment:
+1. Create a virtual environment with python version 3.8.12:
 
 ```
 python3 -m venv venv
 ```
 
-2. Activate the virtual environment with python version 3.8.12:
+2. Activate the virtual environment:
 
 ```
 source venv/bin/activate
@@ -30,18 +51,9 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 ## Testing
-To test the generation of laparoscopic images by the Elucidated Imagen model, please do the following:
+To test the generation of laparoscopic images with the Elucidated Imagen model, please do the following:
 ```
 ./test.sh
-```
-
-## Submodules
-This project utilizes submodules. To initialize and update the submodules, run the following commands:
-
-```
-git submodule init
-git submodule update --remote
-git submodule add https://github.com/CAMMA-public/rendezvous.git
 ```
 
 ## git LFS
@@ -82,11 +94,11 @@ cd data
 2. Download the datasets in this directory after successful registration: 
 -   Cholec80: https://docs.google.com/forms/d/1GwZFM3-GhEduBs1d5QzbfFksKmS1OqXZAz8keYi-wKI
 -   CholecT45: https://forms.gle/jTdPJnZCmSe2Daw7A
--   CholecT50: https://forms.gle/GbMj8TwNoNpMUJuv9
 -   CholecSeg8k: https://www.kaggle.com/datasets/newslab/cholecseg8k/download?datasetVersionNumber=11
+(-   CholecT50: https://forms.gle/GbMj8TwNoNpMUJuv9)
 
 ### Preparation
-To enable proper visualization please copy your configs in the according .yaml file:
+To enable dashboards please copy your configs of neptune.ai and wandb.ai in the according .yaml file:
 
 ```
 cd
