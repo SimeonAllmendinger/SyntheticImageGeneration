@@ -4,4 +4,4 @@ theme: minima
 email: simeon.allmendinger@fim-rc.de
 description: Using diffusion-based generative models, we were able to produce synthetic laparascopic images and investigate their value for CV-enabled surgical applications.
 # url: ""
-github_username:  SimeonAllmendinger
+#github_username:  SimeonAllmendinger

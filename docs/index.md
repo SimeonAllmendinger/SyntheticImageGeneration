@@ -5,17 +5,17 @@
 <div class="row">
   <figure>
     <h4>Dall-e2</h4>
-    <img src="./docs/assets/Dalle2/dalle2_3_T45-grasper%20retract%20gallbladder%20in%20preparation.png" alt="Dall-e2_3_CholecT45" width='250'>
+    <img src="./assets/Dalle2/dalle2_3_T45-grasper%20retract%20gallbladder%20in%20preparation.png" alt="Dall-e2_3_CholecT45" width='250'>
     <figcaption>"grasper retract gallbladder in preparation"</figcaption>
   </figure>
   <figure>
     <h4>Imagen</h4>
-    <img src="./docs/assets/Imagen/Imagen_7_T45-grasper%20grasp%20gallbladder%20and%20grasper%20retract%20gallbladder%20and%20hook%20dissect%20gallbladder%20in%20calot%20triangle%20dissection.png" alt="Imagen_7_CholecT45" width='250'>
+    <img src="./assets/Imagen/Imagen_7_T45-grasper%20grasp%20gallbladder%20and%20grasper%20retract%20gallbladder%20and%20hook%20dissect%20gallbladder%20in%20calot%20triangle%20dissection.png" alt="Imagen_7_CholecT45" width='250'>
     <figcaption>"grasper grasp gallbladder and grasper retract gallbladder and hook dissect gallbladder in calot triangle dissection"</figcaption>
   </figure>
   <figure>
     <h4>Elucidated Imagen</h4>
-    <img src="./docs/assets/EluciatedImagen/ElucidatedImagen_5_T45-grasper%20retract%20gallbladder%20and%20grasper%20retract%20omentum%20and%20hook%20dissect%20omentum%20in%20calot%20triangle%20dissection.png" alt="Dall-e2" width='250'>
+    <img src="./assets/EluciatedImagen/ElucidatedImagen_5_T45-grasper%20retract%20gallbladder%20and%20grasper%20retract%20omentum%20and%20hook%20dissect%20omentum%20in%20calot%20triangle%20dissection.png" alt="Dall-e2" width='250'>
     <figcaption>"grasper retract gallbladder and hook dissect gallbladder in calot triangle dissection"</figcaption>
   </figure>
 </div>
