@@ -20,7 +20,7 @@ To set up a virtual environment, follow these steps:
 1. Create a virtual environment with python version 3.8.12:
 
 ```
-python3 -m venv venv
+virtualenv venv -p $(which python3.8.12)
 ```
 
 2. Activate the virtual environment:
