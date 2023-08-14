@@ -1,6 +1,6 @@
 # * @SimeonAllmendinger
 theme: minima
-title: About the generation of synthetic laparascopic images using diffusion-based models
+#title: About the generation of synthetic laparascopic images using diffusion-based models
 email: simeon.allmendinger@fim-rc.de
 description: Using diffusion-based generative models, we were able to produce synthetic laparascopic images and investigate their value for CV-enabled surgical applications.
 # url: ""
