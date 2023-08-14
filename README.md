@@ -11,16 +11,16 @@ This repository is the code base used for our research. Please follow the guide:
 ## Clone Repository
 
 ```
-git clone https://git.scc.kit.edu/xq5986/master-thesis-simeon-allmendinger.git
+git clone https://github.com/SimeonAllmendinger/SyntheticImageGeneration.git
 cd SyntheticImageGeneration
 ```
 
 ## Virtual Environment
 To set up a virtual environment, follow these steps:
-1. Create a virtual environment with python version 3.8.12:
+1. Create a virtual environment with python version 3.9:
 
 ```
-virtualenv venv -p $(which python3.8.12)
+virtualenv venv -p $(which python3.9)
 ```
 
 2. Activate the virtual environment:
@@ -32,7 +32,7 @@ source venv/bin/activate
 3. Install the required packages:
 
 ```
-pip install -r requirements.txt
+pip install --no-cache-dir -r requirements.txt
 ```
 ## Testing
 To test the generation of laparoscopic images with the Elucidated Imagen model, please do the following:

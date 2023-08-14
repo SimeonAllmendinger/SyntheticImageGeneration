@@ -1,3 +1,5 @@
+!.gitignore
+
 # Components
 src/components/data_manager/settings.yml
 
