@@ -1,7 +1,0 @@
-[submodule "src/components/rendezvous"]
-	path = src/components/rendezvous
-	url = https://github.com/CAMMA-public/rendezvous.git
-
-[submodule "homebrew"]
-	path = homebrew
-	url = https://github.com/Homebrew/brew

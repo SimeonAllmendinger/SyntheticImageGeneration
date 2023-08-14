@@ -17,7 +17,7 @@
   </figure>
 </div>
 
-#
+
 
 <h2>Paper</h2>
 
@@ -29,6 +29,9 @@
 
 Please cite our paper if you refer to our work.
 
-```
-@article{}
-```
+<pre>
+  <code>
+    @article{}
+  </code>
+</pre>
+

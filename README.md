@@ -18,7 +18,7 @@ To set up a virtual environment, follow these steps:
 python3 -m venv venv
 ```
 
-2. Activate the virtual environment:
+2. Activate the virtual environment with python version 3.8.12:
 
 ```
 source venv/bin/activate

@@ -31,6 +31,6 @@ params:
 synthetic_data:
   cond_scale: 5
   model: EluicdatedImagen
-  only_train_synthetic: True
+  only_train_synthetic: False
   max_synthetic_images_list: 
     - 10000
