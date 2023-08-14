@@ -9,14 +9,14 @@ from imagen_pytorch import load_imagen_from_checkpoint
 parser = argparse.ArgumentParser(
                 prog='SyntheticImageGeneration',
                 description='Magic with Text2Image',
-                epilog='For help refer to uerib@student.kit.edu')
+                epilog='For help refer to simeon.allmendinger@fim-rc.de')
 
 parser.add_argument('--model',
                     default='ElucidatedImagen',
                     help='Please choose: Imagen or ElucidatedImagen')
 parser.add_argument('--text',
                     default='grasper grasp gallbladder in callot triangle dissection',
-                    help='Please write a text')
+                    help='Please write a text prompt')
 
 args = parser.parse_args()
 

@@ -34,10 +34,19 @@ source venv/bin/activate
 ```
 pip install --no-cache-dir -r requirements.txt
 ```
+
+## Download Model Weights
+To test the generation of laparoscopic images with the Elucidated Imagen model, please do the following:
+```
+cd src/assets/
+gdown --folder https://drive.google.com/drive/folders/1np4BON_jbQ1-15nVdgMCP1VKSbKS3h2M
+gdown --folder https://drive.google.com/drive/folders/1BNdUmmqN18K4_lH0BMk0bwRkiy8Sv6D-
+```
+
 ## Testing
 To test the generation of laparoscopic images with the Elucidated Imagen model, please do the following:
 ```
-./test.sh
+python3 src/components/test.py --model=ElucidatedImagen --text='grasper grasp gallbladder in callot triangle dissection'
 ```
 
 ## git LFS
