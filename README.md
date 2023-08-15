@@ -41,6 +41,7 @@ To test the generation of laparoscopic images with the Elucidated Imagen model, 
 cd src/assets/
 gdown --folder https://drive.google.com/drive/folders/1np4BON_jbQ1-15nVdgMCP1VKSbKS3h2M
 gdown --folder https://drive.google.com/drive/folders/1BNdUmmqN18K4_lH0BMk0bwRkiy8Sv6D-
+cd ../../
 ```
 
 ## Testing
@@ -60,7 +61,7 @@ git add .gitattributes
 ```
 
 ## Results
-Before running the code, create a directory to store the results:
+Before running the code for training, tuning and testing purposes, please create a directory to store the results:
 
 ```
 mkdir results
@@ -84,7 +85,7 @@ mkdir data
 cd data
 ```
 
-2. Download the datasets in this directory after successful registration: 
+2. Download the datasets into this directory after successful registration: 
 -   Cholec80: https://docs.google.com/forms/d/1GwZFM3-GhEduBs1d5QzbfFksKmS1OqXZAz8keYi-wKI
 -   CholecT45: https://forms.gle/jTdPJnZCmSe2Daw7A
 -   CholecSeg8k: https://www.kaggle.com/datasets/newslab/cholecseg8k/download?datasetVersionNumber=11
