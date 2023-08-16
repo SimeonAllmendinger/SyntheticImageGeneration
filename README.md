@@ -51,9 +51,9 @@ To test the generation of laparoscopic images with the pre-trained Elucidated Im
 python3 src/components/test.py --model=ElucidatedImagen --text='grasper grasp gallbladder in callot triangle dissection' --cond_scale=3
 ```
 
-You can apply the Imagen and ElucidatedImagen model, various conditiong scales and a suitable text prompt according to your desire! Feel free to try everything out. (The sampling of the Elucidated Imagen model also works well on a machine without GPU)
+You can apply the Imagen and Elucidated Imagen model, various conditiong scales and a suitable text prompt according to your desire! Feel free to try everything out. (The sampling of the Elucidated Imagen model also works well on a machine without GPU).
 
-The links of the diffusion-based model weights can be found in the table. Their hyperparameter configurations are contained in the config files respectively. [Model Config Folder](https://github.com/SimeonAllmendinger/SyntheticImageGeneration/tree/main/configs/models) :
+The hyperparameter configurations of the diffusion-based models are contained in the config file respectively ([Model Config Folder](https://github.com/SimeonAllmendinger/SyntheticImageGeneration/tree/main/configs/models)). Their weights can be found in the table:
 
 | Model             | Training Dataset          |    Link                           |
 | ---               | ---                       | ---                               |
@@ -142,7 +142,7 @@ Now, you are prepared to explore the code base in full extense!
 
 In the following, we display a selection of trained rendezvous model weights from the 4-fold cross-validation. Weights follow soon...
 
-| Model   | %2 of samples | %5 of samples  | %10 of samples | %20 of samples |
+| Model   | %2 samples | %5 samples  | %10 samples | %20 samples |
 | I5-RDV  | --- | --- | --- | --- |
 | EI5-RDV | --- | --- | --- | --- |
 
