@@ -104,7 +104,7 @@ cd data
 -   Cholec80: https://docs.google.com/forms/d/1GwZFM3-GhEduBs1d5QzbfFksKmS1OqXZAz8keYi-wKI
 -   CholecT45: https://forms.gle/jTdPJnZCmSe2Daw7A
 -   CholecSeg8k: https://www.kaggle.com/datasets/newslab/cholecseg8k/download?datasetVersionNumber=11
-(-   CholecT50: https://forms.gle/GbMj8TwNoNpMUJuv9)
+-   CholecT50: https://forms.gle/GbMj8TwNoNpMUJuv9
 
 ### Preparation
 To enable dashboards please copy your configs of neptune.ai and wandb.ai in the according .yaml file:
