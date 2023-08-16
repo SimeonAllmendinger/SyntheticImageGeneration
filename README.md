@@ -140,12 +140,11 @@ Now, you are prepared to explore the code base in full extense!
 
 ## Rendezvouz ([GitHub](https://github.com/CAMMA-public/rendezvous))
 
-In the following, we display a selection of trained rendezvous model weights from the 4-fold cross-validation. Weights follow soon...
+In the following, we provide trained rendezvous model weights from the 3-fold cross-validation:
 
-| Model   | %2 samples | %5 samples  | %10 samples | %20 samples |
-| I5-RDV  | --- | --- | --- | --- |
-| EI5-RDV | --- | --- | --- | --- |
-
+| Model   | %2 samples | %5 samples  | %10 samples | %20 samples | %25 samples |
+| I5-RDV  | [Weights](https://drive.google.com/file/d/1LC7OTJMVn_lPy1pucmHMnkRCz1BNnTBI/view?usp=share_link) | [Weights](https://drive.google.com/file/d/1rDyXPNh8vgj4yJwXotEGMNCYfOwVV9z6/view?usp=share_link) | [Weights](https://drive.google.com/file/d/1yqxXXb4-OfWJ4QniyZSJJgG_nyqMrsfy/view?usp=share_link) | [Weights](https://drive.google.com/file/d/1Cas_dBBBCqYOmzJacH_toFQqhSu_Naum/view?usp=share_link) | [Weights](https://drive.google.com/file/d/1a6STIJThlRYqIAgHRnbZACiceVrBMlPS/view?usp=share_link) |
+| EI5-RDV | [Weights](https://drive.google.com/file/d/1LC7OTJMVn_lPy1pucmHMnkRCz1BNnTBI/view?usp=share_link) |  [Weights](https://drive.google.com/file/d/1Miqj6ZPjqCLvuPjXEe9xgUuB3bQnLMC6/view?usp=share_link) | [Weights](https://drive.google.com/file/d/1bNSahBYI1AdATPypjQ3_Xht03pawGBRR/view?usp=share_link) | [Weights](https://drive.google.com/file/d/1bNSahBYI1AdATPypjQ3_Xht03pawGBRR/view?usp=share_link) | [Weights](https://drive.google.com/file/d/1Cas_dBBBCqYOmzJacH_toFQqhSu_Naum/view?usp=share_link) |
 
 
 # Acknowledgements
