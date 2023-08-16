@@ -63,7 +63,6 @@ The links of the diffusion-based model weights can be found in the table. Their 
 | Imagen            | CholecT45 + CholecSeg8k   |  [Imagen_T45_Seg8k](https://drive.google.com/file/d/1myQYlwYWlmnxIvJHkI_tSAQ2yQuXIk7j/view?usp=share_link)  |
 | Elucidated Imagen | CholecT45                 |  [ElucidatedImagen_T45](https://drive.google.com/file/d/1RVHM3jzsMtqRNwuyU2Wi9RExtIYlwDVp/view?usp=share_link)  |
 | Elucidated Imagen | CholecT45 + CholecSeg8k   |  [ElucidatedImagen_T45_Seg8k](https://drive.google.com/file/d/1EdFsQB0RYvVUvonan16RKgIzDoSr3NiK/view?usp=share_link)  |
-| Base | CholecT45 + CholecSeg8k   |  [ElucidatedImagen_T45_Seg8k](https://drive.google.com/file/d/1EdFsQB0RYvVUvonan16RKgIzDoSr3NiK/view?usp=share_link)  |
 
 
 ## Results
