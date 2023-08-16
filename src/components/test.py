@@ -3,6 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.curdir))
 
 import argparse
+import torch
 
 from imagen_pytorch import load_imagen_from_checkpoint
 
@@ -13,10 +14,13 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('--model',
                     default='ElucidatedImagen',
-                    help='Please choose: Imagen or ElucidatedImagen')
+                    help='Please choose: Imagen or ElucidatedImagen.')
 parser.add_argument('--text',
                     default='grasper grasp gallbladder in callot triangle dissection',
-                    help='Please write a text prompt')
+                    help='Please write a text prompt.')
+parser.add_argument('--cond_scale',
+                    default=3,
+                    help='Please insert a conditioning scale between 1 and 10.')
 
 args = parser.parse_args()
 
@@ -26,5 +30,8 @@ if args.model == 'ElucidatedImagen':
 elif args.model == 'Imagen':
     model = load_imagen_from_checkpoint('src/assets/imagen/models/imagen_model_u2_p2_dtp95_T45.pt')
     
-images = model.sample(texts = [args.text], cond_scale = 3., return_pil_images=True)
+if torch.cuda.is_available():
+    model=model.cuda()
+    
+images = model.sample(texts = [args.text], cond_scale = int(args.cond_scale), return_pil_images=True)
 images[0].save(f'./test_image_{args.text}.png')

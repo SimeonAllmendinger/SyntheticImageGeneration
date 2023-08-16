@@ -2,7 +2,7 @@
 
 # Model
 model:
-  model_type: Imagen  # Imagen, ElucidatedImagen, Dalle2
+  model_type: ElucidatedImagen  # Imagen, ElucidatedImagen, Dalle2
 
 # Trainer
 trainer:
@@ -24,17 +24,17 @@ trainer:
 
   # Dataloader
   shuffle: True
-  num_workers: 8    # 3 | 1
-  batch_size: 100    # Training: max. 16 for GPU with 32GB | Testing: max. 100 for GPU with 32GB
+  num_workers: 8    
+  batch_size: 100       # Training: max. 16 for GPU with 32GB | Testing: max. 100 for GPU with 32GB
   train_split: 0.9
   valid_split: 0.1
   
   # Training
-  max_epochs: 2000
-  unet_number: 2 # train unet 1 or 2
+  max_epochs: 100000    # Maximal number of epochs
+  unet_number: 2        # train unet 1 or 2
   param_tuning: False
   early_stopping:
-    usage: False
+    usage: True        # Activate Early Stopping
     threshold: 1.0e-8
     queue_length: 20
 
@@ -48,15 +48,15 @@ validation:
     valid_loss: 20
     validate_model: 5000
 
-  # Sampling
-  sample_quantity: 10
+  # Sampling (while training)
+  sample_quantity: 10   
   sample_seed: 1
   cond_scale: 7  # 1 to 10 for image sampling
 
 
 # Testing
 testing:
-  PATH_MODEL_TESTING: ./src/assets/imagen/models/imagen_model_u2_p2_dtp95_T45.pt
+  PATH_MODEL_TESTING: ./src/assets/elucidated_imagen/models/elucidated_imagen_model_u2_p2_dtp95_T45.pt
   PATH_TEST_SAMPLE: ./results/testing/
   
   # Sampling
@@ -68,17 +68,17 @@ testing:
   only_triplets: True
   cond_scale: 5  # 1 to 10
   loss_weighting: p2   # p2
-  text: grasper retract gallbladder in calot triangle dissection # grasper retract liver in gallbladder dissection | hook dissect gallbladder in gallbladder dissection | grasper retract gallbladder in calot triangle dissection
-  text_dict_index: 17 #19 | 60 | 17
-  phase_name: CalotTriangleDissection # GallbladderDissection | GallbladderDissection | CalotTriangleDissection
+  text: grasper retract gallbladder in calot triangle dissection 
+  text_dict_index: 17
+  phase_name: CalotTriangleDissection 
 
-  # Batches
-  lower_batch: 87
+  # Define Batch Boundaries to parallize sampling
+  lower_batch: 0
   upper_batch: 100 
 
   # Frechet Inception Distance
   FrechetInceptionDistance:
-    usage: False
+    usage: True
     params:
       feature: 2048
       reset_real_features: True
@@ -86,7 +86,7 @@ testing:
 
   # Kernel Inception Distance
   KernelInceptionDistance:
-    usage: False
+    usage: True
     params:
       feature: 2048
       subsets: 10
@@ -96,7 +96,7 @@ testing:
 
   # Clean Fréchet Inception Distance
   CleanFID:
-    usage: False
+    usage: True
     params:
       mode: clean
       model_name: inception_v3
@@ -105,7 +105,7 @@ testing:
 
   # Fréchet CLIP Distance
   FrechetCLIPDistance:
-    usage: False
+    usage: True
     params:
       mode: clean
       model_name: clip_vit_b_32

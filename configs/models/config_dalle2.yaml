@@ -4,17 +4,17 @@
 clip:
     #
     context_length: 77
-    model_name: ViT-B-32            #ViT-H-14 | ViT-g-14 | ViT-bigG-14  # Best performing model on open_clip (DATE: 21.03.2023)
-    pretrained: laion2B-s34B-b79K     #laion2B-s32B-b79K | laion2B-s12B-b42K | laion2b_s39b_b160k
+    model_name: ViT-B-32              
+    pretrained: laion2B-s34B-b79K     
 
 # Diffusion Prior Network Parameters
 diffusion_prior_network:
     params:
-        dim: 512 # 1024 | 1280 
+        dim: 512 
         depth: 6
-        dim_head: 32 #64 | 80
+        dim_head: 32 
         heads: 16 
-        # Transformer: 80 x 16 = 1280 (=dim), which equals the embed dim of clip
+        # Transformer: 32 x 16 = 512 (=dim), which equals the embed dim of clip
 
 # Diffusion Prior Parameters
 diffusion_prior:
@@ -22,7 +22,7 @@ diffusion_prior:
     use_existing_model: True
 
     params:
-        image_embed_dim: 512 # 1024 | 1280
+        image_embed_dim: 512 
         timesteps: 1000
         sample_timesteps: 64
         cond_drop_prob: 0.2
@@ -48,9 +48,9 @@ decoder:
     use_existing_model: True
 
     params:
-        image_sizes: # resolutions, 256 for first unet, 512 for second. these must be unique and in ascending order (matches with the unets passed in)
+        image_sizes: 
             - 128
-            - 224    # 256 
+            - 224  
         timesteps: 1000
         image_cond_drop_prob: 0.1
         text_cond_drop_prob: 0.5
@@ -71,8 +71,8 @@ decoder_trainer:
 # unet 1
 unet1:
     dim: 32
-    image_embed_dim: 512    # 1280
-    text_embed_dim: 512     # 1280
+    image_embed_dim: 512    
+    text_embed_dim: 512     
     cond_dim: 128
     channels: 3
     cond_on_text_encodings: True # set to True for any unets that need to be conditioned on text encodings
@@ -84,7 +84,7 @@ unet1:
 
 unet2:
     dim: 16
-    image_embed_dim: 512    # 1280
+    image_embed_dim: 512   
     cond_dim: 128
     channels: 3
     dim_mults:

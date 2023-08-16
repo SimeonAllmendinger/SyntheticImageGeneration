@@ -1,12 +1,12 @@
 ## RAY TUNING
 
 restore_tuner: False
-PATH_RESTORE_TUNER: /home/kit/stud/uerib/SyntheticImageGeneration/results/tuning/experiment_2023-04-05-22:49:15
+PATH_RESTORE_TUNER: PATH_TO_RESTORE_TUNER
 
 # ray tune parameters
 tune_params:
   scheduler:
-    max_t: 1000 # max_num_epochs
+    max_t: 10000 # max_num_epochs
     grace_period: 200 # Only stop trials at least this old in time.
     reduction_factor: 2 
   resources:
@@ -29,7 +29,7 @@ search_space:
       function: ray.tune.choice
       values:
         - Imagen
-        # - ElucidatedImagen
+        - ElucidatedImagen
         # - dall_e2
 
   ##
@@ -38,8 +38,8 @@ search_space:
       function: ray.tune.choice
       values:
         - Both
-        #- CholecT45
-        #- CholecSeg8k
+        - CholecT45
+        - CholecSeg8k
 
     use_existing_data_files:
       values: True
@@ -48,7 +48,7 @@ search_space:
       function: ray.tune.choice
       values:
         - True
-        #- False
+        - False
 
   ##
   imagen:
@@ -69,9 +69,9 @@ search_space:
     timesteps: 
       function: ray.tune.qrandint
       values:
-        lower: 800
+        lower: 400
         q: 200
-        upper: 1400
+        upper: 2000
     # 2
     cond_drop_prob: 
       function: ray.tune.choice
@@ -108,7 +108,7 @@ search_space:
       function: ray.tune.quniform
       values:
         lower: 0.1
-        q: 0.1
+        q: 0.01
         upper: 0.3
 
     # 8
