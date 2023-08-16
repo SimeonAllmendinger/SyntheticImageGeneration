@@ -49,7 +49,8 @@ cd ../../
 To test the generation of laparoscopic images with the pre-trained Elucidated Imagen model, please do the following:
 ```
 python3 src/components/test.py --model=ElucidatedImagen --text='grasper grasp gallbladder in callot triangle dissection' --cond_scale=3
-```s
+```
+
 You can apply the Imagen and ElucidatedImagen model, various conditiong scales and a suitable text prompt according to your desire! Feel free to try everything out. (The sampling of the Elucidated Imagen model also works well on a machine without GPU)
 
 The links of the diffusion-based model weights can be found in the table. Their hyperparameter configurations are contained in the config files respectively. [Model Config Folder](https://github.com/SimeonAllmendinger/SyntheticImageGeneration/tree/main/configs/models) :
