@@ -22,7 +22,7 @@
 
 
 
-<h3> [Navigating the Synthetic Realm: Harnessing Diffusion-based Models for Laparoscopic Text-to-Image Generation](https://arxiv.org/abs/2312.03043) <h3>
+[<h3> Navigating the Synthetic Realm: Harnessing Diffusion-based Models for Laparoscopic Text-to-Image Generation <h3>](https://arxiv.org/abs/2312.03043)
 
 <h4>Simeon Allmendinger, Patrick Hemmer, Niklas Kühl, Moritz Queisner, Igor Sauer, Leopold Müller, Johannes Jakubik, Michael Vössing </h4>
 
